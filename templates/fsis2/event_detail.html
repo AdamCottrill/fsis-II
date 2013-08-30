@@ -1,0 +1,71 @@
+{% extends "fsis/fsis_base.html" %}
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}pygments.css">
+{% endblock %}
+
+{% block title %} {{ object.title  }}  {% endblock %}
+
+{% block header %} 
+<h2> {{ object.title }} </h2>
+<hr />
+{% endblock %}
+
+{% block pages %} {% endblock %}
+
+{% block content %}
+
+
+  <p>  <b>Language:</b> {{ object.language }} </p>
+  <p>  <b>Author:</b> {{ object.author }} </p>
+  <p>  <b>Description:</b><br />{{ object.description_html|safe }} </p>
+  {% if object.via_url %}
+    <p>  <b>Associated webpage:</b> <br /> 
+      <a href="{{ object.via_url }}">{{ object.via_url }}</a> </p>
+  {% endif %}
+
+  <p>  <b>Code:</b> <br /> {{ object.highlighted_code|safe }} </p>
+  {% if object.usage %}
+    <p>  <b>Example Usage:</b> <br /> {{ object.usage_code|safe }} </p>
+  {% endif %}
+  {% if object.testing %}
+    <p>  <b>Test Code:</b> <br /> {{ object.testing_code|safe }} </p>
+  {% endif %}
+
+  <p>  <b>tags:</b>
+        {% for tag in object.tags.all %}
+             <a href="{% url 'snippets_tagged_with' tag.name %}">{{ tag.name }}</a> , 
+        {% endfor %}
+  </p>
+
+
+{% load snippet_extras %}
+<hr />
+
+<div id="buttonbar" align="left">
+<a href="{% url 'edit_snippet' object.id %}"><button>Edit Snippet</button></a>
+<a href="{% url 'add_snippet' %}"><button>Add New Snippet</button></a>
+{% if object.bookmark_set.count %}
+<a href="{% url 'snippet_delete_bookmark'  object.pk %}"><button>Remove Bookmark</button></a>
+{% else %}
+<a href="{% url 'snippet_add_bookmark'  object.pk %}">
+<button>
+{% if_bookmarked user object %}
+  Bookmark Snippet
+{% else %}
+  Remove Bookmark
+{% endif_bookmarked %}
+</button></a>
+{% endif %}
+<hr />
+
+</div>
+  <p> <em> Date Created: {{ object.pub_date }} |   Last Modified: {{ object.updated_date }} </em></p>
+
+
+
+
+
+
+
+{% endblock %}
