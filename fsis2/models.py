@@ -214,36 +214,37 @@ class Event(models.Model):
     def get_absolute_url(self):
         return ('event_detail', (), {'pk':self.id})
 
-class TagAttributes(models.Model):
+
+
+class TaggingEvent(models.Model):
     stocking_event= models.ForeignKey(Event)
-    tag_id = models.IntegerField(unique=True)
+    fs_tagging_event_id = models.IntegerField(unique=True)
     retention_rate_pct = models.FloatField(null=True, blank=True)
     retention_rate_sample_size = models.IntegerField(null=True, blank=True)
     retention_rate_pop_size = models.IntegerField(null=True, blank=True)
     comments = models.TextField(null=True, blank=True)
 
     TAG_TYPE_CHOICES = (
-        ('1', 'Streamer'),
-        ('2', 'Tubular Vinyl'),
-        ('5', 'Anchor'),
-        ('6', 'Coded Wire'),
-        ('17', 'Sequential_CWT')
+        (1, 'Streamer'),
+        (2, 'Tubular Vinyl'),
+        (5, 'Anchor'),
+        (6, 'Coded Wire'),
+        (17, 'Sequential_CWT')
         )
 
-    tag_type =  models.CharField(max_length=2,
-                                     choices=TAG_TYPE_CHOICES,
-                                     default='6')
+    tag_type =  models.IntegerField(choices=TAG_TYPE_CHOICES,
+                                     default=6)
 
     TAG_POSITION_CHOICES = (
-        ('1', 'Flesh of Back'),
-        ('2', 'Operculum'),
-        ('3', 'Posterior Dorsal Fins'),
-        ('4', 'Snout'),
+        (1, 'Flesh of Back'),
+        (2, 'Operculum'),
+        (3, 'Posterior Dorsal Fins'),
+        (4, 'Snout'),
         )
 
-    tag_position =  models.CharField(max_length=10,
+    tag_position =  models.IntegerField(
                                      choices=TAG_POSITION_CHOICES,
-                                     default='4')
+                                     default=4)
 
     TAG_ORIGIN_CHOICES = (
        ('CFP', 'Community Fisheries Involvement Program(CFIP)'),
@@ -275,16 +276,16 @@ class TagAttributes(models.Model):
        #return ('event_detail', (), {'pk':self.id})
 
 
-##class CWTs_Applied(models.Model):
-##     tagging = models.ManyToMany(TaggingEvent)
-##     cwt = models.CharField(max_length=6)
-##
-##     #class Meta:
-##     #   ordering = ['-date']
-##
-##    def __unicode__(self):
-##        pass
-##        #return "'%s' %s" % (self.snippet, self.user)
-##
-##        #def get_absolute_url(self):
-##        #return ('event_detail', (), {'pk':self.id})
+class CWTs_Applied(models.Model):
+    #tagging = models.ManyToMany(TaggingEvent)
+    tagging_event = models.ForeignKey(TaggingEvent)
+    fs_tagging_event_id = models.IntegerField()    
+    cwt = models.CharField(max_length=6)
+
+    def __unicode__(self):
+        string = '-'.join((cwt[:2],cwt[2:4],cwt[4:]))
+        return string
+
+        #def get_absolute_url(self):
+        #
+        #return ('cwt_events', self.cwt)

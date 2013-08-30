@@ -39,6 +39,17 @@ from sqlalchemy.orm import sessionmaker
 from sqa_models import *
 from helper_fcts import *
 
+
+#here is dicationary that will be needed for the tag attribute table.
+#It may need to be updated if more tag positions are used in fsis.
+TAG_POSITIONS = {
+    'Flesh of Back':1,
+    'Operculum':2,
+    'Posterior Dorsal Fins':3,
+    'Snout':4}
+
+
+
 #========================================
 #            DATA SOURCE
 
@@ -332,11 +343,81 @@ print "'%s' Transaction Complete (%s)"  % \
   (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
 
 
+
+
+
+#========================================
+#       TAGGING EVENTS
+
+table = "Tagging Events"
+
+sql = '''SELECT EVENT AS fs_event, TAG_ID, RETENTION_RATE_PCT,
+            RETENTION_RATE_SAMPLE_SIZE, RETENTION_RATE_POP_SIZE,
+            COMMENTS, TAG_TYPE_CODE, TAG_POSITION, TAG_ORIGIN_CODE,
+            TAG_COLOUR_CODE
+         FROM FS_TagAttributes;'''
+
+src_cur.execute(sql)
+data = src_cur.fetchall()
+
+for row in data:
+    #get objects referenced by foreign key
+    stocking_event = session.query(Event).filter_by(fs_event=row.fs_event).one()
+
+    item = TaggingEvent(
+            stocking_event_id = stocking_event.id,
+            fs_tagging_event_id = row.tag_id,
+            retention_rate_pct = row.retention_rate_pct,
+            retention_rate_sample_size = row.retention_rate_sample_size,
+            retention_rate_pop_size = row.retention_rate_pop_size,
+            comments = row.comments,
+            tag_type =  row.tag_type_code,
+            tag_position =  TAG_POSITIONS[row.tag_position],
+            tag_origins =  row.tag_origin_code,
+            tag_colour =  row.tag_colour_code,
+    )
+    session.add(item)
+
+session.commit()
+
+now = datetime.datetime.now()
+print "'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+
+
+
+
+
+#========================================
+#       CWTs APPLIED
+
+table = "CWTs Applied"
+
+sql = ''' SELECT TAG_ID AS fs_tagging_event_id, CWT FROM FS_CWTs_Applied;'''
+
+src_cur.execute(sql)
+data = src_cur.fetchall()
+
+for row in data:
+    #get objects referenced by foreign key
+    tagging_event = session.query(TaggingEvent).filter_by(
+                        fs_tagging_event_id=row.fs_tagging_event_id).one()
+    item = CWTs_Applied(
+            tagging_event_id=tagging_event.id,
+            fs_tagging_event_id = row.fs_tagging_event_id,
+            cwt = row.cwt
+    )
+    session.add(item)
+
+session.commit()
+
+now = datetime.datetime.now()
+print "'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+
+
 #========================================
 #              BUILD DATE
 build_date = BuildDate(build_date = datetime.datetime.utcnow())
 session.add(build_date)
 session.commit()
-
-
-

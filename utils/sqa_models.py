@@ -180,5 +180,47 @@ class Event(Base):
     lot = relationship("Lot", order_by="Lot.id", backref="lot")
 
     def __repr__(self):
-        return "%s (%s yc %s)" % (self.fs_event, self.event_date,
-                                  self.species.common_name)
+        return "%s (%s stocked on %s)" % (self.fs_event,
+                                          self.lot.species.common_name,
+                                          self.event_date)
+
+
+
+class TaggingEvent(Base):
+
+    __tablename__='fsis2_taggingevent'
+
+    id = Column(Integer, primary_key=True)
+
+    stocking_event_id = Column(Integer, ForeignKey('fsis2_event.id'))
+    stocking_event = relationship("Event", order_by="Event.id",
+                            backref="tagging_event")
+
+    fs_tagging_event_id = Column(Integer, unique=True)
+    retention_rate_pct = Column(Float)
+    retention_rate_sample_size = Column(Integer)
+    retention_rate_pop_size = Column(Integer)
+    comments = Column(String)
+    tag_type =  Column(Integer)
+    tag_position =  Column(Integer)
+    tag_origins =  Column(String(4))
+    tag_colour =  Column(String(3))
+
+    def __repr__(self):
+        return '<fs tagging event :%s>' % self.fs_tagging_event_id
+
+    
+class CWTs_Applied(Base):
+
+    __tablename__='fsis2_cwts_applied'
+
+    id = Column(Integer, primary_key=True)
+    tagging_event_id = Column(Integer, ForeignKey('fsis2_taggingevent.id'))
+    tagging_event = relationship("TaggingEvent",
+                                 backref="cwts")
+    fs_tagging_event_id = Column(Integer, unique=True)
+    cwt = Column(String(6))
+
+    def __repr__(self):
+        string = '-'.join((self.cwt[:2], self.cwt[2:4], self.cwt[4:]))
+        return string
