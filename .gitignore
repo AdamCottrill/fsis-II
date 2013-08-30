@@ -1,0 +1,11 @@
+*~
+venv/*
+doc/*
+*defunct*
+*.pyc
+db/*
+coverage/*
+static/*
+main/whoosh_index/*
+*.mdb
+*.ldb

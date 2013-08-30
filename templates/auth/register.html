@@ -1,0 +1,40 @@
+{% extends "fsis/fsis_base.html" %}
+
+{% block title %}New User{% endblock %}
+
+{% block content %}
+
+    
+
+   <div class="row">
+    <div class="span4 offset4">
+    <div class="well">
+    <legend>Create an account:</legend>
+
+    {% if form.errors %}
+    	<div class="alert alert-error">
+    		<button type="button" class="close" data-dismiss="alert">×</button>
+		<ul>
+		{% for error in form.errors.values %}
+    		    <li>{{ error|striptags }}</li>
+		{% endfor %}
+		</ul>
+
+    	</div>
+    {% endif %}
+
+
+
+    <form method="POST" action="" accept-charset="UTF-8">
+      {% csrf_token %}
+
+    <input class="span3" placeholder="Username" type="text" name="username">
+    <input class="span3" placeholder="Password" type="password" name="password1">
+    <input class="span3" placeholder="Confirm Password" type="password" name="password2">
+    <button class="btn-info btn" type="submit">Login</button>
+    </form>
+    </div>
+    </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "fsis/fsis_base.html" %}
+
+{% block title %} 
+{% if add %}Add{% else %}Edit{% endif %} A Snippet 
+{% endblock %}
+
+
+{% block header %}
+ <h2> {% if add %}Add{% else %}Edit{% endif %} a Snippet</h2>
+<hr />
+{% endblock %}
+
+{% block pages %}  {% endblock %}
+
+
+{% block content %}
+
+{% load crispy_forms_tags %}
+{% crispy form form.helper 'bootstrap' %}
+
+
+{% endblock %}
+

@@ -1,0 +1,44 @@
+{% extends "fsis/fsis_base.html" %}
+
+<!-- {% block pages %}
+
+
+{% endblock %}
+-->
+
+{% block header %} 
+{% if language %} 
+  <h3>Snippets written in {{ language }}:</h3> 
+{% elif tag %}
+  <h3>Snippets tagged with <em>"{{ tag }}"</em>:</h3> 
+{% else %}
+  <h3> Snippets </h3>
+{% endif %}
+<hr />
+{% endblock %}
+
+
+{% block content %}
+
+  <p>
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  {% endif  %}
+  {{page_obj}};
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+  {% endif  %}
+  </p>
+
+  {% if object_list %}
+    {% for object in object_list %}
+    <p>  <a href="{{ object.get_absolute_url }}">
+    {{ object.title }}</a> ({{ object.language }})</p>
+    {% endfor %}
+  {% else %}
+    <p>Sorry no snippets available.</p>
+  {% endif %}
+
+{% endblock %}
+
+
