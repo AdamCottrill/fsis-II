@@ -1,16 +1,18 @@
 #from django.contrib.auth.models import User
-#from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
 #from django.core.context_processors import csrf
 #from django.http import HttpResponseRedirect
 #from django.shortcuts import get_object_or_404, render_to_response
 #from django.template import RequestContext
-#from django.utils.decorators import method_decorator
+from django.utils.decorators import method_decorator
 
 from django.core.urlresolvers import reverse
 
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
+from django.views.generic.dates import YearArchiveView
 
+from .models import Event, Lot
 
 import pdb
 
@@ -30,33 +32,41 @@ class EventDetailView(DetailView):
     #event_detail = EventDetailView.as_view()
 
 
+class EventYearArchiveView(YearArchiveView):
+    queryset = Event.objects.all()
+    date_field = "event_date"
+    make_object_list = True
+    allow_future = True
+
+
+
 class EventListView(ListView):
     '''render a list of events optionally filtered by year or lot'''
     queryset = Event.objects.all()
     template_name = "EventList.html"
     paginate_by = 20
 
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super(EventList, self).dispatch(*args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(EventList, self).get_context_data(**kwargs)
-        context['lot'] = self.kwargs.get('lot',None)
-        #context['year'] = self.kwargs.get('year',None)
-        return context
-
-    def get_queryset(self):
-        self.lot = self.kwargs.get('lot',None)
-        #self.tag = self.kwargs.get('year',None)
-
-        if self.lot:
-            queryset = Event.objects.filter(lot__name=self.lot)
-        #elif self.year:
-            #queryset = Event.objects.filter(year=self.year)
-        else:
-            queryset = Event.objects.all()
-        return queryset
+    ## @method_decorator(login_required)
+    ## def dispatch(self, *args, **kwargs):
+    ##     return super(EventList, self).dispatch(*args, **kwargs)
+    ## 
+    ## def get_context_data(self, **kwargs):
+    ##     context = super(EventList, self).get_context_data(**kwargs)
+    ##     context['lot'] = self.kwargs.get('lot',None)
+    ##     #context['year'] = self.kwargs.get('year',None)
+    ##     return context
+    ## 
+    ## def get_queryset(self):
+    ##     self.lot = self.kwargs.get('lot',None)
+    ##     #self.tag = self.kwargs.get('year',None)
+    ## 
+    ##     if self.lot:
+    ##         queryset = Event.objects.filter(lot__name=self.lot)
+    ##     #elif self.year:
+    ##         #queryset = Event.objects.filter(year=self.year)
+    ##     else:
+    ##         queryset = Event.objects.all()
+    ##     return queryset
 
 
     #event_list = EventList.as_view()
@@ -108,14 +118,16 @@ class EventListView(ListView):
 class LotListView(ListView):
     #includes any lots that don't have any events yet:
     queryset = Lot.objects.filter(
-                        Events__pk__isnull=False).distinct()
+                        event__pk__isnull=False).distinct()
     template_name = "LotList.html"
-
+    paginate_by = 20
     ##@method_decorator(login_required)
     ##def dispatch(self, *args, **kwargs):
     ##    return super(LotList, self).dispatch(*args, **kwargs)
 
     #lot_list = LotList.as_view()
+
+
 
 class LotDetailView(DetailView):
     model = Lot
