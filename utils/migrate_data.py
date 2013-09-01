@@ -68,7 +68,8 @@ src_cur = src_conn.cursor()
 #stocking database - it's database agnostic, so we just need to change
 #the engine if our database changes
 
-trgdb = "C:/1work/Python/djcode/fsis2/db/fsis2.db"
+#trgdb = "C:/1work/Python/djcode/fsis2/db/fsis2.db"
+trgdb = '/home/adam/Documents/djcode/fsis2/db/fsis2.db'
 engine = create_engine('sqlite:///%s' % trgdb)
 
 Session = sessionmaker(bind=engine)

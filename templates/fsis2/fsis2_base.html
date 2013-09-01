@@ -2,11 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>My Snippets | {% block title %}Untitled{% endblock %}</title>
+    <title>FSIS-II | {% block title %}Untitled{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-
 
     <link href="{{STATIC_URL}}bootstrap/css/bootstrap.css" rel="stylesheet">
     <style>
@@ -15,7 +14,6 @@
       }
     </style>
    
-
     <script src="{{STATIC_URL}}js/jquery-1.9.1.js" type="text/javascript"></script>
     <link href="{{STATIC_URL}}bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
     <script src="{{STATIC_URL}}bootstrap/js/bootstrap-dropdown.js" type="text/javascript"></script> 
@@ -23,6 +21,7 @@
 
     {% block extrahead %}
     {% endblock %}
+
     <script type="text/javascript">
     $(function(){
     {% block jquery %}
@@ -36,6 +35,15 @@
         });  
     </script>  
 
+    <script>
+    $(document).ready(function() 
+        { 
+            $("table.tablesorter-blue").tablesorter(); 
+        } 
+    ); 
+    </script>
+    
+
   </head>
 
   <body>
@@ -48,25 +56,35 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="/">My Snippets</a>
+          <a class="brand" href="/">FSIS-II</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li class="active"><a href="/">Home</a></li>
-	      <li><a href="{% url 'add_snippet' %}">New Snippet</a> </li>
-	      <li><a href="{% url 'snippet_list' %}">All Snippets</a> </li>
-	      <li><a href="{% url 'language_list' %}">By Language</a>  </li>
-	      <li><a href="{% url 'snippet_tag_list' %}">By Tag</a>  </li>
-	     
+	      <li><a href="{% url 'lot_list' %}">Fish Lots</a> </li>	     
               <li class="dropdown">
-		<a href="#" class="dropdown-toggle">Most Popular</a>
+		<a href="#" class="dropdown-toggle">Stocking Events</a>
 	 	 <ul class="dropdown-menu">
-		  <li><a href="{% url 'snippet_user_bookmarks' %}">Your Bookmarks</a> </li>
+		  <li><a href="{% url 'event_list' %}">Events</a> </li>
 		  <li class="divider"></li>
-		  <li><a href="{% url 'top_authors' %}">Top Authors</a>  </li>
-		  <li><a href="{% url 'top_languages' %}">Top Languages</a> </li>
-		  <li><a href="{% url 'most_bookmarked' %}">Most Bookmarkded</a> </li>
+		  <li><a href="#">Enter New Event</a>  </li>
+		  <li><a href="#">Edit Event</a> </li>
+		  <li><a href="#">Approve Events</a> </li>
 		</ul>             
                </li>
+	      <li><a href="#">CWTs</a>  </li>
+
+
+              <li class="dropdown">
+		<a href="#"class="dropdown-toggle">Summaries</a>
+	 	 <ul class="dropdown-menu">
+		  <li><a href="">CWT 'Master'</a> </li>
+		  <li class="divider"></li>
+		  <li><a href="#">By Hatchery</a>  </li>
+		  <li><a href="#">By Species</a> </li>
+		  <li><a href="#">D. Reid Spreadsheet</a> </li>
+		</ul>             
+               </li>
+
 	      <li><a href="{% url 'about' %}">About</a>  </li>
             </ul>
 

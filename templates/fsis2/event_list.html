@@ -1,4 +1,4 @@
-{% extends "fsis/fsis_base.html" %}
+{% extends "fsis2/fsis2_base.html" %}
 
 <!-- {% block pages %}
 
@@ -6,38 +6,75 @@
 {% endblock %}
 -->
 
-{% block header %} 
-{% if language %} 
-  <h3>Snippets written in {{ language }}:</h3> 
-{% elif tag %}
-  <h3>Snippets tagged with <em>"{{ tag }}"</em>:</h3> 
-{% else %}
-  <h3> Snippets </h3>
-{% endif %}
-<hr />
+{% block extrahead %} 
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
 {% endblock %}
 
 
 {% block content %}
 
-  <p>
-  {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-  {% endif  %}
-  {{page_obj}};
-  {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">Next</a>
-  {% endif  %}
-  </p>
+
+<h2>{% if year %} {{ year|date:'Y' }}  {% endif %}Stocking Events</h2>
+
+{% load humanize %}
+{% if page_obj %} 
+<ul class="pager">
+    {% if page_obj.has_previous %}
+    <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Newer Events</a></li>
+    {% else %}
+    <li class="previous disabled"><a href="#">Newer Events</a></li>
+    {% endif %}
+    {{page_obj}};
+    {% if page_obj.has_next %}
+    <li class="next"><a href="?page={{ page_obj.next_page_number }}">Older Events</a></li>
+    {% else %}
+    <li class="next disabled"><a href="#">Older Events</a></li>
+    {% endif %}
+</ul>
+{% endif %}
 
   {% if object_list %}
-    {% for object in object_list %}
-    <p>  <a href="{{ object.get_absolute_url }}">
-    {{ object.title }}</a> ({{ object.language }})</p>
-    {% endfor %}
+
+  <table id="myTable" class="tablesorter-blue">
+    <thead><tr>
+	<td>FSIS Event</td>
+	<td>Species</td>
+	<td>Strain</td>
+	<td>Number Stocked</td> 
+	<td>Event Date</td>
+	<td>Site Name</td>
+	<td>Clip Applied</td> 
+	<td>Development Stage</td></tr>
+    </thead>
+  <tbody>
+  {% for event in object_list %}
+    <tr class="{% cycle row1,row2 %}">
+	<td> <a href="">{{ event.fs_event }}</a> </td>
+	<td> {{ event.lot.species.common_name | title }} </td> 
+	<td> {{ event.lot.strain.strain_name | title }} </td> 
+	<td> {{ event.stkcnt|intcomma }} </td> 
+        <td> {{ event.event_date|date }} </td>
+	<td> {{ event.site.site_name }} </td> 
+	<td> {{ event.clipa }} </td> 
+        <td> {{ event.get_development_stage_display }} </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+
+
+
   {% else %}
-    <p>Sorry no snippets available.</p>
+    <p>Sorry no events match that criteria.</p>
   {% endif %}
+
+
+
+
+
+
 
 {% endblock %}
 

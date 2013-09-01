@@ -1,4 +1,4 @@
-{% extends "fsis/fsis_base.html" %}
+{% extends "fsis2/fsis2_base.html" %}
 
 <!-- {% block pages %}
 
@@ -6,38 +6,56 @@
 {% endblock %}
 -->
 
-{% block header %} 
-{% if language %} 
-  <h3>Snippets written in {{ language }}:</h3> 
-{% elif tag %}
-  <h3>Snippets tagged with <em>"{{ tag }}"</em>:</h3> 
-{% else %}
-  <h3> Snippets </h3>
-{% endif %}
-<hr />
+{% block extrahead %} 
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
 {% endblock %}
 
 
 {% block content %}
 
-  <p>
-  {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-  {% endif  %}
-  {{page_obj}};
-  {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}">Next</a>
-  {% endif  %}
-  </p>
+<ul class="pager">
+    {% if page_obj.has_previous %}
+    <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Newer Lots</a></li>
+    {% else %}
+    <li class="previous disabled"><a href="#">Newer Lots</a></li>
+    {% endif %}
+    {{page_obj}};
+    {% if page_obj.has_next %}
+    <li class="next"><a href="?page={{ page_obj.next_page_number }}">Older Lots</a></li>
+    {% else %}
+    <li class="next disabled"><a href="#">Older Lots</a></li>
+    {% endif %}
+</ul>
+
 
   {% if object_list %}
-    {% for object in object_list %}
-    <p>  <a href="{{ object.get_absolute_url }}">
-    {{ object.title }}</a> ({{ object.language }})</p>
-    {% endfor %}
+      <table id="myTable" class="tablesorter-blue">
+        <thead><tr><td>FSIS Lot</td><td>Spawn Year</td> <td>Species</td>
+        <td>Strain</td> <td>Proponent</td></tr>
+        </thead>
+        <tbody>
+      {% for object in object_list %}
+        <tr class="{% cycle row1,row2 %}">
+            <td> <a href="{{ object.get_absolute_url }}"> {{ object.fs_lot }}</a>  </td>
+            <td> {{ object.spawn_year }}  </td>
+            <td> {{ object.species.common_name }} </td>
+            <td> {{ object.strain.strain_name }} </td> 
+            <td> {{ object.proponent.proponent_name|title }}  </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
   {% else %}
-    <p>Sorry no snippets available.</p>
+    <p>Sorry no lots match that criteria.</p>
   {% endif %}
+
+
+
+
+
+
 
 {% endblock %}
 

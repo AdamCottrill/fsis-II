@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 
+from django.core.urlresolvers import reverse
+
 from fsis2 import managers
 import datetime
 
@@ -107,16 +109,22 @@ class Lot(models.Model):
         ('PRIVATE', 'Private Hatchery'),
         ('UNKNOWN', 'Unknown'),
         )
+     #this should be lower case:
     Proponent_Type = models.CharField(max_length=10,
                                       choices=PROPONENT_TYPE_CHOICES,
                                       default='OMNR')
 
+    class Meta:
+        ordering = ['-spawn_year']
+
+
     def __unicode__(self):
         return "%s (%s yc %s)" % (self.fs_lot, self.spawn_year,
-                                  self.species.name)
+                                  self.species.common_name)
 
     def get_absolute_url(self):
-        return ('lot_detail', (), {'pk':self.id})
+        return reverse('lot_detail', args=[str(self.id)])
+
 
 
 class Event(models.Model):
@@ -209,7 +217,7 @@ class Event(models.Model):
         ordering = ['-event_date']
 
     def __unicode__(self):
-        self.event_id
+        return 'fsis event : %s' % self.fs_event
 
     def get_absolute_url(self):
         return ('event_detail', (), {'pk':self.id})
@@ -283,7 +291,7 @@ class CWTs_Applied(models.Model):
     cwt = models.CharField(max_length=6)
 
     def __unicode__(self):
-        string = '-'.join((cwt[:2],cwt[2:4],cwt[4:]))
+        string = '-'.join((self.cwt[:2], self.cwt[2:4], self.cwt[4:]))
         return string
 
         #def get_absolute_url(self):
