@@ -19,6 +19,7 @@
 {% load fsis2_filters %}
 
   <p>  <b>FSIS Event Number:</b> {{ object.fs_event }} </p>
+  <p>  <b>FSIS Lot Number:</b> <a href="{% url 'lot_detail' object.lot.id %}">{{ object.lot.fs_lot }}</a> </p>
   <p>  <b>Species:</b> {{ object.lot.species.common_name }} (<em>{{object.lot.species.scientific_name}}</em>)  </p>
   <p>  <b>Strain:</b>{{ object.lot.strain.strain_name }} ({{object.lot.strain.sto_code}}) </p>
                                        
@@ -30,14 +31,15 @@
 
   <p>  <b>Transit Method:</b> {{ object.get_transit_display }} </p>
   <p>  <b>Stocking Method:</b> {{ object.get_stocking_method_display }} </p>
-  <p>  <b>Stocking Purpose:</b> {{ object.get_stocking_purpose_display }}({{ object.stocking_purpose }}) </p>
+  <p>  <b>Stocking Purpose:</b> {{ object.get_stocking_purpose_display }} ({{ object.stocking_purpose }}) </p>
 
   {% autoescape off %}
   <p>  <b>Latitude:</b> {{ object.dd_lat |format_ddlat }} </p>
   <p>  <b>Longitude:</b> {{ object.dd_lon |format_ddlon }} </p>
   {% endautoescape %}
 
-  <p>  <b>Closest Named Stocking Site:</b> {{ object.site.site_name }} ({{ object.site.fsis_site_id }})</p>
+  <p>  <b>Closest Named Stocking Site:</b> 
+<a href="{% url 'site_detail' object.site.fsis_site_id %}">{{ object.site.site_name }} ({{ object.site.fsis_site_id }})</a></p>
   <p>  <b>Basin:</b> {{ object.site.basin }} </p>
   <p>  <b>Grid Number:</b> {{ object.site.grid }} </p>
 
@@ -63,17 +65,11 @@
 
 
 
-
-
-
-
-
-
 <hr />
 
 <div id="buttonbar" align="left">
-<a href="#"><button>Edit Event Information</button></a>
-<a href="#"><button>Create A New Event</button></a>
+<a href="{% url 'event_create' %}"><button>Edit Event Information</button></a>
+<a href="{% url 'event_update' object.id %}"><button>Create A New Event</button></a>
 
 <hr />
 

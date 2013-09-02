@@ -7,7 +7,10 @@ from django.views.generic import TemplateView
 
 
 from .views import (EventDetailView, EventListView, EventYearArchiveView, 
-                    LotDetailView, LotListView, CwtListView)
+                    EventUpdateView, EventCreateView,
+                    LotDetailView, LotListView, LotCreateView, LotUpdateView,
+                    SiteDetailView, SiteListView, SiteCreateView, 
+                    SiteUpdateView, CwtListView,)
 
 urlpatterns = patterns("",
 
@@ -16,7 +19,7 @@ urlpatterns = patterns("",
 
         #lot detail
         url(
-            regex=r'^lot_detail/(?P<pk>\d+)$',
+            regex=r'^lot/detail/(?P<pk>\d+)$',
             view=LotDetailView.as_view(),
             name='lot_detail'
             ),
@@ -35,6 +38,20 @@ urlpatterns = patterns("",
             ),
 
 
+        #create lot 
+        url(
+            regex=r'^lot/add$',
+            view=LotCreateView.as_view(),
+            name='lot_create'
+            ),
+
+        #update lot 
+        url(
+            regex=r'^lot/update/(?P<pk>\d+)$',
+            view=LotUpdateView.as_view(),
+            name='lot_update'
+            ),
+
 
 
 
@@ -42,7 +59,7 @@ urlpatterns = patterns("",
         #    Events
         #event detail
         url(
-            regex=r'^event_detail/(?P<pk>\d+)$',
+            regex=r'^event/detail/(?P<pk>\d+)$',
             view=EventDetailView.as_view(),
             name='event_detail'
             ),
@@ -67,6 +84,21 @@ urlpatterns = patterns("",
             name='event_list'
             ),
 
+
+        #create event 
+        url(
+            regex=r'^event/add$',
+            view=EventCreateView.as_view(),
+            name='event_create'
+            ),
+
+        #update event 
+        url(
+            regex=r'^event/update/(?P<pk>\d+)$',
+            view=EventUpdateView.as_view(),
+            name='event_update'
+            ),
+
         #================
         #    CWTs
 
@@ -77,6 +109,36 @@ urlpatterns = patterns("",
             name='cwt_list'
             ),
 
+        #================
+        #    STOCKING SITEs
+
+        #create stocking site
+        url(
+            regex=r'^site/add$',
+            view=SiteCreateView.as_view(),
+            name='site_create'
+            ),
+
+        #update stocking site
+        url(
+            regex=r'^site/update/(?P<pk>\d+)$',
+            view=SiteUpdateView.as_view(),
+            name='site_update'
+            ),
+
+        #stocking sites
+        url(
+            regex=r'^sites/$',
+            view=SiteListView.as_view(),
+            name='site_list'
+            ),
+
+        #stocking site details
+        url(
+            regex=r'^site/detail/(?P<pk>\d+)$',
+            view=SiteDetailView.as_view(),
+            name='site_detail'
+            ),
 
         #================
         #    ABOUT

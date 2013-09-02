@@ -68,8 +68,8 @@
 <hr />
 
 <div id="buttonbar" align="left">
-<a href="#"><button>Edit Lot Information</button></a>
-<a href="#"><button>Create A New Lot</button></a>
+<a href="{% url 'lot_update' object.id %}"><button>Edit Lot Information</button></a>
+<a href="{% url 'lot_create' %}"><button>Create A New Lot</button></a>
 <a href="#"><button>Create A New Event for this Lot </button></a>
 <hr />
 
