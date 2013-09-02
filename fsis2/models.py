@@ -222,6 +222,16 @@ class Event(models.Model):
     def get_absolute_url(self):
         return ('event_detail', (), {'pk':self.id})
 
+    def get_cwts(self):
+        '''a simple method to get all of the cwts associated with a stocking
+        event. (this should be optimized, but for now it works.)'''
+
+        cwts=[]
+        te = self.taggingevent_set.values_list('id')
+        if te:
+            cwts = CWTs_Applied.objects.filter(tagging_event__in=te)
+        return cwts
+        
 
 
 class TaggingEvent(models.Model):
@@ -291,7 +301,8 @@ class CWTs_Applied(models.Model):
     cwt = models.CharField(max_length=6)
 
     def __unicode__(self):
-        string = '-'.join((self.cwt[:2], self.cwt[2:4], self.cwt[4:]))
+        cwt = str(self.cwt)
+        string = '-'.join((cwt[:2], cwt[2:4], cwt[4:]))
         return string
 
         #def get_absolute_url(self):

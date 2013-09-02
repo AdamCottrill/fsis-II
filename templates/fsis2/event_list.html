@@ -15,10 +15,12 @@
 
 {% block content %}
 
-
-<h2>{% if year %} {{ year|date:'Y' }}  {% endif %}Stocking Events</h2>
-
 {% load humanize %}
+{% load fsis2_filters %}
+
+<h2>{% if year %} {{ year|date:'Y' }}  {% endif %}Stocking Events {% if cwt %} associated with cwt {{ cwt|format_cwt }} {% endif %}</h2>
+
+
 {% if page_obj %} 
 <ul class="pager">
     {% if page_obj.has_previous %}
@@ -51,7 +53,7 @@
   <tbody>
   {% for event in object_list %}
     <tr class="{% cycle row1,row2 %}">
-	<td> <a href="">{{ event.fs_event }}</a> </td>
+	<td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
 	<td> {{ event.lot.species.common_name | title }} </td> 
 	<td> {{ event.lot.strain.strain_name | title }} </td> 
 	<td> {{ event.stkcnt|intcomma }} </td> 

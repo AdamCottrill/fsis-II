@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 
 
 from .views import (EventDetailView, EventListView, EventYearArchiveView, 
-                    LotDetailView, LotListView)
+                    LotDetailView, LotListView, CwtListView)
 
 urlpatterns = patterns("",
 
@@ -54,6 +54,11 @@ urlpatterns = patterns("",
             EventYearArchiveView.as_view(template_name='fsis2/event_list.html'),
             name="event_year_list"),
            
+        #events associated with cwt
+        url(r'^events/(?P<cwt>\d{6})/$',
+            EventListView.as_view(template_name='fsis2/event_list.html'),
+            name="event_cwt_list"),
+
 
         #event list <lot>
         url(
@@ -65,11 +70,20 @@ urlpatterns = patterns("",
         #================
         #    CWTs
 
+        #event list <lot>
+        url(
+            regex=r'^cwts/$',
+            view=CwtListView.as_view(),
+            name='cwt_list'
+            ),
+
 
         #================
         #    ABOUT
         url(r'^about', TemplateView.as_view(template_name='about.html'),
          name='about'),
+
+
 
 
     )

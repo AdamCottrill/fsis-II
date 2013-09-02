@@ -1,7 +1,8 @@
 #from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 #from django.core.context_processors import csrf
-#from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect
+#from django.http import HttpResponse
 #from django.shortcuts import get_object_or_404, render_to_response
 #from django.template import RequestContext
 from django.utils.decorators import method_decorator
@@ -12,7 +13,7 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.dates import YearArchiveView
 
-from .models import Event, Lot
+from .models import Event, Lot, TaggingEvent, CWTs_Applied
 
 import pdb
 
@@ -50,23 +51,26 @@ class EventListView(ListView):
     ## def dispatch(self, *args, **kwargs):
     ##     return super(EventList, self).dispatch(*args, **kwargs)
     ## 
-    ## def get_context_data(self, **kwargs):
-    ##     context = super(EventList, self).get_context_data(**kwargs)
-    ##     context['lot'] = self.kwargs.get('lot',None)
-    ##     #context['year'] = self.kwargs.get('year',None)
-    ##     return context
-    ## 
-    ## def get_queryset(self):
-    ##     self.lot = self.kwargs.get('lot',None)
-    ##     #self.tag = self.kwargs.get('year',None)
-    ## 
-    ##     if self.lot:
-    ##         queryset = Event.objects.filter(lot__name=self.lot)
-    ##     #elif self.year:
-    ##         #queryset = Event.objects.filter(year=self.year)
-    ##     else:
-    ##         queryset = Event.objects.all()
-    ##     return queryset
+    def get_context_data(self, **kwargs):
+        context = super(EventListView, self).get_context_data(**kwargs)
+        context['cwt'] = self.kwargs.get('cwt',None)
+        #context['year'] = self.kwargs.get('year',None)
+        return context
+    
+    def get_queryset(self):
+        self.cwt = self.kwargs.get('cwt',None)
+        #self.tag = self.kwargs.get('year',None)
+        if self.cwt:
+            #get the list of tagging events associated with that tag number
+            te = TaggingEvent.objects.filter(
+                    cwts_applied__cwt=self.cwt).values_list('stocking_event')
+            #filter the stocking events to those in te
+            queryset = Event.objects.filter(id__in=te)
+        #elif self.year:
+            #queryset = Event.objects.filter(year=self.year)
+        else:
+            queryset = Event.objects.all()
+        return queryset
 
 
     #event_list = EventList.as_view()
@@ -173,3 +177,28 @@ class LotDetailView(DetailView):
 ##    return render_to_response('events/lot_form.html',
 ##                            {"form":form, 'add':True},
 ##                            context_instance = RequestContext(request))
+
+
+
+class CwtListView(ListView):
+    
+    #queryset = CWTs_Applied.objects.values('cwt').order_by('cwt').distinct()
+    template_name='fsis2/cwt_list.html'
+    paginate_by = 20
+    ##@method_decorator(login_required)
+    ##def dispatch(self, *args, **kwargs):
+    ##    return super(CwtListView, self).dispatch(*args, **kwargs)
+
+
+
+    def get_queryset(self):
+        # Fetch the queryset from the parent get_queryset
+        #queryset = super(CwtListView, self).get_queryset()
+        queryset = CWTs_Applied.objects.values('cwt').order_by('cwt').distinct()
+        # Get the q GET parameter
+        cwt = self.request.GET.get("cwt")
+        if cwt:
+            # Return a filtered queryset
+            cwt = cwt.replace('-','')
+            return queryset.filter(cwt__icontains=cwt)
+        return queryset
