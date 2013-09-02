@@ -53,7 +53,7 @@ class Strain(models.Model):
         #unique_together = ['species_code', 'sto_code']
 
     def __unicode__(self):
-        return "%s %s" % (self.strain_name, self.species.name)
+        return "%s %s" % (self.strain_name, self.species.common_name)
 
 
 class Proponent(models.Model):
@@ -88,7 +88,10 @@ class StockingSite(models.Model):
     deswby  = models.CharField(max_length=30)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.site_name, self.site_id)
+        return "%s (%s)" % (self.site_name, self.fsis_site_id)
+
+    class Meta:
+        ordering = ['site_name']
 
 
 class Lot(models.Model):

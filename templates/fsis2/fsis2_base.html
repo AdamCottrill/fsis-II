@@ -66,9 +66,14 @@
 	 	 <ul class="dropdown-menu">
 		  <li><a href="{% url 'event_list' %}">Events</a> </li>
 		  <li class="divider"></li>
-		  <li><a href="#">Enter New Event</a>  </li>
+		  <li><a href="{% url 'event_create' %}">Enter New Event</a>  </li>
 		  <li><a href="#">Edit Event</a> </li>
 		  <li><a href="#">Approve Events</a> </li>
+		  <li class="divider"></li>
+		  <li><a href="{% url 'site_list' %}">Stocking Sites</a>  </li>
+		  <li><a href="{% url 'site_create' %}">Add New Stocking Site</a> </li>
+
+
 		</ul>             
                </li>
 	      <li><a href="{% url 'cwt_list' %}">CWTs</a>  </li>

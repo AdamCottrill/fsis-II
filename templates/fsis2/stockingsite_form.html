@@ -6,15 +6,13 @@ Fish Culture Lot
 
 
 {% block header %}
- <h2>Fish Culture 'Lot' form:</h2>
+ <h2>Named Stocking Site Form:</h2>
 <hr />
 {% endblock %}
 
 {% block pages %}  {% endblock %}
 
-
 {% block content %}
-
 
 <form action="" method="post">{% csrf_token %}
   {{ form.as_p }}

@@ -13,7 +13,9 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.dates import YearArchiveView
 
-from .models import Event, Lot, TaggingEvent, CWTs_Applied
+from django.views.generic import CreateView, UpdateView
+
+from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite)
 
 import pdb
 
@@ -76,6 +78,30 @@ class EventListView(ListView):
     #event_list = EventList.as_view()
 #events_in_year = EventList.as_view()
 #event_by_lot_list = EventList.as_view()
+
+
+class EventCreateView(CreateView):
+    model = Event
+
+class EventUpdateView(UpdateView):
+    model = Event
+
+
+class LotCreateView(CreateView):
+    model = Lot
+
+class LotUpdateView(UpdateView):
+    model = Lot
+
+
+class SiteCreateView(CreateView):
+    model = StockingSite
+
+
+class SiteUpdateView(UpdateView):
+    model = StockingSite
+
+
 
 
 #@login_required
@@ -202,3 +228,25 @@ class CwtListView(ListView):
             cwt = cwt.replace('-','')
             return queryset.filter(cwt__icontains=cwt)
         return queryset
+
+
+
+class SiteListView(ListView):
+    queryset = StockingSite.objects.all()
+    template_name = "fsis2/site_list.html"
+    paginate_by = 20
+
+    def get_queryset(self):
+        # Fetch the queryset from the parent get_queryset
+        #queryset = super(CwtListView, self).get_queryset()
+        queryset = StockingSite.objects.all()
+        # Get the q GET parameter
+        q = self.request.GET.get("q")
+        if q:
+            # Return a filtered queryset
+            return queryset.filter(site_name__icontains=q)
+        return queryset
+
+class SiteDetailView(DetailView):
+    model = StockingSite
+    template_name = "fsis2/site_detail.html"

@@ -1,13 +1,13 @@
-{% extends "fsis/fsis_base.html" %}
+{% extends "fsis2/fsis2_base.html" %}
 
 
 {% block title %} 
-{% if add %}Add{% else %}Edit{% endif %} A Snippet 
+Stocking Event Form
 {% endblock %}
 
 
 {% block header %}
- <h2> {% if add %}Add{% else %}Edit{% endif %} a Snippet</h2>
+ <h2>Stocking Event Form</h2>
 <hr />
 {% endblock %}
 
@@ -16,8 +16,10 @@
 
 {% block content %}
 
-{% load crispy_forms_tags %}
-{% crispy form form.helper 'bootstrap' %}
+<form action="" method="post">{% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Submit" />
+</form>
 
 
 {% endblock %}
