@@ -19,3 +19,10 @@ def format_ddlon(x):
     m = ("%.3f" % m).zfill(6)
     dd_lon = ''.join([str(d), "&#176;",m,"&#39; W"])
     return dd_lon
+
+@register.filter(name='format_cwt')
+def format_cwt(x):
+    '''format cwts as 63-03-99'''
+    x = str(x)
+    cwt = "-".join([x[:2], x[2:4], x[4:6]])
+    return cwt

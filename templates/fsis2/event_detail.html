@@ -47,26 +47,13 @@
  
 <h3>Tags associated with this stocking event: </h3>
 
-{% if object.cwts %}  
+{% if object.get_cwts %}  
 
-  <table id="myTable" class="tablesorter-blue">
-    <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
-    <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
-    </thead>
-  <tbody>
-  {% for tag in object.cwts %}
-    <tr class="{% cycle row1,row2 %}">
-	<td> <a href="">{{ event.fs_event }}</a> </td>
-	<td> {{ event.stkcnt|intcomma }} </td> 
-        <td> {{ event.event_date|date }} </td>
-	<td> {{ event.site.site_name }} </td> 
-	<td> {{ event.clipa }} </td> 
-        <td> {{ event.get_development_stage_display }} </td>
-    </tr>
+<ul>
+  {% for cwt in object.get_cwts %}
+    <li><a href="{% url 'event_cwt_list' cwt.cwt %}"> {{ cwt }}</a></li>
   {% endfor %}
-  </tbody>
-  </table>
-
+</ul>
 
 {% else %}
 
