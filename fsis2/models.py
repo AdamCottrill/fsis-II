@@ -79,7 +79,7 @@ class StockingSite(models.Model):
     fsis_site_id =  models.IntegerField(unique=True)
     site_name = models.CharField(max_length=50) #this should be unique
     stkwby  = models.CharField(max_length=30)
-    stkwby_lid = models.IntegerField()
+    stkwby_lid = models.CharField(max_length=15)
     utm  = models.CharField(max_length=20)
     grid = models.CharField(max_length=4)
     dd_lat = models.FloatField()
@@ -88,7 +88,7 @@ class StockingSite(models.Model):
     deswby_lid  = models.CharField(max_length=30)
     deswby  = models.CharField(max_length=30)
 
-    geom = models.PointField(srid=4326, 
+    geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
 
     objects = models.GeoManager()
@@ -109,7 +109,8 @@ class StockingSite(models.Model):
 class Lot(models.Model):
 
     #prj_cd = models.CharField(max_length=13)
-    fs_lot  = models.IntegerField()
+    #fs_lot  = models.IntegerField()
+    fs_lot = models.CharField(max_length=10)
     species = models.ForeignKey(Species)
     strain = models.ForeignKey(Strain)
     spawn_year = models.IntegerField()
@@ -148,7 +149,7 @@ class Lot(models.Model):
 
         points = Event.objects.filter(lot__id=self.id).values_list(
             'fs_event', 'dd_lat', 'dd_lon')
-        
+
         return points
 
 class Event(models.Model):
@@ -171,7 +172,7 @@ class Event(models.Model):
     dd_lat = models.FloatField()
     dd_lon = models.FloatField()
 
-    geom = models.PointField(srid=4326, 
+    geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
 
     DEVELOPMENT_STAGE_CHOICES = (
@@ -201,7 +202,7 @@ class Event(models.Model):
         ('SNOWMOBILE','Snowmobile'),
         ('TRUCK','Truck'),
         ('UNKNOWN','Unknown'), )
-    transit = models.CharField(max_length=10,
+    transit = models.CharField(max_length=20,
                                       choices=TRANSIT_METHOD_CHOICES,
                                       default='UNKNOWN',
                                       null=True, blank=True)
@@ -214,7 +215,7 @@ class Event(models.Model):
         ('SURFACE','surface'),
         ('UNKNOWN','Unknown'),
         )
-    stocking_method  = models.CharField(max_length=10,
+    stocking_method  = models.CharField(max_length=20,
                                       choices=STOCKING_METHOD_CHOICES,
                                       default='UNKNOWN',
                                       null=True, blank=True)
@@ -267,7 +268,7 @@ class Event(models.Model):
         if te:
             cwts = CWTs_Applied.objects.filter(tagging_event__in=te)
         return cwts
-        
+
 
 
 class TaggingEvent(models.Model):
@@ -333,7 +334,7 @@ class TaggingEvent(models.Model):
 class CWTs_Applied(models.Model):
     #tagging = models.ManyToMany(TaggingEvent)
     tagging_event = models.ForeignKey(TaggingEvent)
-    fs_tagging_event_id = models.IntegerField()    
+    fs_tagging_event_id = models.IntegerField()
     cwt = models.CharField(max_length=6)
 
     def __unicode__(self):

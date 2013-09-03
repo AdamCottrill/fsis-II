@@ -10,11 +10,10 @@
 {% block title %} {{ object.title  }}  {% endblock %}
 
 {% block header %} 
-  <div id="map">
-     <p><em>(pretend the bioplot is a map)</em></p>      
-     <img src="{{STATIC_URL}}/dummy.png" class="" alt="" />
-  </div>
 
+  <div id="map">
+     <img src="{{STATIC_URL}}dummy.png" width = "1200" />
+  </div>
 
 <div id="info">
 
@@ -23,8 +22,8 @@
 {% endblock %}
 
 {% block content %}
-
 {% load humanize %}
+
 
   <p>  <b>FSIS Lot Number:</b> {{ object.fs_lot }} </p>
   <p>  <b>Species:</b> {{ object.species.common_name }} (<em>{{object.species.scientific_name}}</em>)  </p>

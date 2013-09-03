@@ -35,15 +35,15 @@ def upper_or_none(x):
 
 def datetime_or_none(x):
     '''Another helper function to ensure that dates comming out of the
-    fish stocking data base are fomatted properly (or are returned as
-    None)'''
+    fish stocking data base are fomatted properly datetimes (with
+    timestamp) or are returned as None.'''
     try:
-        x = datetime.datetime.strptime(x,'%b-%d-%Y')
+        x = datetime.datetime.strptime(x,'%b-%d-%Y %H:%M:%S.0')
         return(x)
     except:
         pass
     try:
-        x = datetime.datetime.strptime(x,'%d-%b-%Y')
+        x = datetime.datetime.strptime(x,'%d-%b-%Y %H:%M:%S.0')
         return(x)
     except:
         return None
