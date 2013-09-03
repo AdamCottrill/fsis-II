@@ -14,14 +14,21 @@
 {% endblock %}
 
 {% block content %}
-
-
 {% load fsis2_filters %}
+
+
+  <div id="map">
+     <p><em>(pretend the bioplot is a map)</em></p>      
+     <img src="{{STATIC_URL}}/dummy.png" class="" alt="" />
+  </div>
+
+  <div id="info">
+
 
   <p> <b>FSIS Site Number:</b> {{ object.fsis_site_id }} </p>
   <p> <b>Name Site:</b> {{ object.site_name }} </p>
   <p> <b>Destination Waterbody (LID):</b> {{ object.deswby}} ({{ object.deswby_lid}}) </p>
-  <p><b>Basin:</b> {{ object.Basin}} </p>
+  <p><b>Basin:</b> {{ object.basin|title}} </p>
   <p><b>5-minute Grid:</b> {{ object.grid}} </p>
   <p> <b>Stocked Waterbody (LID):</b> {{ object.stkwby }} ({{ object.stkwby_lid }})</p>
 
@@ -33,10 +40,7 @@
 
   <p> <b>UTM:</b> {{ object.utm }} </p>
 
-<hr />
-
-<p> <em>Add a map here.</em> </p>
-
+</div>
 
 <hr />
 

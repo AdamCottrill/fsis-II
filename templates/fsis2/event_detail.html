@@ -9,6 +9,7 @@
 {% block title %} {{ object.title  }}  {% endblock %}
 
 {% block header %} 
+
 <h2> FSIS Event: {{ object.fs_event }} </h2>
 <hr />
 {% endblock %}
@@ -18,10 +19,17 @@
 {% load humanize %}
 {% load fsis2_filters %}
 
+  <div id="map">
+     <p><em>(pretend the bioplot is a map)</em></p>      
+     <img src="{{STATIC_URL}}/dummy.png" class="" alt="" />
+  </div>
+
+  <div id="info">
+
   <p>  <b>FSIS Event Number:</b> {{ object.fs_event }} </p>
   <p>  <b>FSIS Lot Number:</b> <a href="{% url 'lot_detail' object.lot.id %}">{{ object.lot.fs_lot }}</a> </p>
   <p>  <b>Species:</b> {{ object.lot.species.common_name }} (<em>{{object.lot.species.scientific_name}}</em>)  </p>
-  <p>  <b>Strain:</b>{{ object.lot.strain.strain_name }} ({{object.lot.strain.sto_code}}) </p>
+  <p>  <b>Strain:</b> {{ object.lot.strain.strain_name }} ({{object.lot.strain.sto_code}}) </p>
                                        
   <p>  <b>Stocking Date:</b> {{ object.event_date|date }} </p>
   <p>  <b>Clip Applied:</b> {{ object.clipa }} </p>
@@ -29,7 +37,7 @@
   <p>  <b>Number Stocked:</b> {{ object.stkcnk|intcomma }} </p>
   <p>  <b>Life Stage:</b> {{ object.get_development_stage_display }} ({{ object.development_stage }}) </p>
 
-  <p>  <b>Transit Method:</b> {{ object.get_transit_display }} </p>
+  <p>  <b>Transit Method:</b> {{ object.get_transit_display|title }} </p>
   <p>  <b>Stocking Method:</b> {{ object.get_stocking_method_display }} </p>
   <p>  <b>Stocking Purpose:</b> {{ object.get_stocking_purpose_display }} ({{ object.stocking_purpose }}) </p>
 
@@ -39,14 +47,17 @@
   {% endautoescape %}
 
   <p>  <b>Closest Named Stocking Site:</b> 
-<a href="{% url 'site_detail' object.site.fsis_site_id %}">{{ object.site.site_name }} ({{ object.site.fsis_site_id }})</a></p>
+<a href="{% url 'site_detail' object.site.id %}">{{ object.site.site_name }} ({{ object.site.fsis_site_id }})</a></p>
   <p>  <b>Basin:</b> {{ object.site.basin }} </p>
   <p>  <b>Grid Number:</b> {{ object.site.grid }} </p>
 
 <hr />
 
-<p> <em>Add a map here.</em> </p>
+</div>
  
+
+<div id="related">
+
 <h3>Tags associated with this stocking event: </h3>
 
 {% if object.get_cwts %}  
@@ -63,7 +74,7 @@
 
 {% endif %}
 
-
+</div>
 
 <hr />
 

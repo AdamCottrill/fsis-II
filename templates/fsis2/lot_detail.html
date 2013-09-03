@@ -4,11 +4,20 @@
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
+
 {% endblock %}
 
 {% block title %} {{ object.title  }}  {% endblock %}
 
 {% block header %} 
+  <div id="map">
+     <p><em>(pretend the bioplot is a map)</em></p>      
+     <img src="{{STATIC_URL}}/dummy.png" class="" alt="" />
+  </div>
+
+
+<div id="info">
+
 <h2> FSIS Lot: {{ object.fs_lot }} </h2>
 <hr />
 {% endblock %}
@@ -24,10 +33,13 @@
   <p>  <b>Raised and Stocked by:</b> {{ object.proponent.proponent_name|title }} </p>
   <p>  <b>Rearing Location:</b> {{ object.rearloc_nm|title }} </p>
   <p>  <b>Proponent Type:</b> {{ object.get_Proponent_Type_display }} </p>
+        
+  </div>
 
-<hr />
 
- 
+
+<div id="related">
+<hr />  
 <h3>Stocking Events: </h3>
 
 {% if object.event_set.all %}  
@@ -57,10 +69,7 @@
 
 {% endif %}
 
-<p><em>(someday add a map here too)</em></p>
-
-
-
+</div>
 
 
 

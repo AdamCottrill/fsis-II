@@ -6,14 +6,13 @@ from django.http import HttpResponseRedirect
 #from django.shortcuts import get_object_or_404, render_to_response
 #from django.template import RequestContext
 from django.utils.decorators import method_decorator
-
 from django.core.urlresolvers import reverse
-
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.dates import YearArchiveView
-
 from django.views.generic import CreateView, UpdateView
+
+#from olwidget.widgets import InfoMap
 
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite)
 
