@@ -109,7 +109,7 @@ class StockingSite(Base):
     fsis_site_id =  Column(Integer, unique=True)
     site_name = Column(String(50)) #this should be unique too
     stkwby  = Column(String(30))
-    stkwby_lid = Column(Integer)
+    stkwby_lid = Column(String(15))
     utm  = Column(String(20))
     grid = Column(String(4))
     dd_lat = Column(Float)
@@ -130,7 +130,7 @@ class Lot(Base):
 
     id = Column(Integer, primary_key=True)
     #prj_cd = Column(String(13))
-    fs_lot  = Column(Integer)
+    fs_lot  = Column(String(10))
     spawn_year = Column(Integer)
     rearloc = Column(String(30))
     rearloc_nm = Column(String(30))
@@ -172,9 +172,9 @@ class Event(Base):
     dd_lon = Column(Float)
     geom = GeometryColumn(Point(2))
     development_stage = Column(Integer)
-    transit = Column(String(10))
-    stocking_method = Column(String(10))
-    stocking_purpose = Column(String(10))
+    transit = Column(String(20))
+    stocking_method = Column(String(20))
+    stocking_purpose = Column(String(20))
 
     site_id = Column(Integer, ForeignKey('fsis2_stockingsite.id'))
     lot_id = Column(Integer, ForeignKey('fsis2_lot.id'))
