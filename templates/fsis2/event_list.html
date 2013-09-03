@@ -20,21 +20,38 @@
 
 <h2>{% if year %} {{ year|date:'Y' }}  {% endif %}Stocking Events {% if cwt %} associated with cwt {{ cwt|format_cwt }} {% endif %}</h2>
 
+<span>|
+<a href="{% url 'event_year_list' 2012 %}">2012</a> |
+<a href="{% url 'event_year_list' 2011 %}">2011</a> |
+<a href="{% url 'event_year_list' 2010 %}">2010</a> |
+<a href="{% url 'event_year_list' 2009 %}">2009</a> |
+<a href="{% url 'event_year_list' 2008 %}">2008</a> |
+<a href="#">Older</a> 
+|</span>
+
 
 {% if page_obj %} 
+{% if page_obj.paginator.num_pages > 1 %}  
 <ul class="pager">
     {% if page_obj.has_previous %}
     <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Newer Events</a></li>
     {% else %}
     <li class="previous disabled"><a href="#">Newer Events</a></li>
     {% endif %}
-    {{page_obj}};
+
+    <span class="page-current">
+       Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+    </span>
+
     {% if page_obj.has_next %}
     <li class="next"><a href="?page={{ page_obj.next_page_number }}">Older Events</a></li>
     {% else %}
     <li class="next disabled"><a href="#">Older Events</a></li>
     {% endif %}
 </ul>
+{% else %}
+  <br />
+{% endif %}
 {% endif %}
 
   {% if object_list %}
@@ -73,6 +90,15 @@
   {% endif %}
 
 
+
+{% if cwt %} 
+
+  <div id="map">
+     <p><em>(pretend the bioplot is a map)</em></p>      
+     <img src="{{STATIC_URL}}/dummy.png" class="" alt="" />
+  </div>
+
+{% endif %}
 
 
 

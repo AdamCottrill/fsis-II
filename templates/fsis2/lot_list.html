@@ -15,19 +15,29 @@
 
 {% block content %}
 
+<h2>Fish Lots</h2>
+
+{% if page_obj %} 
+{% if page_obj.paginator.num_pages > 1 %}  
 <ul class="pager">
     {% if page_obj.has_previous %}
     <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Newer Lots</a></li>
     {% else %}
     <li class="previous disabled"><a href="#">Newer Lots</a></li>
     {% endif %}
-    {{page_obj}};
+    <span class="page-current">
+       Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+    </span>
     {% if page_obj.has_next %}
     <li class="next"><a href="?page={{ page_obj.next_page_number }}">Older Lots</a></li>
     {% else %}
     <li class="next disabled"><a href="#">Older Lots</a></li>
     {% endif %}
 </ul>
+{% else %}
+  <br />
+{% endif %}
+{% endif %}
 
 
   {% if object_list %}

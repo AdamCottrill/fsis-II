@@ -37,20 +37,28 @@
 
 
 {% if page_obj %} 
+{% if page_obj.paginator.num_pages > 1 %}  
 <ul class="pager">
     {% if page_obj.has_previous %}
     <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
     {% else %}
     <li class="previous disabled"><a href="#">Previous</a></li>
     {% endif %}
-    {{page_obj}};
+    <span class="page-current">
+       Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+    </span>
     {% if page_obj.has_next %}
     <li class="next"><a href="?page={{ page_obj.next_page_number }}">Next</a></li>
     {% else %}
     <li class="next disabled"><a href="#">Next</a></li>
     {% endif %}
 </ul>
+{% else %}
+  <br />
 {% endif %}
+{% endif %}
+
+
 
   {% if object_list %}
 
@@ -66,7 +74,7 @@
   <tbody>
   {% for site in object_list %}
     <tr class="{% cycle row1,row2 %}">
-	<td> <a href="{% url 'site_detail'  site.fsis_site_id  %}">{{ site.fsis_site_id }}</a> </td>
+	<td> <a href="{% url 'site_detail'  site.id  %}">{{ site.fsis_site_id }}</a> </td>
 	<td> {{ site.site_name }} </td> 
 	<td> {{ site.basin }} </td>
 	<td> {{ site.grid }} </td>

@@ -129,6 +129,15 @@ class Lot(models.Model):
         return reverse('lot_detail', args=[str(self.id)])
 
 
+    def get_event_points(self):
+        '''get the coordinates of events associated with this lot.  Returns a
+        list of tuples.  Each tuple contains the fs_event id, dd_lat and
+        dd_lon'''
+
+        points = Event.objects.filter(lot__id=self.id).values_list(
+            'fs_event', 'dd_lat', 'dd_lon')
+        
+        return points
 
 class Event(models.Model):
 
