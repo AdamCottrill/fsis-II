@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
-
 from django.core.urlresolvers import reverse
+
+from django.contrib.gis.db import models
 
 from fsis2 import managers
 import datetime
@@ -87,11 +88,22 @@ class StockingSite(models.Model):
     deswby_lid  = models.CharField(max_length=30)
     deswby  = models.CharField(max_length=30)
 
+    geom = models.PointField(srid=4326, 
+                             help_text='Represented as (longitude, latitude)')
+
+    objects = models.GeoManager()
+
     def __unicode__(self):
         return "%s (%s)" % (self.site_name, self.fsis_site_id)
 
     class Meta:
         ordering = ['site_name']
+
+    def save(self, *args, **kwargs):
+        if not self.geom:
+            self.geom = Point(float(self.dd_lon), float(self.dd_lat))
+        super(StockingSite, self).save( *args, **kwargs)
+
 
 
 class Lot(models.Model):
@@ -113,7 +125,7 @@ class Lot(models.Model):
         ('UNKNOWN', 'Unknown'),
         )
      #this should be lower case:
-    Proponent_Type = models.CharField(max_length=10,
+    proponent_type = models.CharField(max_length=10,
                                       choices=PROPONENT_TYPE_CHOICES,
                                       default='OMNR')
 
@@ -158,6 +170,9 @@ class Event(models.Model):
     site = models.ForeignKey(StockingSite)
     dd_lat = models.FloatField()
     dd_lon = models.FloatField()
+
+    geom = models.PointField(srid=4326, 
+                             help_text='Represented as (longitude, latitude)')
 
     DEVELOPMENT_STAGE_CHOICES = (
         (99, 'Unknown'),
@@ -225,6 +240,8 @@ class Event(models.Model):
                                       choices=STOCKING_PURPOSE_CHOICES,
                                       default='UNKNOWN',
                                       null=True, blank=True)
+    objects = models.GeoManager()
+
     class Meta:
         ordering = ['-event_date']
 
@@ -233,6 +250,13 @@ class Event(models.Model):
 
     def get_absolute_url(self):
         return ('event_detail', (), {'pk':self.id})
+
+
+    def save(self, *args, **kwargs):
+        if not self.geom:
+            self.geom = Point(float(self.dd_lon), float(self.dd_lat))
+        super(Event, self).save( *args, **kwargs)
+
 
     def get_cwts(self):
         '''a simple method to get all of the cwts associated with a stocking
