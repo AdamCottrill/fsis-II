@@ -18,7 +18,8 @@
 #=============================================================
 
 
-import sqlalchemy
+#import sqlalchemy
+from geoalchemy import *
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Column, Integer, String, Date, DateTime, ForeignKey,
@@ -116,6 +117,7 @@ class StockingSite(Base):
     basin = Column(String(15))
     deswby_lid  = Column(String(15))
     deswby  = Column(String(10))
+    geom = GeometryColumn(Point(2))
 
     def __repr__(self):
         return "<%s (%s)>" % (self.site_name, self.site_id)
@@ -168,6 +170,7 @@ class Event(Base):
     transit_mortality_count = Column(Integer)
     dd_lat = Column(Float)
     dd_lon = Column(Float)
+    geom = GeometryColumn(Point(2))
     development_stage = Column(Integer)
     transit = Column(String(10))
     stocking_method = Column(String(10))
