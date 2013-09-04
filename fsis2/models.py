@@ -148,7 +148,7 @@ class Lot(models.Model):
         dd_lon'''
 
         points = Event.objects.filter(lot__id=self.id).values_list(
-            'fs_event', 'dd_lat', 'dd_lon')
+            'fs_event', 'geom')
 
         return points
 

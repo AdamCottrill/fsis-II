@@ -7,6 +7,7 @@
 -->
 
 {% block extrahead %} 
+    {{ map.media }}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
@@ -58,25 +59,25 @@
 
   <table id="myTable" class="tablesorter-blue">
     <thead><tr>
-	<td>FSIS Event</td>
-	<td>Species</td>
-	<td>Strain</td>
-	<td>Number Stocked</td> 
-	<td>Event Date</td>
-	<td>Site Name</td>
-	<td>Clip Applied</td> 
-	<td>Development Stage</td></tr>
+        <td>FSIS Event</td>
+        <td>Species</td>
+        <td>Strain</td>
+        <td>Number Stocked</td> 
+        <td>Event Date</td>
+        <td>Site Name</td>
+        <td>Clip Applied</td> 
+        <td>Development Stage</td></tr>
     </thead>
   <tbody>
   {% for event in object_list %}
     <tr class="{% cycle row1,row2 %}">
-	<td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
-	<td> {{ event.lot.species.common_name | title }} </td> 
-	<td> {{ event.lot.strain.strain_name | title }} </td> 
-	<td> {{ event.stkcnt|intcomma }} </td> 
+        <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
+        <td> {{ event.lot.species.common_name | title }} </td> 
+        <td> {{ event.lot.strain.strain_name | title }} </td> 
+        <td> {{ event.stkcnt|intcomma }} </td> 
         <td> {{ event.event_date|date }} </td>
-	<td> {{ event.site.site_name }} </td> 
-	<td> {{ event.clipa }} </td> 
+        <td> {{ event.site.site_name }} </td> 
+        <td> {{ event.clipa }} </td> 
         <td> {{ event.get_development_stage_display }} </td>
     </tr>
   {% endfor %}
@@ -92,11 +93,11 @@
 
 
 {% if cwt %} 
-
+<div id="outer" style="width:800px;" >
   <div id="map">
-     <img src="{{STATIC_URL}}dummy.png" class="" alt="" />
+     {{ map }}
   </div>
-
+</div> 
 {% endif %}
 
 
