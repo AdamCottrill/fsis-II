@@ -1,6 +1,7 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
+    {{ map.media }}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
@@ -12,7 +13,7 @@
 {% block header %} 
 
   <div id="map">
-     <img src="{{STATIC_URL}}dummy.png" width = "1200" />
+     {{ map }}
   </div>
 
 <div id="info">
@@ -50,11 +51,11 @@
   <tbody>
   {% for event in object.event_set.all %}
     <tr class="{% cycle row1,row2 %}">
-	<td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
-	<td> {{ event.stkcnt|intcomma }} </td> 
+        <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
+        <td> {{ event.stkcnt|intcomma }} </td> 
         <td> {{ event.event_date|date }} </td>
-	<td> {{ event.site.site_name }} </td> 
-	<td> {{ event.clipa }} </td> 
+        <td> {{ event.site.site_name }} </td> 
+        <td> {{ event.clipa }} </td> 
         <td> {{ event.get_development_stage_display }} </td>
     </tr>
   {% endfor %}

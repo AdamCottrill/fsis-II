@@ -12,11 +12,34 @@ from django.views.generic.detail import DetailView
 from django.views.generic.dates import YearArchiveView
 from django.views.generic import CreateView, UpdateView
 
-#from olwidget.widgets import InfoMap
+from olwidget.widgets import InfoMap
 
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite)
 
 import pdb
+
+
+def get_map(event_points):
+    """
+
+    Arguments:
+    - `event_points`:
+    """
+    if len(event_points)>0:
+        points = [[x[1],x[0]] for x in event_points]
+        map = InfoMap(
+            points,
+            {'default_lat': 45,
+            'default_lon': -82.0,
+            'default_zoom':7,
+            'zoom_to_data_extent':False,
+            'map_div_style': {'width': '700px', 'height': '600px'},
+            }
+            )
+    else:
+        map=None
+    return map
+
 
 
 class EventDetailView(DetailView):
@@ -25,6 +48,13 @@ class EventDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(EventDetailView, self).get_context_data(**kwargs)
+
+        #import pdb; pdb.set_trace()
+        event = kwargs.get('object')
+        event_point = [[ event.fs_event, event.geom]]
+        map = get_map(event_point)
+        context['map'] = map
+
         return context
 
     #@method_decorator(login_required)
@@ -51,13 +81,26 @@ class EventListView(ListView):
     ## @method_decorator(login_required)
     ## def dispatch(self, *args, **kwargs):
     ##     return super(EventList, self).dispatch(*args, **kwargs)
-    ## 
+    ##
     def get_context_data(self, **kwargs):
         context = super(EventListView, self).get_context_data(**kwargs)
-        context['cwt'] = self.kwargs.get('cwt',None)
+        cwt = self.kwargs.get('cwt',None)
+        context['cwt'] = cwt
+
+        #import pdb; pdb.set_trace()
+        #if this is cwt view, we want to include a map
+        if cwt:
+            events = kwargs.get('object_list')
+            event_points = [[x.fs_event, x.geom] for x in events]
+            map = get_map(event_points)
+
+            context['map'] = map
+
+
+
         #context['year'] = self.kwargs.get('year',None)
         return context
-    
+
     def get_queryset(self):
         self.cwt = self.kwargs.get('cwt',None)
         #self.tag = self.kwargs.get('year',None)
@@ -160,11 +203,27 @@ class LotListView(ListView):
 
 class LotDetailView(DetailView):
     model = Lot
+
     def get_context_data(self, **kwargs):
         context = super(LotDetailView, self).get_context_data(**kwargs)
+        lot = kwargs.get('object')
+        event_points = lot.get_event_points()
+        map = get_map(event_points)
+        #if len(event_points)>0:
+        #    points = [[x[1],x[0]] for x in event_points]
+        #    map = InfoMap(
+        #        points,
+        #        options = {'default_lat': 45,
+        #                   'default_lon': -81.7,
+        #                   'default_zoom':7,
+        #                   'map_div_style': {'width': '700px',
+        #                                     'height': '600px'},
+        #                   }
+        #                )
+        #else:
+        #    map=None
+        context['map'] = map
         return context
-
-    #lot_detail = LotDetailView.as_view()
 
 
 ###============================
@@ -206,7 +265,7 @@ class LotDetailView(DetailView):
 
 
 class CwtListView(ListView):
-    
+
     #queryset = CWTs_Applied.objects.values('cwt').order_by('cwt').distinct()
     template_name='fsis2/cwt_list.html'
     paginate_by = 20
@@ -249,3 +308,14 @@ class SiteListView(ListView):
 class SiteDetailView(DetailView):
     model = StockingSite
     template_name = "fsis2/site_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(SiteDetailView, self).get_context_data(**kwargs)
+
+        #import pdb; pdb.set_trace()
+        site = kwargs.get('object')
+        site_point = [[site.fsis_site_id, site.geom]]
+        map = get_map(site_point)
+        context['map'] = map
+
+        return context
