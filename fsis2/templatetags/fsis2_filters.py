@@ -1,5 +1,5 @@
 from django import template
-
+import datetime
 
 register = template.Library()
 
@@ -32,3 +32,13 @@ def format_cwt(x):
     x = str(x)
     cwt = "-".join([x[:2], x[2:4], x[4:6]])
     return cwt
+
+
+@register.filter(name='prj_cd_Year')
+def prj_cd_Year(x):
+    '''format LHA_IA12_000 as 2012'''
+    if int(x[6:8]) > 60:
+        yr = "19" + x[6:8]
+    else:
+        yr = "20" + x[6:8]
+    return yr

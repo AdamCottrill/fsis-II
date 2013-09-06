@@ -16,13 +16,13 @@ DATABASES = {
     # }
 
 
-#          'ENGINE': 'django.db.backends.postgresql_psycopg2', 
+#          'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #          'NAME': 'snippets',
 #  ***REMOVED***
 #          'Password': 'adam',
-        #  'HOST': '', 
+        #  'HOST': '',
         #  'PORT': '',
-        
+
 }
 
 
@@ -31,6 +31,5 @@ DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
 }
 
-INSTALLED_APPS += ('debug_toolbar',)
-
-    
+INSTALLED_APPS += ('debug_toolbar',
+                   'django_extensions',)
