@@ -1,19 +1,20 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.template.defaultfilters import slugify
+#from django.db import models
+#from django.contrib.auth.models import User
+#from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
-
 from django.contrib.gis.db import models
 
-from fsis2 import managers
-import datetime
 
+#from fsis2 import managers
+
+
+from datetime import datetime
 
 
 class BuildDate(models.Model):
     '''A database to hold the date that the database was last refreshed.'''
     build_date =  models.DateField(editable=False)
-
+    
 class Readme(models.Model):
     #a table to hold all of the information regarding last FSIS
     #download and FS_Master rebuild (it appear as a footer on every
@@ -40,7 +41,11 @@ class Species(models.Model):
         ordering = ['species_code']
 
     def __unicode__(self):
-        return "%s (%s)" % (self.common_name, self.scientific_name)
+        if self.scientific_name:
+            spc_unicode = "%s (%s)" % (self.common_name, self.scientific_name)
+        else:
+            spc_unicode =  "%s" % self.common_name
+        return spc_unicode
 
 class Strain(models.Model):
 
@@ -268,6 +273,14 @@ class Event(models.Model):
         if te:
             cwts = CWTs_Applied.objects.filter(tagging_event__in=te)
         return cwts
+
+    def get_year(self):
+        '''a function to grab the year from the project code
+        associated with the stocking event.  We don\'t always have a
+        date so we have to use project code.'''
+
+        yr = datetime.strptime(self.prj_cd[6:8], '%y').year
+        return(yr)
 
 
 
