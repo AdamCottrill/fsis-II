@@ -35,6 +35,8 @@ import adodbapi
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from geoalchemy.base import WKTSpatialElement
+
 
 from sqa_models import *
 from helper_fcts import *
@@ -69,8 +71,13 @@ src_cur = src_conn.cursor()
 #the engine if our database changes
 
 #trgdb = "C:/1work/Python/djcode/fsis2/db/fsis2.db"
-trgdb = '/home/adam/Documents/djcode/fsis2/db/fsis2.db'
-engine = create_engine('sqlite:///%s' % trgdb)
+#trgdb = '/home/adam/Documents/djcode/fsis2/db/fsis2.db'
+#engine = create_engine('sqlite:///%s' % trgdb)
+
+
+engine = create_engine('postgresql://adam:django@localhost/fsis2')
+
+
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -212,6 +219,7 @@ src_cur.execute(sql)
 data = src_cur.fetchall()
 
 for row in data:
+    pt = "POINT(%s %s)" % (row.DD_LON, row.DD_LAT)
     item = StockingSite(
         fsis_site_id =  row.SITE_ID,
         site_name = row.SITE_NAME,
@@ -223,8 +231,9 @@ for row in data:
         dd_lon = row.DD_LON,
         basin = row.BASIN,
         deswby_lid  = row.DESWBY_LID,
-        deswby  = row.DESWBY
-         )
+        deswby  = row.DESWBY,
+        geom = WKTSpatialElement(pt),
+        )
     session.add(item)
 
 session.commit()
@@ -307,6 +316,7 @@ src_cur.execute(sql)
 data = src_cur.fetchall()
 
 for row in data:
+    pt = "POINT(%s %s)" % (row.DD_LON, row.DD_LAT)
     #get objects referenced by foreign key
     spc = session.query(Species).filter_by(species_code=row.SPC).one()
     lot = session.query(Lot).filter_by(species_id=spc.id,
@@ -330,6 +340,7 @@ for row in data:
         site_id = site.id,
         dd_lat = row.dd_lat,
         dd_lon = row.dd_lon,
+        geom = WKTSpatialElement(pt),
         development_stage = row.dev_code,
         transit = upper_or_none(row.transit),
         stocking_method = upper_or_none(row.method),
@@ -364,7 +375,6 @@ data = src_cur.fetchall()
 for row in data:
     #get objects referenced by foreign key
     stocking_event = session.query(Event).filter_by(fs_event=row.fs_event).one()
-
     item = TaggingEvent(
             stocking_event_id = stocking_event.id,
             fs_tagging_event_id = row.tag_id,
@@ -394,7 +404,8 @@ print "'%s' Transaction Complete (%s)"  % \
 
 table = "CWTs Applied"
 
-sql = ''' SELECT TAG_ID AS fs_tagging_event_id, CWT FROM FS_CWTs_Applied;'''
+sql = ''' SELECT TAG_ID AS fs_tagging_event_id, int(CWT) as CWT
+          FROM FS_CWTs_Applied;'''
 
 src_cur.execute(sql)
 data = src_cur.fetchall()
@@ -406,7 +417,7 @@ for row in data:
     item = CWTs_Applied(
             tagging_event_id=tagging_event.id,
             fs_tagging_event_id = row.fs_tagging_event_id,
-            cwt = row.cwt
+            cwt = int(row.cwt)
     )
     session.add(item)
 

@@ -1,6 +1,7 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
+    {{ map.media }}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
@@ -18,8 +19,7 @@
 
 
   <div id="map">
-     <p><em>(pretend the bioplot is a map)</em></p>      
-     <img src="{{STATIC_URL}}/dummy.png" class="" alt="" />
+    {{ map }}
   </div>
 
   <div id="info">

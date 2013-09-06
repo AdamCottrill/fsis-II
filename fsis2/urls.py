@@ -10,7 +10,7 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     EventUpdateView, EventCreateView,
                     LotDetailView, LotListView, LotCreateView, LotUpdateView,
                     SiteDetailView, SiteListView, SiteCreateView, 
-                    SiteUpdateView, CwtListView,)
+                    SiteUpdateView, CwtListView, AnnualTotalSpcView,)
 
 urlpatterns = patterns("",
 
@@ -51,8 +51,6 @@ urlpatterns = patterns("",
             view=LotUpdateView.as_view(),
             name='lot_update'
             ),
-
-
 
 
         #================
@@ -146,6 +144,16 @@ urlpatterns = patterns("",
          name='about'),
 
 
+        #================================
+        #    ANNUAL TOTAL BY SPECIES
+
+        #create stocking site
+        url(
+            regex=r'^annual/(?P<spc>\d{2,3})$',
+            view=AnnualTotalSpcView.as_view(),
+            name='annual_total_spc'
+            ),
+         
 
 
     )

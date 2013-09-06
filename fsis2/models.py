@@ -1,19 +1,20 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.template.defaultfilters import slugify
+#from django.db import models
+#from django.contrib.auth.models import User
+#from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
-
 from django.contrib.gis.db import models
 
-from fsis2 import managers
-import datetime
 
+#from fsis2 import managers
+
+
+from datetime import datetime
 
 
 class BuildDate(models.Model):
     '''A database to hold the date that the database was last refreshed.'''
     build_date =  models.DateField(editable=False)
-
+    
 class Readme(models.Model):
     #a table to hold all of the information regarding last FSIS
     #download and FS_Master rebuild (it appear as a footer on every
@@ -40,7 +41,11 @@ class Species(models.Model):
         ordering = ['species_code']
 
     def __unicode__(self):
-        return "%s (%s)" % (self.common_name, self.scientific_name)
+        if self.scientific_name:
+            spc_unicode = "%s (%s)" % (self.common_name, self.scientific_name)
+        else:
+            spc_unicode =  "%s" % self.common_name
+        return spc_unicode
 
 class Strain(models.Model):
 
@@ -79,7 +84,7 @@ class StockingSite(models.Model):
     fsis_site_id =  models.IntegerField(unique=True)
     site_name = models.CharField(max_length=50) #this should be unique
     stkwby  = models.CharField(max_length=30)
-    stkwby_lid = models.IntegerField()
+    stkwby_lid = models.CharField(max_length=15)
     utm  = models.CharField(max_length=20)
     grid = models.CharField(max_length=4)
     dd_lat = models.FloatField()
@@ -88,7 +93,7 @@ class StockingSite(models.Model):
     deswby_lid  = models.CharField(max_length=30)
     deswby  = models.CharField(max_length=30)
 
-    geom = models.PointField(srid=4326, 
+    geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
 
     objects = models.GeoManager()
@@ -109,7 +114,8 @@ class StockingSite(models.Model):
 class Lot(models.Model):
 
     #prj_cd = models.CharField(max_length=13)
-    fs_lot  = models.IntegerField()
+    #fs_lot  = models.IntegerField()
+    fs_lot = models.CharField(max_length=10)
     species = models.ForeignKey(Species)
     strain = models.ForeignKey(Strain)
     spawn_year = models.IntegerField()
@@ -147,8 +153,8 @@ class Lot(models.Model):
         dd_lon'''
 
         points = Event.objects.filter(lot__id=self.id).values_list(
-            'fs_event', 'dd_lat', 'dd_lon')
-        
+            'fs_event', 'geom')
+
         return points
 
 class Event(models.Model):
@@ -171,7 +177,7 @@ class Event(models.Model):
     dd_lat = models.FloatField()
     dd_lon = models.FloatField()
 
-    geom = models.PointField(srid=4326, 
+    geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
 
     DEVELOPMENT_STAGE_CHOICES = (
@@ -201,7 +207,7 @@ class Event(models.Model):
         ('SNOWMOBILE','Snowmobile'),
         ('TRUCK','Truck'),
         ('UNKNOWN','Unknown'), )
-    transit = models.CharField(max_length=10,
+    transit = models.CharField(max_length=20,
                                       choices=TRANSIT_METHOD_CHOICES,
                                       default='UNKNOWN',
                                       null=True, blank=True)
@@ -214,7 +220,7 @@ class Event(models.Model):
         ('SURFACE','surface'),
         ('UNKNOWN','Unknown'),
         )
-    stocking_method  = models.CharField(max_length=10,
+    stocking_method  = models.CharField(max_length=20,
                                       choices=STOCKING_METHOD_CHOICES,
                                       default='UNKNOWN',
                                       null=True, blank=True)
@@ -267,7 +273,15 @@ class Event(models.Model):
         if te:
             cwts = CWTs_Applied.objects.filter(tagging_event__in=te)
         return cwts
-        
+
+    def get_year(self):
+        '''a function to grab the year from the project code
+        associated with the stocking event.  We don\'t always have a
+        date so we have to use project code.'''
+
+        yr = datetime.strptime(self.prj_cd[6:8], '%y').year
+        return(yr)
+
 
 
 class TaggingEvent(models.Model):
@@ -333,7 +347,7 @@ class TaggingEvent(models.Model):
 class CWTs_Applied(models.Model):
     #tagging = models.ManyToMany(TaggingEvent)
     tagging_event = models.ForeignKey(TaggingEvent)
-    fs_tagging_event_id = models.IntegerField()    
+    fs_tagging_event_id = models.IntegerField()
     cwt = models.CharField(max_length=6)
 
     def __unicode__(self):
