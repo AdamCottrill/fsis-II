@@ -1,19 +1,19 @@
 from main.settings.base import *
 
 DATABASES = {
-    #'default': {
-    #    'ENGINE': 'django.db.backends.sqlite3',
-    #    'NAME': '%s/db/fsis2.db' % root(),
-    #  }
-
-
     'default': {
-         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-         'NAME': 'fsis2',
- ***REMOVED***
- ***REMOVED***
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '%s/db/fsis2.db' % root(),
+      }
 
-     }
+
+    #'default': {
+    #     'ENGINE': 'django.contrib.gis.db.backends.postgis',
+    #     'NAME': 'fsis2',
+    #     'USER': 'adam',
+    #     'PASSWORD': 'django',
+    #
+    # }
 
 
 #          'ENGINE': 'django.db.backends.postgresql_psycopg2', 
