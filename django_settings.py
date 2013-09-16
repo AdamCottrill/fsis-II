@@ -13,7 +13,7 @@
  import all of your regular django settings and objects.  
 
  To use it,
- create an emacs virtualenv -> M-x virtualenv-activate
+ activate an emacs virtualenv -> M-x virtualenv-activate <Return> /venv/
  start a python interpreter (usual by sending region of beging code)
  then at the python command prompt 'import django_settings'
 
@@ -27,8 +27,8 @@
 =============================================================
 '''
 
-import os
 import sys
+import os
 
 SETTINGS_FILE = 'main.settings.local'
 

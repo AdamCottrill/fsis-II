@@ -1,0 +1,112 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+<!-- {% block pages %}
+
+
+{% endblock %}
+-->
+
+{% block extrahead %} 
+    {{ map.media }}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
+
+    <style type="text/css" media="screen">
+      #map {
+       width: 600px;
+       float: left;
+      }
+      </style>
+ 
+{% endblock %}
+
+
+{% block content %}
+
+{% load humanize %}
+{% load fsis2_filters %}
+
+<h2> {{ year }}  Stocking events associated with {{ strain }} {{species}}</h2>
+
+
+<div>
+<b>Other Species:</b>
+<span> |
+{% for spc in species_list %}
+  <a href="{% url 'annual_stocking_events_by_spc' spc=spc.species_code year=year%}"> {{ spc.common_name }}</a>  |
+{% endfor %}
+</span>
+
+{% ifequal species.species_code 81 %}
+<br /><b>By Strain:</b>
+<span> |
+{% for strain in strain_list %}
+  <a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain.strain_code year=year %}"
+> {{ strain.strain_name }}</a> |
+{% endfor %}
+
+{% endifequal %}
+</span>
+
+<br />
+<b>Other Years:</b>
+<span> |
+{% if strain %}
+{% for yr in year_list %}
+  <a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain_code year=yr %}"> {{ yr }} </a>  |
+{% endfor %}
+
+{% else %}
+{% for yr in year_list %}
+  <a href="{%url 'annual_stocking_events_by_spc' spc=species.species_code year=yr %}">
+  {{ yr }} </a>  |
+{% endfor %}
+{% endif %}
+
+
+</span>
+
+
+</div>
+
+
+  <div id="map">
+     {{ map }}
+  </div>
+
+
+
+  {% if object_list %}
+
+  <table id="myTable" class="tablesorter-blue">
+    <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
+    <td>Site Name</td><td>Clip Applied</td> <td>Development
+    Stage</td> <td>Proponent</td></tr>
+    </thead>
+  <tbody>
+  {% for event in object_list %}
+    <tr class="{% cycle row1,row2 %}">
+        <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
+        <td> {{ event.stkcnt|intcomma }} </td> 
+        <td> {{ event.event_date|date }} </td>
+        <td> {{ event.site.site_name }} </td> 
+        <td> {{ event.clipa }} </td> 
+        <td> {{ event.get_development_stage_display }} </td>
+        <td> {{ event.lot.proponent.proponent_name|title }} </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+
+
+
+  {% else %}
+    <p>Sorry no events match that criteria.</p>
+  {% endif %}
+
+
+
+{% endblock %}
+
+
