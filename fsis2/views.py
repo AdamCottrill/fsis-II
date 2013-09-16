@@ -18,6 +18,15 @@ from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain)
 
 
+def prj_cd_Year(x):
+    '''format LHA_IA12_000 as 2012'''
+    if int(x[6:8]) > 60:
+        yr = "".join(["19", x[6:8]])
+    else:
+        yr = "".join(["20", x[6:8]])        
+    return yr
+
+
 def get_map(event_points):
     """
 
@@ -190,6 +199,11 @@ class SiteDetailView(DetailView):
 
 
 class AnnualTotalSpcView(ListView):
+    '''renders a view summarizing total number of fish stocked
+    annually by species and Proponent.  Spc is passed in as an
+    argument.
+    '''
+    
     template_name = "fsis2/annual_total_stkcnt_list.html"
 
     def get_queryset(self):
@@ -209,3 +223,116 @@ class AnnualTotalSpcView(ListView):
         context['strain_list'] = Strain.objects.filter(
             species__species_code=81).values('strain_name').distinct()
         return context
+
+
+
+class AnnualStockingBySpcStrainView(ListView):
+    '''render a view that plots the stocking events associated with a
+    strain and year on a map and summarizes those events in a
+    table:'''
+    
+    template_name = "fsis2/annual_stocking_events.html"
+
+    def get_queryset(self):
+        self.spc = self.kwargs.get('spc', None)
+        self.strain = self.kwargs.get('strain', None)
+        self.yr = self.kwargs.get('year', None)
+        project = 'LHA_FS%s_001' % self.yr[2:]
+
+        queryset = Event.objects.filter(lot__species__species_code=self.spc,
+                                        lot__strain__strain_code=self.strain,
+                                        prj_cd=project)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(AnnualStockingBySpcStrainView,
+                         self).get_context_data(**kwargs)
+
+        events = kwargs.get('object_list')
+        event_points = [[x.fs_event, x.geom] for x in events]
+        map = get_map(event_points)
+        context['map'] = map
+        
+        spc = self.kwargs.get('spc', None)
+        strain = self.kwargs.get('strain', None)
+        yr = self.kwargs.get('year', None)
+
+        context['year'] = yr
+        context['species'] = get_object_or_404(Species, species_code=spc)
+        context['strain'] = Strain.objects.filter(species__species_code=spc,
+                                                  strain_code=strain).values_list(
+                                                      'strain_name').distinct()[0][0]
+
+        context['strain_code'] = Strain.objects.filter(species__species_code=spc,
+                                                  strain_code=strain).values_list(
+                                                      'strain_code').distinct()[0][0]
+        #get the lists required for this view:
+        context['species_list'] = Species.objects.all()
+        context['strain_list'] = Strain.objects.filter(
+            species__species_code=81).values(
+                'strain_name','strain_code').distinct()
+        
+        project_list = Event.objects.filter(lot__species__species_code=spc,
+                                        lot__strain__strain_code=strain,
+                    ).values('prj_cd').distinct()
+        year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
+        year_list.sort(reverse=True)
+        context['year_list'] = year_list
+       
+        return context
+
+
+
+class AnnualStockingBySpcView(ListView):
+    '''render a view that plots the stocking events associated with a
+    species in a particular year on a map and summarizes those events in a
+    table:
+
+    NOTE: AnnualStockingBySpcStrainView should be re-written to be a
+    special case of AnnualStockingBySpcView.  the are essentailly the
+    same, except that strain view has a little more informarion and
+    the queryset is a subset of the other. - for now it works.
+
+    '''
+    
+    template_name = "fsis2/annual_stocking_events.html"
+
+    def get_queryset(self):
+        self.spc = self.kwargs.get('spc', None)
+        #self.strain = self.kwargs.get('strain', None)
+        self.yr = self.kwargs.get('year', None)
+        project = 'LHA_FS%s_001' % self.yr[2:]
+
+        queryset = Event.objects.filter(lot__species__species_code=self.spc,
+                                        prj_cd=project)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(AnnualStockingBySpcView,
+                         self).get_context_data(**kwargs)
+
+        events = kwargs.get('object_list')
+        event_points = [[x.fs_event, x.geom] for x in events]
+        map = get_map(event_points)
+        context['map'] = map
+        
+        spc = self.kwargs.get('spc', None)
+        yr = self.kwargs.get('year', None)
+
+        context['year'] = yr
+        context['species'] = get_object_or_404(Species, species_code=spc)
+        
+        #get the lists required for this view:
+        context['species_list'] = Species.objects.all()
+        context['strain_list'] = Strain.objects.filter(
+            species__species_code=81).values(
+                'strain_name','strain_code').distinct()
+        
+        project_list = Event.objects.filter(lot__species__species_code=spc,
+                    ).values('prj_cd').distinct()
+        year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
+        year_list.sort(reverse=True)
+        context['year_list'] = year_list
+       
+        return context
+        
