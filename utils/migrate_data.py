@@ -31,7 +31,7 @@
 import pytz
 from datetime import datetime
 import sqlite3
-import adodbapi
+#import adodbapi
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -57,11 +57,22 @@ TAG_POSITIONS = {
 
 #here is where the data will be coming from:
 #source db
-srcdb = "C:/1work/Python/djcode/fsis2/utils/FS_Master_to_FSIS2.mdb"
+## srcdb = "C:/1work/Python/djcode/fsis2/utils/FS_Master_to_FSIS2.mdb"
+## 
+## src_constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source=%s'  % srcdb
+## src_conn = adodbapi.connect(src_constr)
+## src_cur = src_conn.cursor()
+## 
 
-src_constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source=%s'  % srcdb
-src_conn = adodbapi.connect(src_constr)
+#sqlite clone of FS_master:
+src = r'c:/1work/Python/djcode/fsis2/utils/data/FS_Master_clone.db'
+#src = r'c:/1work/djcode/fsis2/utils/data/FS_Master_clone.db'
+src_conn = sqlite3.connect(src)
+src_conn.row_factory = sqlite3.Row
+
 src_cur = src_conn.cursor()
+
+
 
 #========================================
 #           DATA TARGET
@@ -76,8 +87,7 @@ src_cur = src_conn.cursor()
 
 
 engine = create_engine('postgresql://adam:django@localhost/fsis2')
-
-
+#engine = create_engine('postgresql://cottrillad:uglmu@localhost/fsis2')
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -109,9 +119,10 @@ data = src_cur.fetchall()
 
 for row in data:
     item = Readme(
-            date = row.DATE,
-            comment = row.COMMENT,
-            initials = row.INIT)
+            date =  datetime.datetime.strptime(row['DATE'],
+                                               '%Y-%m-%d  %H:%M:%S'),
+            comment = row['COMMENT'],
+            initials = row['INIT'])
     session.add(item)
 
 session.commit()
@@ -134,9 +145,9 @@ src_cur.execute(sql)
 data = src_cur.fetchall()
 
 for row in data:
-    item = Species(species_code = row.SPC,
-            common_name = row.SPC_NM,
-            scientific_name = row.SPC_NMSC)
+    item = Species(species_code = row['SPC'],
+            common_name = row['SPC_NM'],
+            scientific_name = row['SPC_NMSC'])
     session.add(item)
 
 session.commit()
@@ -163,10 +174,10 @@ data = src_cur.fetchall()
 allspc = session.query(Species)
 
 for row in data:
-   spc = allspc.filter_by(species_code=row.SPC).one()
-   spc.strains.extend([Strain(sto_code= row.STO.upper(),
-                                strain_code= row.StrainCode.upper(),
-                                strain_name= row.StrainName)])
+   spc = allspc.filter_by(species_code=row['SPC']).one()
+   spc.strains.extend([Strain(sto_code= row['STO'].upper(),
+                                strain_code= row['StrainCode'].upper(),
+                                strain_name= row['StrainName'])])
 
 session.commit()
 
@@ -175,26 +186,24 @@ print "'%s' Transaction Complete (%s)"  % \
   (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
 
 
-
 #========================================
 #         PROPONENT TABLE
 table = "Proponents"
-
 
 sql = '''SELECT TL_ProponentNames.Short AS abbrev,
          TL_ProponentNames.PROPONENT_NAME_is AS name
    FROM TL_ProponentNames
    GROUP BY TL_ProponentNames.Short, TL_ProponentNames.PROPONENT_NAME_is,
          TL_ProponentNames.Preferred
-   HAVING (((TL_ProponentNames.Preferred)=True));'''
+   HAVING (((TL_ProponentNames.Preferred)=1));'''
 
 
 src_cur.execute(sql)
 data = src_cur.fetchall()
 
 for row in data:
-    item = Proponent(abbrev = row.abbrev,
-            proponent_name = row.name)
+    item = Proponent(abbrev = row['abbrev'],
+            proponent_name = row['name'])
     session.add(item)
 
 session.commit()
@@ -219,19 +228,19 @@ src_cur.execute(sql)
 data = src_cur.fetchall()
 
 for row in data:
-    pt = "POINT(%s %s)" % (row.DD_LON, row.DD_LAT)
+    pt = "POINT(%s %s)" % (row['DD_LON'], row['DD_LAT'])
     item = StockingSite(
-        fsis_site_id =  row.SITE_ID,
-        site_name = row.SITE_NAME,
-        stkwby  = row.STKWBY,
-        stkwby_lid = row.STKWBY_LID,
-        utm  = row.UTM,
-        grid = row.GRID,
-        dd_lat = row.DD_LAT,
-        dd_lon = row.DD_LON,
-        basin = row.BASIN,
-        deswby_lid  = row.DESWBY_LID,
-        deswby  = row.DESWBY,
+        fsis_site_id =  row['SITE_ID'],
+        site_name = row['SITE_NAME'],
+        stkwby  = row['STKWBY'],
+        stkwby_lid = row['STKWBY_LID'],
+        utm  = row['UTM'],
+        grid = row['GRID'],
+        dd_lat = row['DD_LAT'],
+        dd_lon = row['DD_LON'],
+        basin = row['BASIN'],
+        deswby_lid  = row['DESWBY_LID'],
+        deswby  = row['DESWBY'],
         geom = WKTSpatialElement(pt),
         )
     session.add(item)
@@ -259,17 +268,17 @@ src_cur.execute(sql)
 data = src_cur.fetchall()
 
 for row in data:
-    spc = session.query(Species).filter_by(species_code=row.SPC).one()
+    spc = session.query(Species).filter_by(species_code=row['SPC']).one()
     strain = session.query(Strain).filter_by(species_id=spc.id,
-                                             sto_code=row.STO.upper()).one()
-    proponent = session.query(Proponent).filter_by(abbrev=row.abbrev).one()
+                                             sto_code=row['STO'].upper()).one()
+    proponent = session.query(Proponent).filter_by(abbrev=row['abbrev']).one()
     item = Lot(
     #prj_cd = row.prj_cd,
-        fs_lot  = row.lot,
-        spawn_year = row.spawn_year,
-        rearloc = row.rearloc,
-        rearloc_nm = row.rearloc_nm,
-        proponent_type = row.proponent_type,
+        fs_lot  = row['lot'],
+        spawn_year = row['spawn_year'],
+        rearloc = row['rearloc'],
+        rearloc_nm = row['rearloc_nm'],
+        proponent_type = row['proponent_type'],
         species_id = spc.id,
         strain_id = strain.id,
         proponent_id = proponent.id
@@ -288,15 +297,22 @@ print "'%s' Transaction Complete (%s)"  % \
 
 table = "Events"
 
-#fields in the order specified by the model
-##sql = '''SELECT SPC, SITE_ID, LOT, PRJ_CD, Event AS fs_event, LOTSAM,
-##         Event_Date, CLIPA, FISH_AGE, STKCNT, FISH_WT,
-##         RECORD_BIOMASS_CALC, REARTEM, SITEM, TRANSIT_MORTALITY_COUNT
-##         AS mortality, DD_LAT, DD_LON,
-##         IIf(IsNull([FS_EVENTS].[DEV_CODE]),99,[FS_Events].[DEV_CODE])
-##         AS DEV_CODE, TRANSIT, METHOD, STKPUR
-##         FROM FS_Events;'''
+##MS ACCESS SYNTAX:
+#sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
+#            FS_Events.SITE_ID, FS_Events.PRJ_CD, FS_Events.Event AS fs_event,
+#            FS_Events.LOTSAM, FS_Events.Event_Date, FS_Events.CLIPA,
+#            FS_Events.FISH_AGE, FS_Events.STKCNT, FS_Events.FISH_WT,
+#            FS_Events.RECORD_BIOMASS_CALC, FS_Events.REARTEM, FS_Events.SITEM,
+#            FS_Events.TRANSIT_MORTALITY_COUNT AS mortality, FS_Events.DD_LAT,
+#            FS_Events.DD_LON,
+#            IIf(IsNull([FS_EVENTS].[DEV_CODE]),99,[FS_Events].[DEV_CODE]) AS
+#            DEV_CODE, FS_Events.TRANSIT, FS_Events.METHOD, FS_Events.STKPUR
+#            FROM FS_Lots INNER JOIN FS_Events ON (FS_Lots.SPC = FS_Events.SPC)
+#            AND (FS_Lots.LOT= FS_Events.LOT)
+#            AND (FS_Lots.PRJ_CD = FS_Events.PRJ_CD);'''
 
+
+#SQLITE SYNTAX:
 
 sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
             FS_Events.SITE_ID, FS_Events.PRJ_CD, FS_Events.Event AS fs_event,
@@ -305,46 +321,48 @@ sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
             FS_Events.RECORD_BIOMASS_CALC, FS_Events.REARTEM, FS_Events.SITEM,
             FS_Events.TRANSIT_MORTALITY_COUNT AS mortality, FS_Events.DD_LAT,
             FS_Events.DD_LON,
-            IIf(IsNull([FS_EVENTS].[DEV_CODE]),99,[FS_Events].[DEV_CODE]) AS
+            CASE WHEN [FS_EVENTS].[DEV_CODE] is NULL THEN 99
+            ELSE [FS_EVENTS].[DEV_CODE] END as DEV_CODE,
             DEV_CODE, FS_Events.TRANSIT, FS_Events.METHOD, FS_Events.STKPUR
-        FROM FS_Lots INNER JOIN FS_Events ON (FS_Lots.SPC = FS_Events.SPC) AND
-        (FS_Lots.LOT= FS_Events.LOT) AND (FS_Lots.PRJ_CD = FS_Events.PRJ_CD);'''
-
+            FROM FS_Lots INNER JOIN FS_Events ON (FS_Lots.SPC = FS_Events.SPC)
+            AND (FS_Lots.LOT= FS_Events.LOT)
+            AND (FS_Lots.PRJ_CD = FS_Events.PRJ_CD);'''
 
 
 src_cur.execute(sql)
 data = src_cur.fetchall()
 
 for row in data:
-    pt = "POINT(%s %s)" % (row.DD_LON, row.DD_LAT)
+    pt = "POINT(%s %s)" % (row['DD_LON'], row['DD_LAT'])
     #get objects referenced by foreign key
-    spc = session.query(Species).filter_by(species_code=row.SPC).one()
+    spc = session.query(Species).filter_by(species_code=row['SPC']).one()
     lot = session.query(Lot).filter_by(species_id=spc.id,
-                                       fs_lot=row.lot,
-                                       spawn_year=row.spawn_year).one()
-    site = session.query(StockingSite).filter_by(fsis_site_id=row.site_id).one()
+                                       fs_lot=row['lot'],
+                                       spawn_year=row['spawn_year']).one()
+    site = session.query(StockingSite).filter_by(
+        fsis_site_id=row['site_id']).one()
     item = Event(
         lot_id = lot.id,
-        prj_cd =  row.prj_cd,
-        fs_event = row.fs_event,
-        lotsam = row.lotsam,
-        event_date = datetime_or_none(row.event_date),
-        clipa = row.clipa,
-        fish_age = row.fish_age,
-        stkcnt = row.stkcnt,
-        fish_wt = row.fish_wt,
-        record_biomass_calc = row.record_biomass_calc,
-        reartem = row.reartem,
-        sitem = row.sitem,
-        transit_mortality_count = row.mortality,
-        site_id = site.id,
-        dd_lat = row.dd_lat,
-        dd_lon = row.dd_lon,
-        geom = WKTSpatialElement(pt),
-        development_stage = row.dev_code,
-        transit = upper_or_none(row.transit),
-        stocking_method = upper_or_none(row.method),
-        stocking_purpose = upper_or_none(row.stkpur),
+        site_id = site.id,        
+        prj_cd =  row['prj_cd'],
+        fs_event = row['fs_event'],
+        lotsam = row['lotsam'],
+        event_date = datetime_or_none(row['event_date']),
+        clipa = row['clipa'],
+        fish_age = row['fish_age'],
+        stkcnt = row['stkcnt'],
+        fish_wt = row['fish_wt'],
+        record_biomass_calc = row['record_biomass_calc'],
+        reartem = row['reartem'],
+        sitem = row['sitem'],
+        transit_mortality_count = row['mortality'],
+        development_stage = row['dev_code'],
+        transit = upper_or_none(row['transit']),
+        stocking_method = upper_or_none(row['method']),
+        stocking_purpose = upper_or_none(row['stkpur']),
+        dd_lat = row['dd_lat'],
+        dd_lon = row['dd_lon'],
+        geom = WKTSpatialElement(pt),        
     )
     session.add(item)
 
@@ -374,18 +392,19 @@ data = src_cur.fetchall()
 
 for row in data:
     #get objects referenced by foreign key
-    stocking_event = session.query(Event).filter_by(fs_event=row.fs_event).one()
+    stocking_event=session.query(Event).filter_by(
+        fs_event=row['fs_event']).one()
     item = TaggingEvent(
             stocking_event_id = stocking_event.id,
-            fs_tagging_event_id = row.tag_id,
-            retention_rate_pct = row.retention_rate_pct,
-            retention_rate_sample_size = row.retention_rate_sample_size,
-            retention_rate_pop_size = row.retention_rate_pop_size,
-            comments = row.comments,
-            tag_type =  row.tag_type_code,
-            tag_position =  TAG_POSITIONS[row.tag_position],
-            tag_origins =  row.tag_origin_code,
-            tag_colour =  row.tag_colour_code,
+            fs_tagging_event_id = row['tag_id'],
+            retention_rate_pct = row['retention_rate_pct'],
+            retention_rate_sample_size = row['retention_rate_sample_size'],
+            retention_rate_pop_size = row['retention_rate_pop_size'],
+            comments = row['comments'],
+            tag_type =  row['tag_type_code'],
+            tag_position =  TAG_POSITIONS[row['tag_position']],
+            tag_origins =  row['tag_origin_code'],
+            tag_colour =  row['tag_colour_code'],
     )
     session.add(item)
 
@@ -404,8 +423,9 @@ print "'%s' Transaction Complete (%s)"  % \
 
 table = "CWTs Applied"
 
-sql = ''' SELECT TAG_ID AS fs_tagging_event_id, int(CWT) as CWT
+sql = ''' SELECT TAG_ID AS fs_tagging_event_id, CWT
           FROM FS_CWTs_Applied;'''
+
 
 src_cur.execute(sql)
 data = src_cur.fetchall()
@@ -413,11 +433,11 @@ data = src_cur.fetchall()
 for row in data:
     #get objects referenced by foreign key
     tagging_event = session.query(TaggingEvent).filter_by(
-                        fs_tagging_event_id=row.fs_tagging_event_id).one()
+                        fs_tagging_event_id=row['fs_tagging_event_id']).one()
     item = CWTs_Applied(
             tagging_event_id=tagging_event.id,
-            fs_tagging_event_id = row.fs_tagging_event_id,
-            cwt = int(row.cwt)
+            fs_tagging_event_id = row['fs_tagging_event_id'],
+            cwt = int(row['cwt'])
     )
     session.add(item)
 

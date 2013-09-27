@@ -1,16 +1,15 @@
 from main.settings.base import *
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
-###these need to be reset to work with heroku:
-##DATABASES = {
-##    'default': {
-##          'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-##          'NAME': 'snippets',
-##  ***REMOVED***
-##          'Password': 'adam',
-##        #  'HOST': '', 
-##        #  'PORT': '',
-##    }
-##}
+#these need to be reset to work with heroku:
+DATABASES = {
+    'default': {
+    'default': {
+         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+         'NAME': 'fsis2',
+ ***REMOVED***
+ ***REMOVED***
+     }
+}
