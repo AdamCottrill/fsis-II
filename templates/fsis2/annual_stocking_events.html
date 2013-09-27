@@ -11,13 +11,6 @@
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
-
-    <style type="text/css" media="screen">
-      #map {
-       width: 600px;
-       float: left;
-      }
-      </style>
  
 {% endblock %}
 
@@ -48,34 +41,33 @@
 
 {% endifequal %}
 </span>
-
-<br />
-<b>Other Years:</b>
-<span> |
-{% if strain %}
-{% for yr in year_list %}
-  <a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain_code year=yr %}"> {{ yr }} </a>  |
-{% endfor %}
-
-{% else %}
-{% for yr in year_list %}
-  <a href="{%url 'annual_stocking_events_by_spc' spc=species.species_code year=yr %}">
-  {{ yr }} </a>  |
-{% endfor %}
-{% endif %}
-
-
-</span>
-
-
 </div>
-
 
   <div id="map">
      {{ map }}
   </div>
 
+<div id="info">
+<br />
+<b>Other Years:</b>
 
+{% if strain %}
+<ul>  
+{% for yr in year_list %}
+  <li><a href="{%url 'annual_stocking_events_by_strain' spc=81  strain=strain_code year=yr %}"> {{ yr }} </a>  </li>
+{% endfor %}
+</ul>
+
+{% else %}
+<ul>
+{% for yr in year_list %}
+<li>  <a href="{%url 'annual_stocking_events_by_spc' spc=species.species_code year=yr %}">
+  {{ yr }} </a>  </li>
+{% endfor %}
+</ul>
+{% endif %}
+
+</div>
 
   {% if object_list %}
 
