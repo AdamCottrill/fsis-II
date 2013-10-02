@@ -24,14 +24,12 @@
 
   <div id="info">
 
-
   <p> <b>FSIS Site Number:</b> {{ object.fsis_site_id }} </p>
   <p> <b>Name Site:</b> {{ object.site_name }} </p>
   <p> <b>Destination Waterbody (LID):</b> {{ object.deswby}} ({{ object.deswby_lid}}) </p>
   <p><b>Basin:</b> {{ object.basin|title}} </p>
   <p><b>5-minute Grid:</b> {{ object.grid}} </p>
   <p> <b>Stocked Waterbody (LID):</b> {{ object.stkwby }} ({{ object.stkwby_lid }})</p>
-
 
   {% autoescape off %}
   <p>  <b>Latitude:</b> {{ object.dd_lat |format_ddlat }} </p>
@@ -45,11 +43,8 @@
 <hr />
 
 <div id="buttonbar" align="left">
-<a href="{% url 'site_update' object.id %}"><button>Edit Site Information</button></a>
-<a href="{% url 'site_create' %}"><button>Create A New Stocking Site</button></a>
-
-<hr />
-
+  <a href="{% url 'site_update' object.id %}"><button>Edit Site Information</button></a>
+  <a href="{% url 'site_create' %}"><button>Create A New Stocking Site</button></a>
 </div>
 
 
