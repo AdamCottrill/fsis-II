@@ -137,8 +137,24 @@
     <div class="container">
     {% block header %}
     {% endblock %}
+
     {% block content %}
     {% endblock %}
+
     </div> <!-- /container -->
+
+    {% block footer %}
+    {% if footer %}    
+    <hr />
+    <div id="footer">
+      <div class="container well">
+        <center>
+        <p class="muted credit">{{ footer }}.</p>
+        </center>
+      </div>
+    </div>
+    {% endif %}
+    {% endblock %}
+
   </body>
 </html>

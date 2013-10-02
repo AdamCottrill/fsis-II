@@ -15,8 +15,27 @@ from django.db.models import Sum
 from olwidget.widgets import InfoMap
 
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
-                     Proponent, Species, Strain)
+                     Proponent, Species, Strain, BuildDate, Readme)
 
+
+
+def footer_string():
+    '''Build the footer string that indicates when the website
+    database as last build and when the data was last downloaded from
+    fsis.  This string will appear at the bottom of a number of
+    standard views
+    '''
+    
+    build_date = BuildDate.objects.latest('build_date').build_date
+    build_date = build_date.strftime("%b-%d-%Y")
+
+    download_date = Readme.objects.latest('date')
+    download_date = download_date.get_download_date().strftime("%b-%d-%Y")
+        
+    footer_str = "FSIS-II built on {0} using data downloaded from FSIS on {1}"
+    footer_str = footer_str.format(build_date, download_date)
+    return footer_str
+   
 
 def prj_cd_Year(x):
     '''format LHA_IA12_000 as 2012'''
@@ -62,7 +81,7 @@ class EventDetailView(DetailView):
         event_point = [[ event.fs_event, event.geom]]
         map = get_map(event_point)
         context['map'] = map
-
+        context['footer'] = footer_string()
         return context
 
 
@@ -72,6 +91,13 @@ class EventYearArchiveView(YearArchiveView):
     make_object_list = True
     allow_future = True
 
+    def get_context_data(self, **kwargs):
+        context = super(EventYearArchiveView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
+
+
+    
 class EventListView(ListView):
     '''render a list of events optionally filtered by year or lot'''
     queryset = Event.objects.all()
@@ -82,15 +108,14 @@ class EventListView(ListView):
         context = super(EventListView, self).get_context_data(**kwargs)
         cwt = self.kwargs.get('cwt',None)
         context['cwt'] = cwt
-
+        context['footer'] = footer_string()
+        
         #if this is cwt view, we want to include a map
         if cwt:
             events = kwargs.get('object_list')
             event_points = [[x.fs_event, x.geom] for x in events]
             map = get_map(event_points)
-
             context['map'] = map
-
         return context
 
     def get_queryset(self):
@@ -108,7 +133,12 @@ class EventListView(ListView):
 
 class EventCreateView(CreateView):
     model = Event
-
+    
+    def get_context_data(self, **kwargs):
+        context = super(EventCreateView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
+    
 class EventUpdateView(UpdateView):
     model = Event
 
@@ -138,7 +168,12 @@ class LotListView(ListView):
     template_name = "LotList.html"
     paginate_by = 20
 
+    def get_context_data(self, **kwargs):
+        context = super(LotListView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
 
+    
 class LotDetailView(DetailView):
     model = Lot
 
@@ -148,6 +183,7 @@ class LotDetailView(DetailView):
         event_points = lot.get_event_points()
         map = get_map(event_points)
         context['map'] = map
+        context['footer'] = footer_string()        
         return context
 
 
@@ -168,6 +204,12 @@ class CwtListView(ListView):
             return queryset.filter(cwt__icontains=cwt)
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super(CwtListView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
+
+        
 
 class SiteListView(ListView):
     queryset = StockingSite.objects.all()
@@ -185,6 +227,13 @@ class SiteListView(ListView):
             return queryset.filter(site_name__icontains=q)
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super(SiteListView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
+
+
+        
 class SiteDetailView(DetailView):
     model = StockingSite
     template_name = "fsis2/site_detail.html"
@@ -195,6 +244,7 @@ class SiteDetailView(DetailView):
         site_point = [[site.fsis_site_id, site.geom]]
         map = get_map(site_point)
         context['map'] = map
+        context['footer'] = footer_string()        
         return context
 
 
@@ -222,6 +272,7 @@ class AnnualTotalSpcView(ListView):
         context['species_list'] = Species.objects.all()
         context['strain_list'] = Strain.objects.filter(
             species__species_code=81).values('strain_name').distinct()
+        context['footer'] = footer_string()
         return context
 
 
@@ -257,6 +308,7 @@ class AnnualStockingBySpcStrainView(ListView):
         strain = self.kwargs.get('strain', None)
         yr = self.kwargs.get('year', None)
 
+        context['footer'] = footer_string()        
         context['year'] = yr
         context['species'] = get_object_or_404(Species, species_code=spc)
         context['strain'] = Strain.objects.filter(species__species_code=spc,
@@ -315,6 +367,7 @@ class AnnualStockingBySpcView(ListView):
         event_points = [[x.fs_event, x.geom] for x in events]
         map = get_map(event_points)
         context['map'] = map
+        context['footer'] = footer_string()
         
         spc = self.kwargs.get('spc', None)
         yr = self.kwargs.get('year', None)

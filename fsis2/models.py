@@ -1,3 +1,4 @@
+import re
 #from django.db import models
 #from django.contrib.auth.models import User
 #from django.template.defaultfilters import slugify
@@ -14,6 +15,10 @@ from datetime import datetime
 class BuildDate(models.Model):
     '''A database to hold the date that the database was last refreshed.'''
     build_date =  models.DateField(editable=False)
+
+    def __unicode__(self):
+        return self.build_date.strftime("%d-%b-%Y")
+
     
 class Readme(models.Model):
     #a table to hold all of the information regarding last FSIS
@@ -30,6 +35,18 @@ class Readme(models.Model):
         return self.comment
 
 
+    def get_download_date(self, ):
+        """a little function to pull the FSIS download date out of the
+        readme string build by Process-FSIS
+        """
+        regex = "\d{1,2}\-[a-zA-Z]{3}\-\d{4}"
+        datestring = re.search(regex, self.comment)
+        if datestring:
+            xx = datestring.group()
+            return datetime.strptime(xx, "%d-%b-%Y")
+        else:
+            return None
+                
 
 class Species(models.Model):
     species_code = models.IntegerField(unique=True)
