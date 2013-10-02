@@ -34,7 +34,8 @@ MANAGERS = ADMINS
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+# not supposed to use * in production, but nothing else seems to work:
+ALLOWED_HOSTS = ['*']
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -77,6 +78,7 @@ ADMIN_MEDIA_PREFIX = '/admin/media/'
 # Example: "/var/www/example.com/static/"
 #STATIC_ROOT = ''
 STATIC_ROOT = root("static_root/")
+
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
