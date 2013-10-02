@@ -1,5 +1,4 @@
-'''
-=============================================================
+'''=============================================================
  c:/1work/Python/djcode/fsis2/django_settings.py
  Created: 06 Sep 2013 12:11:42
 
@@ -23,8 +22,19 @@
  rs = A.<model>.objects.all()
  rs2 = A.<model2>.objects.filter(foo=bar)
 
+NOTE - the current working directory should be the root of your django
+project (where manage.py and this file are).  If you open a shell and
+are unable to import django_settings or your models, you may have to
+move the working directory up one level:
+
+os.getcwd()
+os.chdir(os.path.split(os.getcwd())[0])
+
+
+
  A. Cottrill
 =============================================================
+
 '''
 
 import sys
