@@ -24,6 +24,7 @@ A. Cottrill
 '''
 import pyodbc
 import os
+import shutil
 import sqlite3
 
 #here is where we will place the clone after we make it:
@@ -68,6 +69,7 @@ for table in tables:
         trg_cur.executemany(sql2, jj)
         trg_conn.commit()
 
+        print "Successfully ported {0}".format(table)
 
 src_cur.close()
 src_conn.close()
@@ -98,9 +100,11 @@ trg_conn.close()
 src_conn.close()
 
 #
-#print "Copying clone to deployment directory..."
-#os.remove(os.path.join(deploy_dir, os.path.split(trg)[1]))
+print "Copying clone to deployment directory..."
+os.remove(os.path.join(deploy_dir, os.path.split(trg)[1]))
 #os.rename(trg,os.path.join(deploy_dir, os.path.split(trg)[1]))
+destination = os.path.join(deploy_dir, os.path.split(trg)[1])
+shutil.copy(trg, destination)
 print "Done!"
 
 

@@ -6,6 +6,9 @@ doc/*
 db/*
 coverage/*
 static/*
+staticfiles/*
 main/whoosh_index/*
 *.mdb
 *.ldb
+*TAGS
+*.db
