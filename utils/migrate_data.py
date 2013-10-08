@@ -86,8 +86,8 @@ src_cur = src_conn.cursor()
 #engine = create_engine('sqlite:///%s' % trgdb)
 
 
-engine = create_engine('postgresql://adam:django@localhost/fsis2')
-#engine = create_engine('postgresql://cottrillad:uglmu@localhost/fsis2')
+#engine = create_engine('postgresql://adam:django@localhost/fsis2')
+engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -453,3 +453,6 @@ print "'%s' Transaction Complete (%s)"  % \
 build_date = BuildDate(build_date = datetime.datetime.utcnow())
 session.add(build_date)
 session.commit()
+
+print "All Migrations Complete ({0})".format(build_date)
+

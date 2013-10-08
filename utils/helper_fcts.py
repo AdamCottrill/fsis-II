@@ -38,27 +38,31 @@ def datetime_or_none(x):
     fish stocking data base are fomatted properly datetimes (with
     timestamp) or are returned as None.'''
     from datetime import datetime
-    try:
-        x = datetime.strptime(x,'%b-%d-%Y %H:%M:%S.0')
-        return(x)
-    except ValueError:
-        pass
-    try:
-        x = datetime.strptime(x,'%b-%d-%Y')
-        return(x)
-    except ValueError:
-        pass
-    try:
-        x = datetime.strptime(x,'%d-%b-%Y')
-        return(x)
-    except ValueError:
-        pass                
-    try:
-        x = datetime.strptime(x,'%d-%b-%Y %H:%M:%S.0')
-        return(x)
-    except ValueError:
-        return None
 
+    if x:
+        try:
+            x = datetime.strptime(x,'%b-%d-%Y %H:%M:%S.0')
+            return(x)
+        except ValueError:
+            pass
+        try:
+            x = datetime.strptime(x,'%b-%d-%Y')
+            return(x)
+        except ValueError:
+            pass
+        try:
+            x = datetime.strptime(x,'%d-%b-%Y')
+            return(x)
+        except ValueError:
+            pass                
+        try:
+            x = datetime.strptime(x,'%d-%b-%Y %H:%M:%S.0')
+            return(x)
+        except ValueError:
+            return None
+    else:
+        return None
+            
 #[date_time_or_none(x) for x in samples]
 
 
@@ -97,6 +101,10 @@ class TestDateTimeOrNone(unittest.TestCase):
         
         x = datetime_or_none('')
         self.assertIsNone(x)              
+
+        x = datetime_or_none(None)
+        self.assertIsNone(x)              
+
         
 def main():
     unittest.main()
