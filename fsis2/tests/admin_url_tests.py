@@ -2,8 +2,8 @@
 that the admin contains interfaces to the models taht we need.'''
 
 from django.core.urlresolvers import reverse
-from .tests import DemoTestCase
-from .tests.factories import *
+from fsis2.tests import DemoTestCase
+from fsis2.tests.factories import *
 
 
 class TestUrls(DemoTestCase):

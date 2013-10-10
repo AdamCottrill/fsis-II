@@ -16,6 +16,16 @@ DATABASES = {
     }
 }
 
+#DATABASES = {
+#    'default': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'fsis2',
+# ***REMOVED***
+# ***REMOVED***
+#     }
+#}
+
+
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
 )

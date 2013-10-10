@@ -39,11 +39,20 @@ class Readme(models.Model):
         """a little function to pull the FSIS download date out of the
         readme string build by Process-FSIS
         """
-        regex = "\d{1,2}\-[a-zA-Z]{3}\-\d{4}"
+        regex = "\d{1,2}\-[a-zA-Z]{3}\-\d{4}|\d{1,2}/\d{1,2}/\d{4}"
         datestring = re.search(regex, self.comment)
         if datestring:
             xx = datestring.group()
-            return datetime.strptime(xx, "%d-%b-%Y")
+            try:
+                formatted_date = datetime.strptime(xx, "%d-%b-%Y")          
+                return formatted_date
+            except ValueError:
+                pass
+            try:
+                formatted_date = datetime.strptime(xx, "%m/%d/%Y")          
+                return formatted_date
+            except ValueError:
+                return None               
         else:
             return None
                 

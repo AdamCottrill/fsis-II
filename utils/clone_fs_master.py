@@ -22,6 +22,7 @@ A. Cottrill
 =============================================================
 
 '''
+import datetime
 import pyodbc
 import os
 import shutil
@@ -29,7 +30,6 @@ import sqlite3
 
 #here is where we will place the clone after we make it:
 deploy_dir = r'X:/djcode/fsis2/utils/data'
-
 
 #trg =  r'C:/1work/ScrapBook/clone_fs_master/FS_Master.db'
 trg = r'c:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db'
@@ -44,8 +44,8 @@ trg_cur = trg_conn.cursor()
 
 #open a connection to the source database and create a cursor
 #src = r'C:/1work/ScrapBook/clone_fs_master/FS_Master.mdb'
-src = r"C:/1work/Python/djcode/fsis2/utils/FS_Master_copy.mdb"
-#src = r"Y:/Information Resources/Dataset_Utilities/FS_Maker/FS_Master.mdb"
+#src = r"C:/1work/Python/djcode/fsis2/utils/FS_Master_copy.mdb"
+src = r"Y:/Information Resources/Dataset_Utilities/FS_Maker/FS_Master.mdb"
 src_conn = pyodbc.connect(r"DRIVER={Microsoft Access Driver (*.mdb)};" \
                      "DBQ=%s" % src)
 src_cur = src_conn.cursor()
@@ -105,7 +105,7 @@ os.remove(os.path.join(deploy_dir, os.path.split(trg)[1]))
 #os.rename(trg,os.path.join(deploy_dir, os.path.split(trg)[1]))
 destination = os.path.join(deploy_dir, os.path.split(trg)[1])
 shutil.copy(trg, destination)
-print "Done!"
+print "Done! ({0})".format(datetime.datetime.now().strftime("%b-%d-%Y %H:%M"))
 
 
 
