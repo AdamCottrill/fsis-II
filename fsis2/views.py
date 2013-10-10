@@ -1,3 +1,4 @@
+from datetime import datetime
 #from django.contrib.auth.models import User
 #from django.core.context_processors import csrf
 #from django.http import HttpResponse
@@ -18,6 +19,33 @@ from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain, BuildDate, Readme)
 
 
+def timesince(dt, default="just now"):
+    """
+    Returns string representing "time since" e.g.
+    3 days ago, 5 hours ago etc.
+    from:http://flask.pocoo.org/snippets/33/
+    """
+
+    now = datetime.utcnow()
+    diff = now - dt
+    
+    periods = (
+        (diff.days / 365, "year", "years"),
+        (diff.days / 30, "month", "months"),
+        (diff.days / 7, "week", "weeks"),
+        (diff.days, "day", "days"),
+        (diff.seconds / 3600, "hour", "hours"),
+        (diff.seconds / 60, "minute", "minutes"),
+        (diff.seconds, "second", "seconds"),
+    )
+
+    for period, singular, plural in periods:
+        
+        if period:
+            return "%d %s ago" % (period, singular if period == 1 else plural)
+
+    return default    
+
 
 def footer_string():
     '''Build the footer string that indicates when the website
@@ -30,11 +58,13 @@ def footer_string():
     build_date = build_date.strftime("%b-%d-%Y")
 
     download_date = Readme.objects.latest('date')
-    download_date = download_date.get_download_date().strftime("%b-%d-%Y")
+    download_date = download_date.get_download_date()
+    delta = timesince(download_date) #lapse time
+    download_date = download_date.strftime("%b-%d-%Y") #time as a string
         
-    footer_str = "FSIS-II built on {0} using data downloaded from FSIS on {1}"
-    footer_str = footer_str.format(build_date, download_date)
-    return footer_str
+    ftr_str="FSIS-II built on {0} using data downloaded from FSIS on {1} ({2})"
+    ftr_str = ftr_str.format(build_date, download_date, delta)
+    return ftr_str
    
 
 def prj_cd_Year(x):
@@ -328,6 +358,8 @@ class AnnualStockingBySpcStrainView(ListView):
                                         lot__strain__strain_code=strain,
                     ).values('prj_cd').distinct()
         year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
+        #get unique values and return it to  list
+        year_list = list(set(year_list))        
         year_list.sort(reverse=True)
         context['year_list'] = year_list
        
@@ -384,6 +416,8 @@ class AnnualStockingBySpcView(ListView):
         project_list = Event.objects.filter(lot__species__species_code=spc,
                     ).values('prj_cd').distinct()
         year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
+        #get unique values and return it to  list
+        year_list = list(set(year_list))
         year_list.sort(reverse=True)
         context['year_list'] = year_list
        

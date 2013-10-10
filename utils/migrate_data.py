@@ -51,6 +51,9 @@ TAG_POSITIONS = {
     'Snout':4}
 
 
+#are we working in the deployment machine or just locally?
+DEPLOY = False
+
 
 #========================================
 #            DATA SOURCE
@@ -65,8 +68,11 @@ TAG_POSITIONS = {
 ## 
 
 #sqlite clone of FS_master:
-src = r'c:/1work/Python/djcode/fsis2/utils/data/FS_Master_clone.db'
-#src = r'c:/1work/djcode/fsis2/utils/data/FS_Master_clone.db'
+if DEPLOY:
+    src = r'c:/1work/djcode/fsis2/utils/data/FS_Master_clone.db'
+else:
+    src = r'c:/1work/Python/djcode/fsis2/utils/data/FS_Master_clone.db'
+    
 src_conn = sqlite3.connect(src)
 src_conn.row_factory = sqlite3.Row
 
@@ -85,9 +91,10 @@ src_cur = src_conn.cursor()
 #trgdb = '/home/adam/Documents/djcode/fsis2/db/fsis2.db'
 #engine = create_engine('sqlite:///%s' % trgdb)
 
-
-#engine = create_engine('postgresql://adam:django@localhost/fsis2')
-engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
+if DEPLOY:
+    engine = create_engine('postgresql://adam:django@localhost/fsis2')
+else:
+    engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -129,7 +136,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 
@@ -154,7 +161,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 
@@ -183,7 +190,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 #========================================
@@ -210,7 +217,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 
@@ -249,7 +256,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 #========================================
@@ -289,7 +296,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 #========================================
@@ -370,7 +377,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 
@@ -412,7 +419,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 
@@ -445,7 +452,7 @@ session.commit()
 
 now = datetime.datetime.now()
 print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d-%H:%M:%S'))
+  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 #========================================

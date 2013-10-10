@@ -1,9 +1,9 @@
 import factory
-#from datetime import datetime
+from datetime import datetime
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 
-from .models import *
+from fsis2.models import *
 
 
 class UserFactory(factory.DjangoModelFactory):
@@ -27,6 +27,13 @@ class UserFactory(factory.DjangoModelFactory):
         return user
 
 
+class ReadmeFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = Readme
+    date = datetime.now()
+    initials = "hs" #Homer Simpson
+    comment = "Database compiled with FSIS data downloaded on 08/20/2013."
+
+        
 class SpeciesFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Species
     pass
