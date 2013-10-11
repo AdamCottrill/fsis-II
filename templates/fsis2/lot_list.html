@@ -14,8 +14,20 @@
 
 
 {% block content %}
-
+<div class="row">
 <h2>Fish Lots</h2>
+
+  <div class="pull-right">
+  <form id="custom-search-form" class="form-search form-horizontal pull-right" 
+        action="{% url "lot_list" %}" method="GET">
+    <div class="input-append span12">
+      <input name ="lot" type="text" class="search-query"
+             placeholder="fsis lot number">
+      <button type="submit" class="btn"><i class="icon-search"></i></button>
+    </div>
+  </form>
+  </div>
+</div>
 
 {% if page_obj %} 
 {% if page_obj.paginator.num_pages > 1 %}  

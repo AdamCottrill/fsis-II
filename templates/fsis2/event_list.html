@@ -21,6 +21,9 @@
 
 <h2>{% if year %} {{ year|date:'Y' }}  {% endif %}Stocking Events {% if cwt %} associated with cwt {{ cwt|format_cwt }} {% endif %}</h2>
 
+<div class="container">
+  
+{% if not cwt %}
 <span>|
 <a href="{% url 'event_year_list' 2012 %}">2012</a> |
 <a href="{% url 'event_year_list' 2011 %}">2011</a> |
@@ -29,6 +32,22 @@
 <a href="{% url 'event_year_list' 2008 %}">2008</a> |
 <a href="#">Older</a> 
 |</span>
+
+
+<div class="pull-right">
+  <form id="custom-search-form" class="form-search form-horizontal pull-right" 
+        action="{% url "event_list" %}" method="GET">
+    <div class="input-append span12">
+      <input name ="event" type="text" class="search-query"
+             placeholder="fsis event number">
+      <button type="submit" class="btn"><i class="icon-search"></i></button>
+    </div>
+  </form>
+  </div>
+</div>
+
+
+{% endif %}
 
 
 {% if page_obj %} 
@@ -101,7 +120,7 @@
 {% endif %}
 
 
-
+</div>
 
 
 {% endblock %}

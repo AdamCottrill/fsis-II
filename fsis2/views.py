@@ -1,7 +1,7 @@
 from datetime import datetime
 #from django.contrib.auth.models import User
 #from django.core.context_processors import csrf
-#from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 #from django.template import RequestContext
 
@@ -139,7 +139,7 @@ class EventListView(ListView):
         cwt = self.kwargs.get('cwt',None)
         context['cwt'] = cwt
         context['footer'] = footer_string()
-        
+
         #if this is cwt view, we want to include a map
         if cwt:
             events = kwargs.get('object_list')
@@ -148,6 +148,20 @@ class EventListView(ListView):
             context['map'] = map
         return context
 
+
+    def dispatch(self, request, *args, **kwargs):
+       
+        event = self.request.GET.get("event")
+        #import pdb; pdb.set_trace()
+        if event:
+            event = get_object_or_404(Event,fs_event = event)        
+        if event:
+            url = reverse('event_detail', kwargs={'pk': event.id})
+            return HttpResponseRedirect(url)
+            #return redirect(url)
+        else:
+            return super(EventListView, self).dispatch(request, *args, **kwargs)
+        
     def get_queryset(self):
         self.cwt = self.kwargs.get('cwt',None)
         if self.cwt:
@@ -198,6 +212,16 @@ class LotListView(ListView):
     template_name = "LotList.html"
     paginate_by = 20
 
+    def dispatch(self, request, *args, **kwargs):      
+        lot = self.request.GET.get("lot")
+        if lot:
+            lot = get_object_or_404(Lot,fs_lot = lot)        
+        if lot:
+            url = reverse('lot_detail', kwargs={'pk': lot.id})
+            return HttpResponseRedirect(url)
+        else:
+            return super(LotListView, self).dispatch(request, *args, **kwargs)
+    
     def get_context_data(self, **kwargs):
         context = super(LotListView, self).get_context_data(**kwargs)
         context['footer'] = footer_string()        

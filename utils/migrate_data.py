@@ -381,8 +381,6 @@ print "'%s' Transaction Complete (%s)"  % \
 
 
 
-
-
 #========================================
 #       TAGGING EVENTS
 
@@ -463,3 +461,4 @@ session.commit()
 
 print "All Migrations Complete ({0})".format(build_date)
 
+session.close()
