@@ -34,7 +34,7 @@
   <p>  <b>Stocking Date:</b> {{ object.event_date|date }} </p>
   <p>  <b>Clip Applied:</b> {{ object.clipa }} </p>
   <p>  <b>Fish Age (months):</b> {{ object.fish_age }} </p>
-  <p>  <b>Number Stocked:</b> {{ object.stkcnk|intcomma }} </p>
+  <p>  <b>Number Stocked:</b> {{ object.stkcnt|intcomma }} </p>
   <p>  <b>Life Stage:</b> {{ object.get_development_stage_display }} ({{ object.development_stage }}) </p>
 
   <p>  <b>Transit Method:</b> {{ object.get_transit_display|title }} </p>

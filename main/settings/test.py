@@ -9,21 +9,21 @@ USE_TZ = False
 
 INSTALLED_APPS += ('django_nose',)
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-    }
-}
-
-#DATABASES = {
-#    'default': {
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'NAME': 'fsis2',
-# ***REMOVED***
-# ***REMOVED***
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": ":memory:",
 #     }
-#}
+# }
+
+DATABASES = {
+    'default': {
+         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+         'NAME': 'fsis2',
+ ***REMOVED***
+ ***REMOVED***
+     }
+}
 
 
 PASSWORD_HASHERS = (
