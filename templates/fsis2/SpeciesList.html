@@ -1,0 +1,37 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+<!-- {% block pages %}
+
+
+{% endblock %}
+-->
+
+
+{% block content %}
+<div class="row">
+<h2>Fish Species Stocked in Lake Huron</h2>
+</div>
+
+<br />
+
+  {% if object_list %}
+      <ul>
+      {% for object in object_list %}
+      <li> <a href="{% url 'annual_total_spc' object.species_code %}">
+      {{ object.species_code }} -  {{ object.common_name }}(
+      {{ object.scientific_name }})</a></li>
+      {% endfor%}
+      </ul>
+  {% else %}
+    <p>Sorry no species match that criteria.</p>
+  {% endif %}
+
+
+
+
+
+
+
+{% endblock %}
+
+

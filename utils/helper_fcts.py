@@ -15,8 +15,9 @@
 #     standard format.
 #
 # datetime_or_none - if a value is present, it parses assuming that it
-#     is formatted either as mmm-dd-yyyy or dd-mmm-yyyy.  Otherwise it
-#     returns None.
+#     is formatted either as dd/mm/yyyy, mmm-dd-yyyy or dd-mmm-yyyy.
+#     Otherwise it returns None.
+#     
 #
 # A. Cottrill
 #=============================================================
@@ -40,6 +41,21 @@ def datetime_or_none(x):
     from datetime import datetime
 
     if x:
+
+        #04/14/2012
+        try:
+            x = datetime.strptime(x,'%m/%d/%Y %H:%M:%S.0')
+            return(x)
+        except ValueError:
+            pass
+        try:
+            x = datetime.strptime(x,'%m/%d/%Y')
+            return(x)
+        except ValueError:
+            pass
+
+        
+        #Apr-14-2012
         try:
             x = datetime.strptime(x,'%b-%d-%Y %H:%M:%S.0')
             return(x)
@@ -50,6 +66,8 @@ def datetime_or_none(x):
             return(x)
         except ValueError:
             pass
+
+        # 14-04-2014
         try:
             x = datetime.strptime(x,'%d-%b-%Y')
             return(x)
@@ -78,6 +96,16 @@ class TestDateTimeOrNone(unittest.TestCase):
         '''
 
         from datetime import datetime
+
+        datestring = "04/18/2011"
+        dt = datetime.strptime(datestring,'%m/%d/%Y')
+        x = datetime_or_none(datestring)
+        self.assertEqual(x,dt)
+
+        datestring = "04/18/2011 11:43:32.0"
+        dt = datetime.strptime(datestring,'%m/%d/%Y %H:%M:%S.0')
+        x = datetime_or_none(datestring)
+        self.assertEqual(x,dt)
         
         datestring = "18-Apr-2011"
         dt = datetime.strptime(datestring,'%d-%b-%Y')
