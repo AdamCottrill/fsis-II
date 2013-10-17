@@ -173,6 +173,20 @@ class Lot(models.Model):
         return reverse('lot_detail', args=[str(self.id)])
 
 
+    def get_year(self):
+            """          
+            Arguments:
+            - `self`:
+            """
+            '''format LHA_IA12_000 as 2012'''
+            x = self.prj_cd
+            if int(x[6:8]) > 60:
+                yr = "19" + x[6:8]
+            else:
+                yr = "20" + x[6:8]
+            return yr
+                  
+
     def get_event_points(self):
         '''get the coordinates of events associated with this lot.  Returns a
         list of tuples.  Each tuple contains the fs_event id, dd_lat and

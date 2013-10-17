@@ -446,4 +446,122 @@ class AnnualStockingBySpcView(ListView):
         context['year_list'] = year_list
        
         return context
+
+
+
+class AnnualStockingByHatcherySpcView(ListView):
+    '''render a view that plots the stocking events associated with a
+    species in a particular year from a particular proponent on a map
+    and summarizes those events in a table:
+
+    NOTE: AnnualStockingBySpcStrainView should be re-written to be a
+    special case of AnnualStockingBySpcView.  the are essentailly the
+    same, except that strain view has a little more informarion and
+    the queryset is a subset of the other. - for now it works.
+
+    '''
+    
+    template_name = "fsis2/annual_stocking_events.html"
+
+    def get_queryset(self):
+        self.spc = self.kwargs.get('spc', None)
+        self.hatchery = self.kwargs.get('hatchery', None)
+        #self.strain = self.kwargs.get('strain', None)
+        self.yr = self.kwargs.get('year', None)
+        project = 'LHA_FS%s_001' % self.yr[2:]
+
+        queryset = Event.objects.filter(lot__species__species_code=self.spc,
+                                        prj_cd=project,
+                                        lot__proponent__abbrev=self.hatchery)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(AnnualStockingByHatcherySpcView,
+                         self).get_context_data(**kwargs)
+
+        events = kwargs.get('object_list')
+        event_points = [[x.fs_event, x.geom] for x in events]
+        map = get_map(event_points)
+        context['map'] = map
+        context['footer'] = footer_string()
+        
+        spc = self.kwargs.get('spc', None)
+        yr = self.kwargs.get('year', None)
+        hatchery = self.kwargs.get('hatchery', None)
+
+        context['year'] = yr
+        context['species'] = get_object_or_404(Species, species_code=spc)
+        context['hatchery'] = get_object_or_404(Proponent, abbrev=hatchery)
+        
+        #get the lists required for this view:
+        context['species_list'] = Species.objects.all()
+        context['strain_list'] = Strain.objects.filter(
+            species__species_code=81).values(
+                'strain_name','strain_code').distinct()
+        
+        project_list = Event.objects.filter(lot__species__species_code=spc,
+                    ).values('prj_cd').distinct()
+        year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
+        #get unique values and return it to  list
+        year_list = list(set(year_list))
+        year_list.sort(reverse=True)
+        context['year_list'] = year_list
+       
+        return context
+
+
+
+
+        
+#
+class ProponentListView(ListView):
+    #includes any lots that don't have any events yet:
+    queryset = Proponent.objects.all()
+
+    template_name = "fsis2/ProponentList.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(ProponentListView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
+
+
+    
+class ProponentLotListView(ListView):
+    template_name = "LotList.html"
+    paginate_by = 20
+
+    def dispatch(self, request, *args, **kwargs):      
+        lot = self.request.GET.get("lot")
+        if lot:
+            lot = get_object_or_404(Lot,fs_lot = lot)        
+        if lot:
+            url = reverse('lot_detail', kwargs={'pk': lot.id})
+            return HttpResponseRedirect(url)
+        else:
+            return super(ProponentLotListView, self).dispatch(request,
+                                                              *args, **kwargs)
+
+    def get_queryset(self, **kwargs):
+        self.hatchery = self.kwargs.get('hatchery', None)
+        queryset = Lot.objects.filter(proponent__abbrev=self.hatchery)
+        return queryset
+
+        
+            
+    def get_context_data(self, **kwargs):
+        context = super(ProponentLotListView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
+
+
+class SpeciesListView(ListView):
+    
+    queryset = Species.objects.all()
+    template_name = "fsis2/SpeciesList.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super(SpeciesListView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()        
+        return context
         

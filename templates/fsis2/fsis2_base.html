@@ -78,7 +78,7 @@
           <a class="brand" href="/">FSIS-II</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="/">Home</a></li>
+              <li class="active"><a href="/lots/">Home</a></li>
               <li><a href="{% url 'lot_list' %}">Fish Lots</a> </li>         
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle">Stocking Events</a>
@@ -103,8 +103,8 @@
                  <ul class="dropdown-menu">
                   <li><a href="">CWT 'Master'</a> </li>
                   <li class="divider"></li>
-                  <li><a href="#">By Hatchery</a>  </li>
-                  <li><a href="#">By Species</a> </li>
+                  <li><a href="{% url 'hatchery_list' %}">By Hatchery</a>  </li>
+                  <li><a href="{% url 'species_list' %}">By Species</a> </li>
                   <li><a href="#">D. Reid Spreadsheet</a> </li>
                 </ul>             
                </li>

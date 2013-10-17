@@ -1,0 +1,36 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+<!-- {% block pages %}
+
+
+{% endblock %}
+-->
+
+
+{% block content %}
+<div class="row">
+<h2>Fish Hatcheries/Proponents</h2>
+</div>
+
+<br />
+
+  {% if object_list %}
+      <ul>
+      {% for object in object_list %}
+      <li> <a href="{% url 'hatchery_lot_list' object.abbrev %}">
+      {{ object.proponent_name }} </a></li>
+      {% endfor%}
+      </ul>
+  {% else %}
+    <p>Sorry no hatcheries match that criteria.</p>
+  {% endif %}
+
+
+
+
+
+
+
+{% endblock %}
+
+
