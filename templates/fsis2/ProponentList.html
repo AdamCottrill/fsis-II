@@ -8,24 +8,29 @@
 
 
 {% block content %}
+<div class="container">
+  
 <div class="row">
 <h2>Fish Hatcheries/Proponents</h2>
 </div>
 
 <br />
 
-  {% if object_list %}
-      <ul>
-      {% for object in object_list %}
-      <li> <a href="{% url 'hatchery_lot_list' object.abbrev %}">
-      {{ object.proponent_name }} </a></li>
-      {% endfor%}
-      </ul>
-  {% else %}
-    <p>Sorry no hatcheries match that criteria.</p>
-  {% endif %}
+{% if object_list %}
+<table class="table">
+  
+  {% for object in object_list %}
+  {% cycle '<tr>' '' %}
+    <td> <a href="{% url 'hatchery_lot_list' object.abbrev %}"> {{ object.proponent_name }} </a></td>
+    {% cycle '' '</tr>' %}
+  {% endfor %}
 
+</table>
+{% else %}
+<p>Sorry no hatcheries match that criteria.</p>
+{% endif %}
 
+</div>
 
 
 

@@ -13,7 +13,8 @@
 
  To use it,
  activate an emacs virtualenv -> M-x virtualenv-activate <Return> /venv/
- start a python interpreter (usual by sending region of beging code)
+
+ next start a python interpreter (usual by sending region of beging code)
  then at the python command prompt 'import django_settings'
 
  as a bonus, all of your model will aready be imported as A, meaning
