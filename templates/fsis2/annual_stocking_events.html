@@ -6,11 +6,11 @@
 -->
 
 {% block extrahead %} 
-    {{ map.media }}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}themeblue.css" /> 
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}tablesorter.css" /> 
-    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script> 
- 
+{{ map.media }}
+<!-- tablesorter plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script> 
 {% endblock %}
 
 {% block content %}
@@ -19,100 +19,135 @@
 {% load fsis2_filters %}
 
 <div class="container">
-
-<div class="row">
-  <div class="navbar">
-    <div class="navbar-inner">
-    <ul class="nav">
+  <div class="row">
+    <div class="btn-group btn-group-xs">
       {% for spc in species_list %}
-      <li><a href="{% url 'annual_stocking_events_by_spc' spc=spc.species_code year=year%}"> {{ spc.common_name }}</a>  </li>
+      {% ifequal spc.species_code 81 %}
+      <div class="btn-group">
+        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+          Lake Trout
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="{% url 'annual_stocking_events_by_spc' spc=81 year=year %}">All Lake Trout</a></li>
+            {% for strain in strain_list %}
+            <li> <a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain.strain_code year=year %}"> {{ strain.strain_name }}</a> </li>
+            {% endfor %}
+        </ul>
+      </div>
+      {% else %}
+      <a href="{% url 'annual_stocking_events_by_spc' spc=spc.species_code year=year%}" class="btn btn-default" role="button" > {{ spc.common_name }}</a>
+      {% endifequal %}
       {% endfor %}
-    </ul>
     </div>
-  </div> 
-</div>  <!-- row -->
+  </div>
 
-<div class="row">
-  <div class="span12">
-    <heading>
-      <h2> {{ year }}  Stocking events associated with {{ strain }} {{species}}</h2>
-    <heading>      
-  </div>  
-</div>
+  <br />
+  <div class="row">
+    <div class="col-md-3">    
+
+      <heading>
+        <h4> {{ year }} - {{ strain }} {{species}}</h4>
+        <heading>      
+          <br />
+
+          <table class="table table-striped">
+
+            {% for yr in year_list %}
+            {% cycle '<tr>' '' '' %}
+              {% if strain %}
+              <td><a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain_code year=yr %}" class="btn btn-default btn-xs" role="button"> {{ yr }} </a></td>
+              {% else %}
+              <td><a href="{%url 'annual_stocking_events_by_spc' spc=species.species_code year=yr %}" class="btn btn-default btn-xs" role="button">  {{ yr }} </a></td>
+              {% endif %}
+              {% cycle '' '' '</tr>' %}
+            {% endfor %}
+          </table>
+
+          <br />
+          <table class="table table-striped">
+            <tr>
+              <td>North Channel:</td>
+              <td>Coming Soon</td>
+            </tr>
+
+            <tr>
+              <td>Georgian Bay:</td>
+              <td>Coming Soon</td>
+            </tr>
+
+            <tr>
+              <td>Main Basin:</td>
+              <td>Coming Soon</td>
+            </tr>
+
+            <tr>
+              <td><strong>Total:</strong></td>
+              <td><strong>Coming Soon</strong></td>
+            </tr>
+
+
+          </table>          
+
+
+    </div>
+
+    <div class="col-md-9">
+      {% if map %}
+      {{ map }}
+      {% endif %}
+    </div> 
+  </div>
 
 <br />
 
-<div class="row">
-  <div class="span4">    
-
-    {% ifequal species.species_code 81 %}
-      <div class="navbar">
-        <div class="navbar-inner">
-        <a class="brand" href="#">By Strain:</a>
-        <ul class="nav">
-          {% for strain in strain_list %}
-          <li> <a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain.strain_code year=year %}"> {{ strain.strain_name }}</a> </li>
+  <div class="row">
+      {% if object_list %}
+      <table class="table tablesorter">
+        <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
+            <td>Site Name</td><td>Clip Applied</td> <td>Development
+              Stage</td> <td>Proponent</td></tr>
+        </thead>
+        <tbody>
+          {% for event in object_list %}
+          <tr class="{% cycle row1,row2 %}">
+            <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
+            <td> {{ event.stkcnt|intcomma }} </td> 
+            <td> {{ event.event_date|date }} </td>
+            <td> {{ event.site.site_name }} </td> 
+            <td> {{ event.clipa }} </td> 
+            <td> {{ event.get_development_stage_display }} </td>
+            <td> {{ event.lot.proponent.proponent_name|title }} </td>
+          </tr>
           {% endfor %}
-        </ul>
-        </div>
-      </div> 
-    {% endifequal %}
-
-
-      <div class="navbar">
-        <div class="navbar-inner">
-        <a class="brand" href="#">Other Years:</a>
-        <ul class="nav">
-        {% for yr in year_list %}
-          {% if strain %}
-            <li> <a href="{%url 'annual_stocking_events_by_strain' spc=81  strain=strain_code year=yr %}"> {{ yr }} </a> </li>
-          {% else %}
-            <li> <a href="{%url 'annual_stocking_events_by_spc'  spc=species.species_code year=yr %}">  {{ yr }} </a> </li>
-          {% endif %}
-        {% endfor %}    
-        </ul>
-        </div>
-      </div> 
-  </div>
-  <div class="span8">
-    {% if map %}
-       {{ map }}
-    {% endif %}
-  </div> 
-</div>
-
-
-<div class="row">
-  <div class="span12">
-  {% if object_list %}
-    <table id="myTable" class="tablesorter-blue">
-      <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
-      <td>Site Name</td><td>Clip Applied</td> <td>Development
-      Stage</td> <td>Proponent</td></tr>
-      </thead>
-    <tbody>
-    {% for event in object_list %}
-      <tr class="{% cycle row1,row2 %}">
-          <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
-          <td> {{ event.stkcnt|intcomma }} </td> 
-          <td> {{ event.event_date|date }} </td>
-          <td> {{ event.site.site_name }} </td> 
-          <td> {{ event.clipa }} </td> 
-          <td> {{ event.get_development_stage_display }} </td>
-          <td> {{ event.lot.proponent.proponent_name|title }} </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-    </table>    
-    {% else %}
+        </tbody>
+      </table>    
+      {% else %}
       <p>Sorry no events match that criteria.</p>
-    {% endif %}    
-  </div>  
-</div>
+      {% endif %}    
+    </div>  
 
 </center>
 
 </div>   <!-- container -->
+
+
+<script type="text/javascript">
+  $(".tablesorter").tablesorter({
+  theme: 'bootstrap',
+  widthFixed: true,
+  showProcessing: true,
+  headerTemplate: '{content} {icon}',
+  widgets: ['zebra', 'uitheme', 'scroller'],
+  widgetOptions: {
+  scroller_height: 300,
+  scroller_barWidth: 17,
+  scroller_jumpToHeader: true,
+  scroller_idPrefix: 's_'
+  }
+  });
+</script>
+
 
 {% endblock %}
 
