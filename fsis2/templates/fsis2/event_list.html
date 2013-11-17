@@ -31,26 +31,21 @@
 
   <div class="row">
     <div class="col-sm-9">          
-
-
       <div class="btn-group btn-group-xs">
-        <a href="{% url 'event_year_list' 2012 %}" class="btn btn-default" role="button">2012</a>
-        <a href="{% url 'event_year_list' 2011 %}" class="btn btn-default" role="button">2011</a>  
-        <a href="{% url 'event_year_list' 2010 %}" class="btn btn-default" role="button">2010</a>
-        <a href="{% url 'event_year_list' 2009 %}" class="btn btn-default" role="button">2009</a>
-        <a href="{% url 'event_year_list' 2008 %}" class="btn btn-default" role="button">2008</a>
-        <a href="#" class="btn btn-default" role="button">Older</a>
-      </div>
-
-
-      <div class="btn-group btn-group-xs">
-        {% for yr in year_list|slice ":10" %}
-        <a href="{% url 'event_year_list' yr %}" class="btn btn-default" role="button">{{ yr }}</a>
+        {% for yr in years|slice:":10" %}
+        <a href="{% url 'event_year_list' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a>
         {% endfor %}
-        <a href="#" class="btn btn-default" role="button">Older</a>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+            Older <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            {% for yr in years|slice:"10:" %}
+            <li> <a href="{% url 'event_year_list' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
-
-
 
     </div>
     <div class="col-sm-3">          

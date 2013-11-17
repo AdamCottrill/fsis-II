@@ -95,6 +95,8 @@
     <div class="col-md-9">
       {% if map %}
       {{ map }}
+      {% else %}
+      <h3>Sorry no events match that criteria.</h3>
       {% endif %}
     </div> 
   </div>
@@ -122,8 +124,6 @@
           {% endfor %}
         </tbody>
       </table>    
-      {% else %}
-      <p>Sorry no events match that criteria.</p>
       {% endif %}    
     </div>  
 

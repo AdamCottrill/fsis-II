@@ -131,7 +131,8 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 TEMPLATE_DIRS = (
     root('templates'),
-    root('templates/auth'),
+    root('fsis/templates'),
+    root('simple_auth/templates'),    
 )
 
 LOGIN_REDIRECT_URL = "/"
@@ -158,7 +159,8 @@ THIRDPARTY_APPS = (
 
 CRISPY_FAIL_SILENTLY = not DEBUG
 
-MY_APPS =(
+MY_APPS =(    
+    'simple_auth',
     'fsis2',
     )
 
