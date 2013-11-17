@@ -124,7 +124,9 @@ class EventYearArchiveView(YearArchiveView):
     
     def get_context_data(self, **kwargs):
         context = super(EventYearArchiveView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
+        years = Event.objects.values('year').distinct().order_by('-year')
+        context['years'] = years
         return context
 
     
@@ -136,10 +138,14 @@ class EventListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(EventListView, self).get_context_data(**kwargs)
+
+        years = Event.objects.values('year').distinct().order_by('-year')
+        
         cwt = self.kwargs.get('cwt',None)
         context['cwt'] = cwt
         context['footer'] = footer_string()
-
+        context['years'] = years
+        
         #if this is cwt view, we want to include a map
         if cwt:
             events = kwargs.get('object_list')
@@ -163,7 +169,7 @@ class EventListView(ListView):
             return super(EventListView, self).dispatch(request, *args, **kwargs)
         
     def get_queryset(self):
-        self.cwt = self.kwargs.get('cwt',None)
+        self.cwt = self.kwargs.get('cwt', None)
         if self.cwt:
             #get the list of tagging events associated with that tag number
             te = TaggingEvent.objects.filter(

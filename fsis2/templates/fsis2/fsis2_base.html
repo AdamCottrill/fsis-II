@@ -7,7 +7,6 @@
 
     <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/stickyfooter.css">
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <script src="{{ STATIC_URL }}js/html5shiv.js"></script>
     <script src="{{ STATIC_URL }}js/respond.min.js"></script>
@@ -57,7 +56,6 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse navbar-ex1-collapse">
         <ul class="nav navbar-nav">
-          <li class="active"><a href="/lots/">Home</a></li>
           <li><a href="{% url 'lot_list' %}">Fish Lots</a> </li>         
 
           <li class="dropdown">
@@ -144,7 +142,7 @@
     {% if footer %}    
     <hr />
     <div id="footer">
-      <div class="container well">
+      <div class="container well ">
         <center>
         <p class="muted credit">{{ footer }}.</p>
         </center>

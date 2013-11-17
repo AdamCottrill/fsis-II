@@ -21,26 +21,29 @@
 
   <h2>Total Annual Stocking of {{species}} by Proponent</h2>
 
-  <div class="row">
+  <div class="row col-md-offset-1">
     <div class="btn-group btn-group-xs">
       {% for spc in species_list %}
+      {% ifequal spc.species_code 81 %}
+      <div class="btn-group">
+        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+          Lake Trout
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="{% url 'annual_total_spc' 81 %}">All Lake Trout</a></li>
+          {% for strain in strain_list %}
+          <li> <a href="#"> {{ strain.strain_name }}</a> </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% else %}
       <a href="{% url 'annual_total_spc' spc.species_code %}" class="btn btn-default" role="button" > {{ spc.common_name }}</a>
-      {% endfor %}
-    </div>
-  </div>
-
-  <br />
-
-  {% ifequal species.species_code 81 %}
-  <div class="row">
-    <div class="btn-group btn-group-xs">
-      {% for strain in strain_list %}
-      <a href="#" class="btn btn-default" role="button" >  {{ strain.strain_name }}</a>
+      {% endifequal %}
       {% endfor %}
     </div>
   </div>
   <br />
-  {% endifequal %}
 
   {% if object_list %}
   <table class="tablesorter">

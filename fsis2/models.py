@@ -201,6 +201,7 @@ class Event(models.Model):
 
     lot = models.ForeignKey(Lot)
     prj_cd =  models.CharField(max_length=13)
+    year = models.IntegerField()
     fs_event = models.IntegerField(unique=True)
     lotsam = models.CharField(max_length=8, null=True, blank=True)
     event_date = models.DateTimeField(editable=True, null=True, blank=True)
