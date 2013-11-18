@@ -2,8 +2,8 @@ from datetime import datetime
 #from django.contrib.auth.models import User
 #from django.core.context_processors import csrf
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
-#from django.template import RequestContext
+from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 
 from django.core.urlresolvers import reverse
 from django.views.generic.list import ListView
@@ -18,6 +18,7 @@ from olwidget.widgets import InfoMap
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain, BuildDate, Readme)
 
+from .forms import GeoForm
 
 def timesince(dt, default="just now"):
     """
@@ -568,4 +569,30 @@ class SpeciesListView(ListView):
         context = super(SpeciesListView, self).get_context_data(**kwargs)
         context['footer'] = footer_string()        
         return context
+
+
+def find_events(request):
+    '''render a map in a form and return a list of stocking events
+    contained in the selected poygon
+    '''
+
+    if request.method == 'POST':
+        #import pdb; pdb.set_trace()
+        form = GeoForm(request.POST)
+        if form.is_valid():
+            roi = form.cleaned_data['selection'][0]
+            selected = []
+            if roi.geom_type=='Polygon':
+                selected = Event.objects.filter(
+                    geom__contained=roi).order_by('-year')
+            return render_to_response('fsis2/find_events_gis.html',
+                              {'form':form,
+                               'object_list':selected,},
+                              context_instance = RequestContext(request))
+    else:
+        form = GeoForm() # An unbound form
+        return render_to_response('fsis2/find_events_gis.html',
+                                  {'form':form},
+                                  context_instance = RequestContext(request)
+        )
         
