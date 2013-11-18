@@ -68,22 +68,22 @@
           <table class="table table-striped">
             <tr>
               <td>North Channel:</td>
-              <td>Coming Soon</td>
+              <td>{{ basin_totals.northchannel|intcomma|default:0 }}</td>
             </tr>
 
             <tr>
               <td>Georgian Bay:</td>
-              <td>Coming Soon</td>
+              <td>{{ basin_totals.georgianbay|intcomma|default:0 }}</td>
             </tr>
 
             <tr>
               <td>Main Basin:</td>
-              <td>Coming Soon</td>
+              <td>{{ basin_totals.mainbasin|intcomma|default:0 }}</td>
             </tr>
 
             <tr>
               <td><strong>Total:</strong></td>
-              <td><strong>Coming Soon</strong></td>
+              <td><strong>{{ basin_totals.total|intcomma|default:0 }}</strong></td>
             </tr>
 
 

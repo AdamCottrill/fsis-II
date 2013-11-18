@@ -100,6 +100,44 @@ def get_map(event_points):
 
 
 
+def get_basin_totals(year, spc, strain=None):
+    '''A helper function to retrieve the number of fish stocked by
+    basin given a species and year.
+
+    This function uses raw sql - the django orm still doesn't seem to
+    to aggregation well.'
+    
+    Returns a dictionary that includes keys for 'North Channel',
+    'Georgian Bay', 'Main Basin' and 'total''
+
+    '''
+    from django.db import connection
+        
+    #spc ignoring strain
+    sql = '''select basin, sum(stkcnt) from fsis2_event 
+         join fsis2_lot on fsis2_lot.id=fsis2_event.lot_id
+         join fsis2_species on fsis2_species.id = fsis2_lot.species_id
+         join fsis2_stockingsite on fsis2_stockingsite.id = fsis2_event.site_id
+         group by basin, year, species_code having 
+         fsis2_event.year=%(year)s and
+         fsis2_species.species_code=%(spc)s;
+         '''
+
+    cursor = connection.cursor()
+    cursor.execute(sql, {'year':year, 'spc':spc})
+    rs = cursor.fetchall()
+
+    basin_dict = dict()
+    for basin in rs:
+        #remove any spaces and turn them into lowercase
+        basin_name = basin[0].lower().replace(" ","")
+        basin_dict[basin_name] = int(basin[1])
+    basin_dict['total']=sum(basin_dict.values())
+
+    return basin_dict
+
+    
+
 class EventDetailView(DetailView):
 
     model = Event
@@ -321,18 +359,20 @@ class AnnualTotalSpcView(ListView):
         self.spc = self.kwargs.get('spc', None)
         queryset = Proponent.objects.filter(
             lot__species__species_code=self.spc).values('proponent_name',
-            'lot__event__prj_cd').annotate(total=Sum('lot__event__stkcnt'))
+            'lot__event__prj_cd').annotate(total=Sum('lot__event__stkcnt'
+                                                 )).order_by('-lot__event__year')
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super(AnnualTotalSpcView, self).get_context_data(**kwargs)
-
+        
         spc = self.kwargs.get('spc', None)
         context['species'] = get_object_or_404(Species, species_code=spc)
         context['species_list'] = Species.objects.all()
         context['strain_list'] = Strain.objects.filter(
             species__species_code=81).values('strain_name').distinct()
         context['footer'] = footer_string()
+      
         return context
 
 
@@ -448,7 +488,10 @@ class AnnualStockingBySpcView(ListView):
         year_list = list(set(year_list))
         year_list.sort(reverse=True)
         context['year_list'] = year_list
-       
+
+        basin_totals = get_basin_totals(year=yr, spc=spc)
+        context['basin_totals'] = basin_totals
+        
         return context
 
 
@@ -577,14 +620,19 @@ def find_events(request):
     '''
 
     if request.method == 'POST':
-        #import pdb; pdb.set_trace()
         form = GeoForm(request.POST)
         if form.is_valid():
             roi = form.cleaned_data['selection'][0]
-            selected = []
+            species = form.cleaned_data.get('species')            
+            selected = []            
             if roi.geom_type=='Polygon':
-                selected = Event.objects.filter(
-                    geom__contained=roi).order_by('-year')
+                if species:
+                    selected = Event.objects.filter(
+                        lot__species__in=species).filter(
+                            geom__within=roi).order_by('-year')
+                else:
+                    selected = Event.objects.filter(
+                            geom__within=roi).order_by('-year')
             return render_to_response('fsis2/find_events_gis.html',
                               {'form':form,
                                'object_list':selected,},

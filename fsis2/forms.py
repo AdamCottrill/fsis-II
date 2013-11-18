@@ -1,7 +1,7 @@
 from django import forms
 from olwidget.fields import MapField, EditableLayerField
 
-#from fsis.models import *
+from fsis2.models import Species
 
 
 class GeoForm(forms.Form):
@@ -23,3 +23,7 @@ class GeoForm(forms.Form):
 
         )
 
+
+    species = forms.ModelMultipleChoiceField(
+        Species.objects.all(), required=False,
+        widget=forms.CheckboxSelectMultiple(), label='Species')

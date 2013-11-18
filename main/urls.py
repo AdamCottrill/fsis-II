@@ -8,7 +8,7 @@ admin.autodiscover()
 from fsis2.views import LotListView
 
 urlpatterns = patterns('',
-                       url(r'^fsis2', include('fsis2.urls')),
+                       url(r'^fsis2/', include('fsis2.urls')),
 
                        url(r'^$', LotListView.as_view(), name='home'),
                        url(r'^$', LotListView.as_view(), name='index'),
