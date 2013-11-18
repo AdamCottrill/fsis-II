@@ -13,7 +13,7 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     SiteUpdateView, CwtListView, AnnualTotalSpcView,
                     AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
                     ProponentListView, ProponentLotListView, SpeciesListView,
-                    AnnualStockingByHatcherySpcView)
+                    AnnualStockingByHatcherySpcView, find_events)
 
 urlpatterns = patterns("",
 
@@ -99,6 +99,9 @@ urlpatterns = patterns("",
             name='event_update'
             ),
 
+
+        url(r'^find_events/$', 'fsis2.views.find_events', name='find_events'),
+                       
         #================
         #    CWTs
 
