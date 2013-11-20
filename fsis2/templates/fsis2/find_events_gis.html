@@ -20,62 +20,32 @@
 
 
 {% block content %}
-
 {% load humanize %}
 {% load fsis2_filters %}
 
-<div class="container">
 
-  <div class="row">
-    <div class="col-md-8 col-md-offset-2">
-      <form method="post" id="" action="">{% csrf_token %}
-        {{ form }}
-        <div class="row col-md-8 col-md-offset-2">
-        <a href="{% url 'find_events' %}" class="btn btn-default pull-right">Reset</a>
-        <button type="submit" class="btn btn-default pull-right">Submit</button>          
+  <div class="row well">
+    <form method="post" id="" action="">{% csrf_token %}
+      <div class="row">
+        <div class="col-md-7">
+          {{ form.selection }}            
         </div>
-      </form>    
-    </div>
+        <div class="col-md-5">
+          <div class="panel panel-default">
+            <div class="panel-body">
+          <h4>Select Species:</h4>
+          <p>(leave blank for all species)</p>
+          {{ form.species }}                         
+            </div>            
+          </div>
+          <a href="{% url 'find_events' %}" class="btn btn-default">Reset</a>
+          <button type="submit" class="btn  btn-success">Submit</button>          
+
+        </div>
+      </div>
+    </form>    
   </div>
 
-  {% if object_list %}
-
-<br />
-<h4>{{ object_list|length }} events found.</h4>
-<br />
-
-  <table id="myTable" class="table tablesorter">
-    <thead><tr>
-        <td>FSIS Event</td>
-        <td>Species</td>
-        <td>Strain</td>
-        <td>Number Stocked</td> 
-        <td>Event Date</td>
-        <td>Site Name</td>
-        <td>Clip Applied</td> 
-        <td>Development Stage</td></tr>
-    </thead>
-    <tbody>
-      {% for event in object_list %}
-      <tr class="{% cycle row1,row2 %}">
-        <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
-        <td> {{ event.lot.species.common_name | title }} </td> 
-        <td> {{ event.lot.strain.strain_name | title }} </td> 
-        <td> {{ event.stkcnt|intcomma }} </td> 
-        <td> {{ event.event_date|date }} </td>
-        <td> {{ event.site.site_name }} </td> 
-        <td> {{ event.clipa }} </td> 
-        <td> {{ event.get_development_stage_display }} </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  {% else %}
-  <p>Sorry no events match that criteria.</p>
-  {% endif %}
-
-</div>
 
 <script type="text/javascript">
 

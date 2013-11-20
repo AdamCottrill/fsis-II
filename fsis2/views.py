@@ -13,7 +13,7 @@ from django.views.generic import CreateView, UpdateView
 from django.db.models import Sum
 
 
-from olwidget.widgets import InfoMap
+from olwidget.widgets import InfoMap, InfoLayer, Map
 
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain, BuildDate, Readme)
@@ -84,9 +84,9 @@ def get_map(event_points):
     - `event_points`:
     """
     if len(event_points)>0:
-        points = [[x[1],x[0]] for x in event_points]
+        geoms = [[x[1],x[0]] for x in event_points]
         map = InfoMap(
-            points,
+            geoms,
             {'default_lat': 45,
             'default_lon': -82.0,
             'default_zoom':7,
@@ -99,6 +99,57 @@ def get_map(event_points):
     return map
 
 
+def get_map2(event_points, roi=None):
+    """This map function taks a list of points and a region of
+    interest and returns a map that is zoomed to spatial extent of the
+    roi.  The roi and all of the points it contains are rendered.
+
+    used by views Find_Events
+    
+    Arguments: -
+    `event_points`: a list of points objects and their event numbers
+    'roi': region of interest used to select event points
+
+    """
+    layers = []
+    zoom_to_extent = False    
+    if len(event_points)>0:
+        if roi:
+            style = {'overlay_style': {'fill_color': '#0000FF',
+                               'fill_opacity': 0,
+                               'stroke_color':'#0000FF'},
+                     'name':'Region of Interest'}
+            #polygon = InfoLayer([roi,style])
+            polygon =  InfoLayer([[roi.wkt, "Region Of Interest"]] ,style)
+            try:
+                layers.extend(polygon)
+            except TypeError:
+                layers.append(polygon)
+            zoom_to_extent = True
+
+        for pt in event_points:
+            pt_layer = InfoLayer([[pt[1].wkt, str(pt[0])]],{'name':str(pt[0])})
+            try:
+                layers.extend(pt_layer)
+            except TypeError:
+                layers.append(pt_layer)
+            
+        mymap = Map(
+            layers,
+            {'default_lat': 45,
+            'default_lon': -82.0,
+            'default_zoom':7,
+            'zoom_to_data_extent': zoom_to_extent,
+            'map_div_style': {'width': '700px', 'height': '600px'},
+             
+            }
+            )
+    else:
+        mymap=None
+    return mymap
+
+
+    
 
 def get_basin_totals(year, spc, strain=None):
     '''A helper function to retrieve the number of fish stocked by
@@ -148,8 +199,8 @@ class EventDetailView(DetailView):
         #import pdb; pdb.set_trace()
         event = kwargs.get('object')
         event_point = [[ event.fs_event, event.geom]]
-        map = get_map(event_point)
-        context['map'] = map
+        mymap = get_map(event_point)
+        context['map'] = mymap
         context['footer'] = footer_string()
         return context
 
@@ -189,8 +240,8 @@ class EventListView(ListView):
         if cwt:
             events = kwargs.get('object_list')
             event_points = [[x.fs_event, x.geom] for x in events]
-            map = get_map(event_points)
-            context['map'] = map
+            mymap = get_map(event_points)
+            context['map'] = mymap
         return context
 
 
@@ -280,8 +331,8 @@ class LotDetailView(DetailView):
         context = super(LotDetailView, self).get_context_data(**kwargs)
         lot = kwargs.get('object')
         event_points = lot.get_event_points()
-        map = get_map(event_points)
-        context['map'] = map
+        mymap = get_map(event_points)
+        context['map'] = mymap
         context['footer'] = footer_string()        
         return context
 
@@ -341,8 +392,8 @@ class SiteDetailView(DetailView):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
         site = kwargs.get('object')
         site_point = [[site.fsis_site_id, site.geom]]
-        map = get_map(site_point)
-        context['map'] = map
+        mymap = get_map(site_point)
+        context['map'] = mymap
         context['footer'] = footer_string()        
         return context
 
@@ -401,8 +452,8 @@ class AnnualStockingBySpcStrainView(ListView):
 
         events = kwargs.get('object_list')
         event_points = [[x.fs_event, x.geom] for x in events]
-        map = get_map(event_points)
-        context['map'] = map
+        mymap = get_map(event_points)
+        context['map'] = mymap
         
         spc = self.kwargs.get('spc', None)
         strain = self.kwargs.get('strain', None)
@@ -465,8 +516,8 @@ class AnnualStockingBySpcView(ListView):
 
         events = kwargs.get('object_list')
         event_points = [[x.fs_event, x.geom] for x in events]
-        map = get_map(event_points)
-        context['map'] = map
+        mymap = get_map(event_points)
+        context['map'] = mymap
         context['footer'] = footer_string()
         
         spc = self.kwargs.get('spc', None)
@@ -528,8 +579,8 @@ class AnnualStockingByHatcherySpcView(ListView):
 
         events = kwargs.get('object_list')
         event_points = [[x.fs_event, x.geom] for x in events]
-        map = get_map(event_points)
-        context['map'] = map
+        mymap = get_map(event_points)
+        context['map'] = mymap
         context['footer'] = footer_string()
         
         spc = self.kwargs.get('spc', None)
@@ -616,7 +667,9 @@ class SpeciesListView(ListView):
 
 def find_events(request):
     '''render a map in a form and return a list of stocking events
-    contained in the selected poygon
+    contained in the selected poygon.  If the form is valid, the
+    selected events and a map containing the selected region and
+    selected point are passed to a different template.
     '''
 
     if request.method == 'POST':
@@ -624,23 +677,28 @@ def find_events(request):
         if form.is_valid():
             roi = form.cleaned_data['selection'][0]
             species = form.cleaned_data.get('species')            
-            selected = []            
+            #import pdb; pdb.set_trace()
             if roi.geom_type=='Polygon':
                 if species:
-                    selected = Event.objects.filter(
+                    events = Event.objects.filter(
                         lot__species__in=species).filter(
                             geom__within=roi).order_by('-year')
                 else:
-                    selected = Event.objects.filter(
+                    events = Event.objects.filter(
                             geom__within=roi).order_by('-year')
-            return render_to_response('fsis2/find_events_gis.html',
-                              {'form':form,
-                               'object_list':selected,},
-                              context_instance = RequestContext(request))
+
+                event_points = [[x.fs_event, x.geom] for x in events]
+                mymap = get_map2(event_points=event_points, roi=roi)
+                                    
+            return render_to_response('fsis2/show_events_gis.html',
+                              {'map':mymap,
+                               'object_list':events,},
+                            context_instance = RequestContext(request))
+
+            
     else:
         form = GeoForm() # An unbound form
         return render_to_response('fsis2/find_events_gis.html',
                                   {'form':form},
                                   context_instance = RequestContext(request)
         )
-        
