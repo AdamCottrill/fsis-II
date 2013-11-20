@@ -158,6 +158,7 @@ THIRDPARTY_APPS = (
     )
 
 CRISPY_FAIL_SILENTLY = not DEBUG
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 MY_APPS =(    
     'simple_auth',
