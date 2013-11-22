@@ -66,4 +66,95 @@ class TestReadme(TestCase):
     def tearDown(self):
         pass
 
+
+class TestSpecies(TestCase):
+    '''verify that the unicode of species works as expected'''
+    def setUp(self):
+
+        self.common_name = "Gold Fish"
+        self.scientific_name = 'fishicus goldicus'
+
+        self.spc1 = SpeciesFactory(common_name=self.common_name,
+                                   scientific_name=scientific_name)
+
+        self.spc2 = SpeciesFactory(common_name=self.common_name,
+                                   scientific_name=None)
+
+    def test_species_name_unicode(self):
+        '''If there is a scientific name, the unicode method should return the
+        common name followed by the scientific_name in brackets, if there is
+        no scientific_name, just return the common name as is.'''
+
+        shouldbe = "{0} ({1})".format(self.common_name, self.scientific_name)
+        self.assertEqual(str(self.spc1), shouldbe)
+        
+        self.assertEqual(str(self.spc2), self.common_name)
+        
+    def tearDown(self):
+        pass
+
+
+class TestStrain(TestCase):
+    '''verify that the unicode of strain works as expected'''
+    def setUp(self):
+
+        self.common_name = "Gold Fish"
+        self.scientific_name = 'fishicus goldicus'
+
+        self.strain_name = 'Homers choice'
+        self.strain_code = 'HC'
+        self.sto_code = 'wtf'
+
+        self.spc = SpeciesFactory(common_name=self.common_name,
+                                  scientific_name=scientific_name)
+
+        self.strain = StrainFactory(species=self.spc, sto_code=self.sto_code,
+                                    strain_name=self.strain_name,
+                                    strain_code=self.strain_code)
+
+    def test_strain_name_unicode(self):
+        '''The unicode method for strain should be the strain name prefixed
+        ahead of the species name.'''
+
+        shouldbe = "{0} {1}".format(self.common_name, self.strain_name)
+        self.assertEqual(str(self.strain), shouldbe)
+        
+    def tearDown(self):
+        pass
+
+
+class TestProponent(TestCase):
+    '''verify that the unicode of proponent works as expected'''
+    def setUp(self):
+
+        self.abbrev = "HJS"
+        self.proponent_name = "Homer J. Simpson"
+
+        self.proponent = ProponentFactory(proponent_name=self.proponent_name,
+                                          abbrev=self.abbrev)
+
+    def test_proponent_name_unicode(self):
+        '''The unicode method for proponent should be the propent name
+        followed by their abbreviation in brackets.'''
+
+        shouldbe = "{0} ({1})".format(self.proponent_name, self.abbrev)
+        self.assertEqual(str(self.spc1), shouldbe)
+                
+    def tearDown(self):
+        pass
+
+
+
+class TestLot(TestCase):
+    '''verify that the unicode, get_url, and slug of Lot work as
+       expected'''
+    def setUp(self):
+        pass
+
+    def test_language_unicode(self):
+        pass
+            
+    def tearDown(self):
+        pass
+
         
