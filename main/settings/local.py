@@ -2,6 +2,7 @@ from main.settings.base import *
 
 DATABASES = {
     'default': {
+<<<<<<< HEAD
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': '%s/db/fsis2.db' % root(),
       }
@@ -23,6 +24,13 @@ DATABASES = {
         #  'HOST': '',
         #  'PORT': '',
 
+=======
+         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+         'NAME': 'fsis2',
+ ***REMOVED***
+ ***REMOVED***
+     }
+>>>>>>> 4e315ca2b10ddf64238133ee8ed784527acff6bf
 }
 
 
@@ -31,5 +39,9 @@ DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
 }
 
+MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+
 INSTALLED_APPS += ('debug_toolbar',
                    'django_extensions',)
+
+

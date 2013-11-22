@@ -1,0 +1,110 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+{% block extrahead %}
+{{ map.media }}
+<!-- tablesorter plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script> 
+{% endblock %}
+
+{% block title %} {{ object.title  }}  {% endblock %}
+
+{% block content %}
+{% load humanize %}
+
+<div class="container">
+
+  <div class="row">
+    <div class="col-md-4">
+      <h2> FSIS Lot: {{ object.fs_lot }} </h2>
+      <table class="table">        
+        <tr>
+          <td>  <b>Species:</b></td>
+          <td> {{ object.species.common_name }}
+          (<em>{{object.species.scientific_name}}</em>) </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Strain:</b></td>
+          <td>{{ object.strain.strain_name }}
+          ({{object.strain.sto_code}}) </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Spawn Year:</b></td>
+          <td> {{ object.spawn_year }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Raised and Stocked by:</b></td>
+          <td> {{ object.proponent.proponent_name|title }} </td>
+        </tr>
+        <tr>
+          <td>  <b>Rearing Location:</b></td>
+          <td> {{ object.rearloc_nm|title }} </td>
+        </tr>
+        <tr>
+          <td>  <b>Proponent Type:</b></td>
+          <td> {{ object.get_Proponent_Type_display }} </td>
+        </tr>
+      </table>
+      
+    </div>
+    <div class="col-md-8">
+      {{ map }}
+    </div>
+  </div>
+
+  <div id="event_list" class="row">
+    <hr />  
+    <h3>Stocking Events: </h3>
+    {% if object.event_set.all %}  
+    <table id="myTable" class="table tablesorter">
+      <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
+          <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
+      </thead>
+      <tbody>
+        {% for event in object.event_set.all %}
+        <tr class="{% cycle row1,row2 %}">
+          <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
+          <td> {{ event.stkcnt|intcomma }} </td> 
+          <td> {{ event.event_date|date }} </td>
+          <td> {{ event.site.site_name }} </td> 
+          <td> {{ event.clipa }} </td> 
+          <td> {{ event.get_development_stage_display }} </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>There are currenly No events associated with lot {{ object.fs_lot }} </p>
+    {% endif %}
+    
+  </div>
+
+  <div id="button_bar" class="row">
+    <a href="{% url 'lot_update' object.id %}" class="btn btn-default" role="button">Edit Lot Information</a>
+    <a href="{% url 'lot_create' %}"class="btn btn-default" role="button">Create A New Lot</a>
+    <a href="#"class="btn btn-default" role="button">Create A New Event for this Lot</a>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  $(".tablesorter").tablesorter({
+  theme: 'bootstrap',
+  widthFixed: true,
+  showProcessing: true,
+  headerTemplate: '{content} {icon}',
+  widgets: ['zebra', 'uitheme', 'scroller'],
+  widgetOptions: {
+  scroller_height: 300,
+  scroller_barWidth: 17,
+  scroller_jumpToHeader: true,
+  scroller_idPrefix: 's_'
+  }
+  });
+</script>
+
+{% endblock %}

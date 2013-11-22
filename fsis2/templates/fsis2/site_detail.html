@@ -1,0 +1,92 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+{% block extrahead %}
+{{ map.media }}
+
+{% endblock %}
+
+{% block title %} {{ object.title  }}  {% endblock %}
+
+{% block header %} 
+<h2> Named Stocking Site: {{ object.site_name }} </h2>
+<hr />
+{% endblock %}
+
+{% block content %}
+{% load fsis2_filters %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <table class="table">
+        <tr>
+          <td><b>FSIS Site Number:</b></td>
+          <td> {{ object.fsis_site_id }}</td>
+        </tr>
+
+        <tr>
+          <td><b>Name Site:</b></td>
+          <td>{{ object.site_name }}</td>
+        </tr>
+
+        <tr>
+          <td><b>Destination Waterbody (LID):</b></td>
+          <td>{{ object.deswby}} ({{ object.deswby_lid}})</td>
+        </tr>
+
+        <tr>
+          <td> <b>Basin:</b></td>
+          <td> {{ object.basin|title}} </td>
+        </tr>
+
+        <tr>
+          <td><b>5-minute Grid:</b></td>
+          <td>{{ object.grid}}</td>
+        </tr>
+
+
+        <tr>
+          <td><b>Stocked Waterbody (LID):</b> </td>
+          <td>{{ object.stkwby }} ({{ object.stkwby_lid }}) </td>
+        </tr>
+
+        {% autoescape off %}
+        <tr>
+          <td><b>Latitude:</b></td>
+          <td> {{ object.dd_lat |format_ddlat }}</td>
+        </tr>
+
+        <tr>
+          <td><b>Longitude:</b></td>
+          <td>{{ object.dd_lon |format_ddlon }}</td>
+        </tr>
+        {% endautoescape %}
+
+        <tr>
+          <td><b>UTM:</b></td>
+          <td> {{ object.utm }}</td>
+        </tr>
+        
+      </table>
+      
+    </div>
+    <div class="col-md-8">
+      {{ map }}
+    </div>
+    
+  </div>
+
+  <hr />
+
+  <div id="buttonbar" align="left">
+    
+
+    <a href="{% url 'site_update' object.id %}" class="btn btn-default" role="button">Edit Site Information</a>
+    <a href="{% url 'site_create' %}"  class="btn btn-default" role="button">Create A New Stocking Site</a>
+  </div>
+
+
+
+</div>
+
+{% endblock %}

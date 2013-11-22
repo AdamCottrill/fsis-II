@@ -1,0 +1,137 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+{% block extrahead %}
+{{ map.media }} 
+{% endblock %}
+
+{% block title %} {{ object.title  }}  {% endblock %}
+
+{% block content %}
+
+{% load humanize %}
+{% load fsis2_filters %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <h2> FSIS Event: {{ object.fs_event }} </h2>
+      <table class="table">
+        <tr>
+          <td>  <b>FSIS Event Number:</b></td>
+          <td>{{ object.fs_event }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>FSIS Lot Number:</b> 
+          <td> <a href="{% url 'lot_detail' object.lot.id %}">{{ object.lot.fs_lot }}</a> </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Species:</b></td>
+          <td>{{ object.lot.species.common_name }} (<em>{{object.lot.species.scientific_name}}</em>)  </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Strain:</b></td>
+          <td>{{ object.lot.strain.strain_name }} ({{object.lot.strain.sto_code}}) </td>
+        </tr>
+        
+        <tr>
+          <td>  <b>Stocking Date:</b></td>
+          <td>{{ object.event_date|date }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Clip Applied:</b></td>
+          <td>{{ object.clipa }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Fish Age (months):</b></td>
+          <td>{{ object.fish_age }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Number Stocked:</b></td>
+          <td>{{ object.stkcnt|intcomma }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Life Stage:</b></td>
+          <td>{{ object.get_development_stage_display }} ({{ object.development_stage }}) </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Transit Method:</b></td>
+          <td>{{ object.get_transit_display|title }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Stocking Method:</b></td>
+          <td>{{ object.get_stocking_method_display }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Stocking Purpose:</b></td>
+          <td>{{ object.get_stocking_purpose_display }} ({{ object.stocking_purpose }}) </td>
+        </tr>
+
+        {% autoescape off %}
+        <tr>
+          <td>  <b>Latitude:</b></td>
+          <td>{{ object.dd_lat |format_ddlat }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Longitude:</b></td>
+          <td>{{ object.dd_lon |format_ddlon }} </td>
+        </tr>
+        {% endautoescape %}
+
+        <tr>
+          <td>  <b>Closest Named Stocking Site:</b> </td> 
+          <td>  <a href="{% url 'site_detail' object.site.id %}">{{ object.site.site_name }} ({{ object.site.fsis_site_id }})</a></td>
+        </tr>
+
+        <tr>
+          <td>  <b>Basin:</b></td>
+          <td>{{ object.site.basin }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Grid Number:</b></td>
+          <td>{{ object.site.grid }} </td>
+        </tr>        
+      </table>
+    </div>
+    <div class="col-md-8">
+      {{ map }}
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row" id="related">
+
+    <h3>Tags associated with this stocking event: </h3>
+
+    {% if object.get_cwts %}  
+    <ul>
+      {% for cwt in object.get_cwts %}
+      <li><a href="{% url 'event_cwt_list' cwt.cwt %}"> {{ cwt }}</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>There do not appear to be any tags associated with this event. </p>
+    {% endif %}
+  </div>
+  <hr />
+
+  <div class="row" id="buttonbar" align="left">
+    <a href="{% url 'event_create' %}"  class="btn btn-default" role="button">Edit Event Information</a>
+    <a href="{% url 'event_update' object.id %}"  class="btn btn-default" role="button">Create A New Event</a>
+  </div>
+
+</div>
+
+{% endblock %}

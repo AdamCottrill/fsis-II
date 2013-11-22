@@ -34,7 +34,8 @@ MANAGERS = ADMINS
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+# not supposed to use * in production, but nothing else seems to work:
+ALLOWED_HOSTS = ['*']
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -77,6 +78,7 @@ ADMIN_MEDIA_PREFIX = '/admin/media/'
 # Example: "/var/www/example.com/static/"
 #STATIC_ROOT = ''
 STATIC_ROOT = root("static_root/")
+
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
@@ -87,8 +89,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_ROOT, 'staticfiles'),
+    # Don't forget to use absolute paths, not relative paths
+    #os.path.join(PROJECT_ROOT, 'staticfiles'),
+    os.path.join(PROJECT_ROOT, 'static'),
 )
 
 # List of finder classes that know how to find static files in
@@ -99,7 +102,8 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-SECRET_KEY = get_env_variable("SECRET_KEY")
+#SECRET_KEY = get_env_variable("SECRET_KEY")
+SECRET_KEY = "1234"
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -116,7 +120,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 
@@ -127,7 +131,8 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 TEMPLATE_DIRS = (
     root('templates'),
-    root('templates/auth'),
+    root('fsis/templates'),
+    root('simple_auth/templates'),    
 )
 
 LOGIN_REDIRECT_URL = "/"
@@ -154,7 +159,8 @@ THIRDPARTY_APPS = (
 
 CRISPY_FAIL_SILENTLY = not DEBUG
 
-MY_APPS =(
+MY_APPS =(    
+    'simple_auth',
     'fsis2',
     )
 
