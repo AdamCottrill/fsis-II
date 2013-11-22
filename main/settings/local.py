@@ -2,15 +2,16 @@ from main.settings.base import *
 
 DATABASES = {
     'default': {
-         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-         'NAME': 'fsis2',
-         'USER': 'adam',
-         'PASSWORD': 'django',
-     }
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'fsis2',
+        'USER': 'adam',
+        'PASSWORD': 'django',
+    }
+
 }
 
 
-INTERNAL_IPS = ('127.0.0.1', )   #added for debug toolbar
+INTERNAL_IPS = ('127.0.0.1', )
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
 }
