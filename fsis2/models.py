@@ -1,3 +1,4 @@
+import re
 #from django.db import models
 #from django.contrib.auth.models import User
 #from django.template.defaultfilters import slugify
@@ -14,6 +15,10 @@ from datetime import datetime
 class BuildDate(models.Model):
     '''A database to hold the date that the database was last refreshed.'''
     build_date =  models.DateField(editable=False)
+
+    def __unicode__(self):
+        return self.build_date.strftime("%d-%b-%Y")
+
     
 class Readme(models.Model):
     #a table to hold all of the information regarding last FSIS
@@ -30,6 +35,27 @@ class Readme(models.Model):
         return self.comment
 
 
+    def get_download_date(self, ):
+        """a little function to pull the FSIS download date out of the
+        readme string build by Process-FSIS
+        """
+        regex = "\d{1,2}\-[a-zA-Z]{3}\-\d{4}|\d{1,2}/\d{1,2}/\d{4}"
+        datestring = re.search(regex, self.comment)
+        if datestring:
+            xx = datestring.group()
+            try:
+                formatted_date = datetime.strptime(xx, "%d-%b-%Y")          
+                return formatted_date
+            except ValueError:
+                pass
+            try:
+                formatted_date = datetime.strptime(xx, "%m/%d/%Y")          
+                return formatted_date
+            except ValueError:
+                return None               
+        else:
+            return None
+                
 
 class Species(models.Model):
     species_code = models.IntegerField(unique=True)
@@ -147,6 +173,20 @@ class Lot(models.Model):
         return reverse('lot_detail', args=[str(self.id)])
 
 
+    def get_year(self):
+            """          
+            Arguments:
+            - `self`:
+            """
+            '''format LHA_IA12_000 as 2012'''
+            x = self.prj_cd
+            if int(x[6:8]) > 60:
+                yr = "19" + x[6:8]
+            else:
+                yr = "20" + x[6:8]
+            return yr
+                  
+
     def get_event_points(self):
         '''get the coordinates of events associated with this lot.  Returns a
         list of tuples.  Each tuple contains the fs_event id, dd_lat and
@@ -161,6 +201,7 @@ class Event(models.Model):
 
     lot = models.ForeignKey(Lot)
     prj_cd =  models.CharField(max_length=13)
+    year = models.IntegerField()
     fs_event = models.IntegerField(unique=True)
     lotsam = models.CharField(max_length=8, null=True, blank=True)
     event_date = models.DateTimeField(editable=True, null=True, blank=True)

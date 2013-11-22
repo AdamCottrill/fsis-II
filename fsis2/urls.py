@@ -10,7 +10,10 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     EventUpdateView, EventCreateView,
                     LotDetailView, LotListView, LotCreateView, LotUpdateView,
                     SiteDetailView, SiteListView, SiteCreateView, 
-                    SiteUpdateView, CwtListView, AnnualTotalSpcView,)
+                    SiteUpdateView, CwtListView, AnnualTotalSpcView,
+                    AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
+                    ProponentListView, ProponentLotListView, SpeciesListView,
+                    AnnualStockingByHatcherySpcView)
 
 urlpatterns = patterns("",
 
@@ -36,7 +39,6 @@ urlpatterns = patterns("",
             view=LotListView.as_view(),
             name='lot_list'
             ),
-
 
         #create lot 
         url(
@@ -138,6 +140,46 @@ urlpatterns = patterns("",
             name='site_detail'
             ),
 
+
+        #================                       
+        #Proponent List
+        url(
+            regex=r'^hatcheries/$',
+            view = ProponentListView.as_view(),
+            name='hatchery_list'
+            ),
+
+        url(
+            regex=r'^hatchery/lots/(?P<hatchery>\w{1,7})$',
+            view = ProponentLotListView.as_view(),
+            name='hatchery_lot_list'
+            ),
+
+#        url(
+#            regex=r'^hatchery/events/(?P<hatchery>\d{2})$',
+#            view = ProponentLotListView.as_view(),
+#            name='hatchery_event_list'
+#            ),
+#
+                       
+
+        #================                       
+        #SPECIES
+        url(
+            regex=r'^species/$',
+            view = SpeciesListView.as_view(),
+            name='species_list'
+            ),
+
+         # url(
+         #     regex=r'^species/lots/(?P<hatchery>\w{1,7})$',
+         #     view = ProponentLotListView.as_view(),
+         #     name='hatchery_lot_list'
+         #     ),
+
+                       
+
+                       
         #================
         #    ABOUT
         url(r'^about', TemplateView.as_view(template_name='about.html'),
@@ -147,13 +189,41 @@ urlpatterns = patterns("",
         #================================
         #    ANNUAL TOTAL BY SPECIES
 
-        #create stocking site
+        #annual stocking by proponent
         url(
             regex=r'^annual/(?P<spc>\d{2,3})$',
             view=AnnualTotalSpcView.as_view(),
             name='annual_total_spc'
             ),
-         
 
+
+        # annual stocking by species - where did they go?
+        url(
+            regex=
+            r'^annual/(?P<spc>\d{2,3})/(?P<year>\d{4})$',
+            view = AnnualStockingBySpcView.as_view(),
+            name = 'annual_stocking_events_by_spc'
+            ),
+                       
+
+        # annual stocking by strain - where did they go?
+        url(
+            regex=
+            r'^annual/(?P<spc>\d{2,3})/(?P<strain>\w{2,4})/(?P<year>\d{4})$',
+            view = AnnualStockingBySpcStrainView.as_view(),
+            name = 'annual_stocking_events_by_strain'
+            ),
+
+
+
+        # annual stocking by species by proponent - where did they go?
+        url(
+            regex=
+            r'^annual/(?P<hatchery>\w{1,7})/(?P<spc>\d{2,3})/(?P<year>\d{4})$',
+            view = AnnualStockingByHatcherySpcView.as_view(),
+            name = 'annual_stocking_events_by_spc_hatchery'
+            ),
+
+                       
 
     )
