@@ -14,114 +14,139 @@
 {% load humanize %}
 
 
+{% load fsis2_filters %}
+
+
 <div class="container">
 
   <div class="row">
-      <h2> CWT Number: {{ cwt }} </h2>
-      {% if cwt.count > 1 %}
-      <p>WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN
-      ONCE.  INTERPRET WITH CAUTION.</p>      
-      {% endif %}
+    <h2> CWT Number: {{ cwt_number|format_cwt }} </h2>
 
+    <div class="alert alert-danger">
+      WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN  ONCE.  INTERPRET WITH CAUTION.</p>      </div>
 
-      <div class="col-md-5">
+<div class="col-md-5">
+  <ul class="nav nav-pills">
+    {% for cwt in cwt_list %}
+    <li><a href="#{{ forloop.counter }}" data-toggle="tab">{{ forloop.counter }}</a></li>
+    {% endfor %}       
+  </ul>
+
+  <div class="tab-content">
+  {% for cwt in cwt_list %}
+    {% if forloop.counter == 1 %}
+    <div class="tab-pane active" id="{{ forloop.counter }}">
+      {% else %}
+      <div class="tab-pane" id="{{ forloop.counter }}">
+        {% endif %}
         <ul class="nav nav-tabs">
-          <li><a href="#details" data-toggle="tab">Details</a></li>
-          <li><a href="#ageatcapture" data-toggle="tab">Age At Capture</a></li>
+          <li><a href="#details{{ forloop.counter }}" data-toggle="tab">Details</a></li>
+          <li><a href="#ageatcapture{{ forloop.counter }}" data-toggle="tab">Age At Capture</a></li>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="details">
+          <div class="tab-pane active" id="details{{ forloop.counter }}">
             <table class="table">        
               <tr>
                 <td>  <b>Species:</b></td>
-                <td> {{ cwt.spc.common_name }}
-                  (<em>{{cwt.spc.scientific_name}}</em>) </td>
+                <td> {{ cwt.cwt.spc.common_name }}
+                  (<em>{{cwt.cwt.spc.scientific_name}}</em>) </td>
               </tr>
               <tr>
                 <td>  <b>Strain:</b></td>
-                <td> {{ cwt.get_strain_display }} ({{ cwt.strain }})</td>
+                <td> {{ cwt.cwt.get_strain_display }} ({{ cwt.cwt.strain }})</td>
               </tr>
               <tr>
                 <td>  <b>Year Class:</b></td>
-                <td> {{ cwt.year_class }} </td>
+                <td> {{ cwt.cwt.year_class }} </td>
               </tr>
               <tr>
                 <td>  <b>Stocking Year:</b></td>
-                <td> {{ cwt.stock_year }} </td>
+                <td> {{ cwt.cwt.stock_year }} </td>
               </tr>
               <tr>
                 <td>  <b>Life Stage:</b></td>
-                <td> {{ cwt.get_development_stage_display }} </td>
+                <td> {{ cwt.cwt.get_development_stage_display }} </td>
               </tr>
               <tr>
                 <td>  <b>Clip Applied:</b></td>
-                <td> {{ cwt.clipa }} </td>
+                <td> {{ cwt.cwt.clipa }} </td>
               </tr>
               <tr>
                 <td>  <b>Stocking Location:</b></td>
-                <td> {{ cwt.plant_site|title }} </td>
+                <td> {{ cwt.cwt.plant_site|title }} </td>
               </tr>
               <tr>
                 <td>  <b>LTRZ:</b></td>
-                <td> {{ cwt.get_ltrz_display }} ({{ cwt.ltrz }}) </td>
+                <td> {{ cwt.cwt.get_ltrz_display }} ({{ cwt.cwt.ltrz }}) </td>
               </tr>
               <tr>
                 <td>  <b>Tag Count:</b></td>
-                <td> {{ cwt.tag_cnt|intcomma }} </td>
+                <td> {{ cwt.cwt.tag_cnt|intcomma }} </td>
               </tr>
               <tr>
                 <td>  <b>Agency:</b></td>
-                <td> {{ cwt.agency }} </td>
+                <td> {{ cwt.cwt.agency }} </td>
               </tr>
               <tr>
                 <td>  <b>Hatchery:</b></td>
-                <td> {{ cwt.hatchery }} </td>
+                <td> {{ cwt.cwt.hatchery }} </td>
               </tr>
               <tr>
                 <td>  <b>Tag Manufacturer:</b></td>
-                <td> {{ cwt.get_cwt_mfr_display }} </td>
+                <td> {{ cwt.cwt.get_cwt_mfr_display }} </td>
               </tr>
               <tr>
                 <td>  <b>Tag Type:</b></td>
-                <td> {{ cwt.get_tag_type_display }} </td>
+                <td> {{ cwt.cwt.get_tag_type_display }} </td>
               </tr>
 
-              {% if cwt.tag_type == 17 %}
+              {% if cwt.cwt.tag_type == 17 %}
               <tr>
                 <td>  <b>Sequence Range:</b></td>
-                <td> {{ cwt.seq_start|intcomma }} - {{ cwt.seq_end|intcomma }} </td>
+                <td> {{ cwt.cwt.seq_start|intcomma }} - {{ cwt.cwt.seq_end|intcomma }} </td>
               </tr>
               {% endif %}
 
               <tr>
                 <td>  <b>CWT Reused:</b></td>
-                <td> {{ cwt.cwt_reused }} </td>
+                <td> {{ cwt.cwt.cwt_reused }} </td>
               </tr>
               <tr>
                 <td>  <b>Comments:</b></td>
-                <td> {{ cwt.comments }} </td>
+                <td> {{ cwt.cwt.comments }} </td>
               </tr>
             </table>
           </div>
-          <div class="tab-pane" id="ageatcapture">
-            {% if aac %}
+
+          <div class="tab-pane" id="ageatcapture{{ forloop.counter }}">
+            {% if cwt.aac %}
             <table class="table">        
               <tr>
                 <td>  <b>Year of Capture</b></td>
                 <td> <b>Age</b></td>
               </tr>
-              {% for yr in aac %}
+              {% for yr in cwt.aac %}
               <tr>
                 <td>{{ yr.1 }} </td><td> {{ yr.0}} </td>
               </tr>
               {% endfor %}
             </table>
             {% else %}
-            <p>Age at capture is not currently available for cwt.cwt.</p>
+            <p>Age at capture is not currently available for cwt.cwt.cwt.</p>
             {% endif %}
           </div>
         </div>        
+        <script type="text/javascript">
+          $('#myTab{{ forloop.counter }} a').click(function (e) {
+          e.preventDefault()
+          $(this).tab('show')
+          })
+        </script>
+      </div>
+    {% endfor %}
     </div>
+  </div>
+
     <div class="col-md-7">
       {{ map }}
     </div>
@@ -171,12 +196,14 @@
   });
 </script>
 
+
 <script type="text/javascript">
   $('#myTab a').click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
+  e.preventDefault()
+  $(this).tab('show')
   })
 </script>
+
 
 
 {% endblock %}

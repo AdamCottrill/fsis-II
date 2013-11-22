@@ -37,7 +37,8 @@ class ReadmeFactory(factory.DjangoModelFactory):
 
 class SpeciesFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Species
-    species_code = '81'
+    #species_code = '81'
+    species_code = factory.Sequence(lambda n: n)    
     common_name = 'Lake Trout'
     scientific_name = 'Salvelinus nameychush'
 
@@ -81,23 +82,23 @@ class LotFactory(factory.DjangoModelFactory):
 
 
     fs_lot = '1234'
-    species = factory.subFactory(SpeciesFactory)
-    strain = factory.subFactory(StrainFactory)
+    species = factory.SubFactory(SpeciesFactory)
+    strain = factory.SubFactory(StrainFactory)
     spawn_year = 2010
     rearloc = 'My Place'
     rearloc_nm = 'My Backyard'
-    proponent = factory.subFactory(ProponentFactory)
+    proponent = factory.SubFactory(ProponentFactory)
     proponent_type = 'OMNR'
 
 
 class EventFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Event
 
-    lot = factory.subFactory(LotFactory)
+    lot = factory.SubFactory(LotFactory)
     prj_cd = 'LHA_FS11_111'
     fs_event = '123'
     lotsam = '789'
-    event_date = datetime.datetime.now()
+    event_date = datetime.now()
     clipa = 5
     fish_age = 12
     stkcnt = 9999
@@ -106,7 +107,7 @@ class EventFactory(factory.DjangoModelFactory):
     reartem = 7.8
     sitem = 4.5
     transit_mortality_count = 10
-    site = factory.subFactory(LotFactory)
+    site = factory.SubFactory(LotFactory)
     dd_lat = 45.25
     dd_lon = -81.5
     #geom = GEOSGeometry('POINT(-81.50 45.25)')
@@ -119,7 +120,7 @@ class EventFactory(factory.DjangoModelFactory):
 class TaggingEventFactory(factory.DjangoModelFactory):
     FACTORY_FOR = TaggingEvent
 
-    stocking_event = factory.subFactory(LotFactory)
+    stocking_event = factory.SubFactory(LotFactory)
     fs_tagging_event_id = 1
     retention_rate_pct = 90
     retention_rate_sample_size = 100
@@ -130,7 +131,7 @@ class TaggingEventFactory(factory.DjangoModelFactory):
 class CWTsAppliedFactory(factory.DjangoModelFactory):
     FACTORY_FOR = CWTs_Applied
 
-    tagging_event = factory.subFactory(LotFactory)
+    tagging_event = factory.SubFactory(LotFactory)
     fs_tagging_event_id = 123
     cwt = factory.Sequence(lambda n: '63-01-{0:02d}'.format(n))
 
