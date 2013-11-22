@@ -163,6 +163,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 MY_APPS =(    
     'simple_auth',
     'fsis2',
+    'cwts',
     )
 
 INSTALLED_APPS = DJANGO_APPS + THIRDPARTY_APPS + MY_APPS

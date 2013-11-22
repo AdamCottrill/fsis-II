@@ -118,7 +118,7 @@
     {% if object.get_cwts %}  
     <ul>
       {% for cwt in object.get_cwts %}
-      <li><a href="{% url 'event_cwt_list' cwt.cwt %}"> {{ cwt }}</a></li>
+      <li><a href="{% url 'cwt_detail' cwt.cwt %}"> {{ cwt }}</a></li>
       {% endfor %}
     </ul>
     {% else %}

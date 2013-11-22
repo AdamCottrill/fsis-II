@@ -13,3 +13,4 @@ main/whoosh_index/*
 *.ldb
 *TAGS
 *.db
+*flymake*
