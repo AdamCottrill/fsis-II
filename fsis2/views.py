@@ -18,6 +18,8 @@ from olwidget.widgets import InfoMap, InfoLayer, Map
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain, BuildDate, Readme)
 
+from cwts.models import CWT
+
 from .forms import GeoForm
 
 def timesince(dt, default="just now"):
@@ -187,6 +189,29 @@ def get_basin_totals(year, spc, strain=None):
 
     return basin_dict
 
+
+
+def calc_aac(yc):
+    """given a year class that a cwt was associated with calculate
+    age-at-capture for every year between age 0 and today
+    
+    returns a list of two element tuples.  each tuple contains the
+    year and the age the fish would have been if it had been captured
+    in that year.  If yc is greater than the current year it returns None.
+
+    """
+
+    from datetime import datetime
+    this_year = datetime.now().year
+    if this_year < yc:
+        return None
+    else:
+        yrs = range(yc, this_year + 1)
+        aac = list(enumerate(yrs, start=0))
+        aac.sort(reverse=True, key=lambda x: x[1])
+        return aac
+
+
     
 
 class EventDetailView(DetailView):
@@ -339,13 +364,15 @@ class LotDetailView(DetailView):
 
 class CwtListView(ListView):
 
+    model = CWT
+    
     template_name='fsis2/cwt_list.html'
-    paginate_by = 80
+    paginate_by = 30
 
     def get_queryset(self):
         # Fetch the queryset from the parent get_queryset
         #queryset = super(CwtListView, self).get_queryset()
-        queryset = CWTs_Applied.objects.values('cwt').order_by('cwt').distinct()
+        queryset = CWT.objects.all().order_by('-year_class')
         # Get the q GET parameter
         cwt = self.request.GET.get("cwt")
         if cwt:
@@ -702,3 +729,24 @@ def find_events(request):
                                   {'form':form},
                                   context_instance = RequestContext(request)
         )
+
+
+
+def cwt_detail_view(request, cwt_number):
+    
+    cwt = CWT.objects.get(cwt=cwt_number)
+    aac = calc_aac(cwt.year_class)
+    
+    events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number)
+    
+    event_points = [[x.fs_event, x.geom] for x in events]
+    mymap = get_map(event_points)
+    
+    #import pdb; pdb.set_trace()
+    
+    return render_to_response('fsis2/cwt_detail.html',
+                              {'cwt': cwt,
+                               'aac': aac,
+                               'event_list':events,
+                               'map': mymap,},
+                              context_instance=RequestContext(request))

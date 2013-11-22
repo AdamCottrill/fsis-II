@@ -13,7 +13,8 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     SiteUpdateView, CwtListView, AnnualTotalSpcView,
                     AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
                     ProponentListView, ProponentLotListView, SpeciesListView,
-                    AnnualStockingByHatcherySpcView, find_events)
+                    AnnualStockingByHatcherySpcView, find_events,
+                    cwt_detail_view)
 
 urlpatterns = patterns("",
 
@@ -72,9 +73,9 @@ urlpatterns = patterns("",
             name="event_year_list"),
            
         #events associated with cwt
-        url(r'^events/(?P<cwt>\d{6})/$',
-            EventListView.as_view(template_name='fsis2/event_list.html'),
-            name="event_cwt_list"),
+        #url(r'^events/(?P<cwt>\d{6})/$',
+        #    EventListView.as_view(template_name='fsis2/event_list.html'),
+        #    name="event_cwt_list"),
 
 
         #event list <lot>
@@ -112,6 +113,14 @@ urlpatterns = patterns("",
             name='cwt_list'
             ),
 
+        url(
+            #regex=r'^cwts/detail/(?P<cwt>\d{2}\-\d{2}-\d{2})$',
+            regex=r'^cwts/detail/(?P<cwt_number>\d{6})$',
+            view=cwt_detail_view,
+            name='cwt_detail'
+            ),
+
+                       
         #================
         #    STOCKING SITEs
 
