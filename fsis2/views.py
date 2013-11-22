@@ -5,6 +5,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
+from django.core.exceptions import MultipleObjectsReturned
+
 from django.core.urlresolvers import reverse
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -733,20 +735,43 @@ def find_events(request):
 
 
 def cwt_detail_view(request, cwt_number):
+
+    cwt = None
+    cwt_qs = None
     
-    cwt = CWT.objects.get(cwt=cwt_number)
-    aac = calc_aac(cwt.year_class)
-    
+    try:
+        cwt = CWT.objects.get(cwt=cwt_number)
+    except MultipleObjectsReturned:
+        cwt_qs = CWT.objects.filter(cwt=cwt_number).order_by(
+            'seq_start','-stock_year')
+        #return HttpResponseRedirect(reverse('cwt_list'))        
+
     events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number)
-    
+    #make the map
     event_points = [[x.fs_event, x.geom] for x in events]
     mymap = get_map(event_points)
-    
-    #import pdb; pdb.set_trace()
-    
-    return render_to_response('fsis2/cwt_detail.html',
+
+
+    if cwt:
+    #get age at capture dictionary    
+        aac = calc_aac(cwt.year_class)
+        return render_to_response('fsis2/cwt_detail.html',
                               {'cwt': cwt,
                                'aac': aac,
                                'event_list':events,
                                'map': mymap,},
-                              context_instance=RequestContext(request))
+                              context_instance=RequestContext(request))        
+    else:
+        cwt_list = []
+        for cwt in cwt_qs:
+            aac = calc_aac(cwt.year_class)
+            cwt_list.append({'cwt': cwt, 'aac': aac})
+        #import pdb; pdb.set_trace()                        
+        return render_to_response('fsis2/multiple_cwt_detail.html',        
+                                  {'cwt_number':cwt_number,
+                                   'cwt_list': cwt_list,
+                                   'event_list':events,
+                                   'map': mymap,},
+                                  context_instance=RequestContext(request))
+            
+            

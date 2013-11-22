@@ -75,7 +75,7 @@ class TestSpecies(TestCase):
         self.scientific_name = 'fishicus goldicus'
 
         self.spc1 = SpeciesFactory(common_name=self.common_name,
-                                   scientific_name=scientific_name)
+                                   scientific_name=self.scientific_name)
 
         self.spc2 = SpeciesFactory(common_name=self.common_name,
                                    scientific_name=None)
@@ -106,7 +106,7 @@ class TestStrain(TestCase):
         self.sto_code = 'wtf'
 
         self.spc = SpeciesFactory(common_name=self.common_name,
-                                  scientific_name=scientific_name)
+                                  scientific_name=self.scientific_name)
 
         self.strain = StrainFactory(species=self.spc, sto_code=self.sto_code,
                                     strain_name=self.strain_name,
@@ -116,7 +116,7 @@ class TestStrain(TestCase):
         '''The unicode method for strain should be the strain name prefixed
         ahead of the species name.'''
 
-        shouldbe = "{0} {1}".format(self.common_name, self.strain_name)
+        shouldbe = "{0} {1}".format( self.strain_name, self.common_name)
         self.assertEqual(str(self.strain), shouldbe)
         
     def tearDown(self):
@@ -138,7 +138,7 @@ class TestProponent(TestCase):
         followed by their abbreviation in brackets.'''
 
         shouldbe = "{0} ({1})".format(self.proponent_name, self.abbrev)
-        self.assertEqual(str(self.spc1), shouldbe)
+        self.assertEqual(str(self.proponent), shouldbe)
                 
     def tearDown(self):
         pass
