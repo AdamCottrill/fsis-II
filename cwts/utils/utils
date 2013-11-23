@@ -1,0 +1,6 @@
+  c:/1work/Python/djcode/fsis2/cwts/utils:
+  total used in directory 19 available 231865196
+  drwxrwxrwx  1 COTTRILLAD None 4096 11-23 11:14 .
+  drwxrwxrwx  1 COTTRILLAD None 4096 11-23 09:28 ..
+  -rw-rw-rw-  1 COTTRILLAD None 6760 11-23 10:53 get_cwt_data.py
+  -rw-rw-rw-  1 COTTRILLAD None 1869 11-23 11:14 get_us_grid_centroids.py

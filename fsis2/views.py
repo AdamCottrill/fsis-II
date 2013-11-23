@@ -20,7 +20,7 @@ from olwidget.widgets import InfoMap, InfoLayer, Map
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain, BuildDate, Readme)
 
-from cwts.models import CWT
+from cwts.models import CWT, USgrid
 
 from .forms import GeoForm
 
@@ -100,6 +100,7 @@ def get_map(event_points):
             )
     else:
         map=None
+    #import pdb; pdb.set_trace()
     return map
 
 
@@ -735,7 +736,49 @@ def find_events(request):
 
 
 def cwt_detail_view(request, cwt_number):
+    '''The view returns all of the available information associated
+    with a specific cwt number.  The view attemps to create a map
+    illustrating location of stocking events.  For Ontario tags, it
+    first looks for associated stocking events, if no events are
+    found, it will query usgrid for an associated grid number and
+    point.  If multiple events are found in cwts_cwt, a template
+    accomodates that multiple tagging events and includes a warning is
+    used instead.
+    
+    **Context:**
 
+    ``cwt``
+        a :model:`cwts.CWT` object if only one cwt is found in cwt
+
+    ``aac``    
+        a dictionary contain year of catpture and age pairs calculated
+        for this cwt based on its year class.  Dynamically calculated
+        when view is called.
+
+    ``cwt_number``
+        only returned if multiple cwt records are found. Used to label
+        multiple cwt template.
+    
+    ``cwt_list``
+        a query set of :model:`cwts.CWT` filtered by cwt_number.  None
+        if cwt_number returns only one record.
+    
+    ``event_list``
+        a list of :model:`fsis2.Event` objects associated with this
+        cwt.
+
+    ``map``
+        a olwidget map contain stocking points associated with this cwt.
+    
+    **Templates:**
+
+    :template:`fsis2/cwt_detail.html`
+    :template:`fsis2/multiple_cwt_detail.html`
+
+    '''
+
+
+    
     cwt = None
     cwt_qs = None
     
@@ -748,9 +791,17 @@ def cwt_detail_view(request, cwt_number):
 
     events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number)
     #make the map
-    event_points = [[x.fs_event, x.geom] for x in events]
-    mymap = get_map(event_points)
-
+    if events:
+        event_points = [[x.fs_event, x.geom] for x in events]
+        mymap = get_map(event_points)
+    else:
+        #see if there are us sites associated with this tag
+        #import pdb; pdb.set_trace()
+        if cwt:
+            mymap = get_map([["foo", cwt.us_grid_no.geom]])
+        else:
+            event_points = [[x.fs_event, x.geom] for x in cwt_qs]
+            mymap = get_map(event_points)
 
     if cwt:
     #get age at capture dictionary    

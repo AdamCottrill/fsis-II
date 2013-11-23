@@ -23,7 +23,21 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
+from django.contrib.gis.db import models
+
 from fsis2.models import (StockingSite, Proponent, Species, Strain)
+
+
+class USgrid(models.Model):
+    '''Centroids of us 10-minute grids - thee are used as APPROXIMATE stocking locations for US cwts.
+    '''
+
+    us_grid_no = models.CharField(max_length=4)
+    geom = models.PointField(srid=4326,
+                             help_text='Represented as (longitude, latitude)')
+
+    objects = models.GeoManager()
+    
 
 class CWT(models.Model):
     
@@ -128,7 +142,7 @@ class CWT(models.Model):
     ltrz =  models.IntegerField(choices=LTRZ_CHOICES, null=True, blank=True)
     #other = models.CharField(max_length=100, null=True, blank=True)
     #study_number = models.CharField(max_length=15, null=True, blank=True)
-
+    us_grid_no = models.ForeignKey(USgrid, null=True, blank=True)
 
     #hatchery = models.ForeignKey(Proponent)
     hatchery = models.CharField(max_length=80, null=True, blank=True)
