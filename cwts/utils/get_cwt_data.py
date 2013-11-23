@@ -22,6 +22,49 @@ import adodbapi
 import psycopg2
 
 
+
+def get_spc_id(species_code):
+    '''a little helper function to get species id number from lookup
+    table in fsis2
+    '''
+    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
+    pgconn = psycopg2.connect(constr)
+    pgcur = pgconn.cursor()
+    sql = "select id from fsis2_species where species_code={0}"
+    sql = sql.format(species_code)
+    pgcur.execute(sql)
+    try:
+        result = pgcur.fetchall()[0]
+    except IndexError:
+        result = None
+    pgcur.close()
+    pgconn.close()
+
+    return result
+
+
+def get_us_grid_id(us_grid_no):
+    '''a little helper function to get the id number or us grids from
+    the lookup table in cwt
+
+    '''
+    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
+    pgconn = psycopg2.connect(constr)
+    pgcur = pgconn.cursor()
+    sql = "select id from cwts_usgrid where us_grid_no='{0}'"
+    sql = sql.format(us_grid_no)
+    pgcur.execute(sql)
+    try:
+        result = pgcur.fetchall()[0]
+    except IndexError:
+        result = None
+    pgcur.close()
+    pgconn.close()
+
+    return result
+
+
+
 print "Retrieving US tags..."
 
 usdbase = 'C:/1work/LakeTrout/Stocking/CWTs/US_CWTs/WhatThe_USCWTS.mdb'
@@ -35,10 +78,11 @@ usconn = adodbapi.connect(constr)
 #try the lookup tables first - keep things simple
 uscur = usconn.cursor()
 
-uscur.callproc('Get_US_TagData_for_Django')
+#use this query when live:
+#uscur.callproc('Get_US_TagData_for_Django')
 
-#sql = 'select * from cwt_data_django'
-#uscur.execute(sql)
+sql = 'select * from cwt_data_django'
+uscur.execute(sql)
 
 result = uscur.fetchall()
 
@@ -60,15 +104,22 @@ pgcur = pgconn.cursor()
 
 reused_index = [x.lower() for x in col_names].index('cwt_reused')
 spc_index = [x.lower() for x in col_names].index('spc')
+grid_index = [x.lower() for x in col_names].index('us_grid_no')
 #rename the column for species to 'spc_id'
 col_names[spc_index] = 'spc_id'
+col_names[grid_index] = 'us_grid_no_id'
 
 for row in result:    
     spc_code = row['spc']
     spc_id = get_spc_id(spc_code)
 
+    us_grid = row['us_grid_no']
+    us_grid_id = get_us_grid_id(us_grid)
+    
     values = [x for x in row]
+    
     values[spc_index] = spc_id
+    values[grid_index] = us_grid_id    
     #convert reused from 0/-1 to False/True
     values[reused_index] = False if values[reused_index]==0 else True   
 
@@ -223,4 +274,5 @@ def drop_cwts_cwt():
 
 
 
+    
     
