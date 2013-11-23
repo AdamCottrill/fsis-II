@@ -20,7 +20,7 @@ from olwidget.widgets import InfoMap, InfoLayer, Map
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain, BuildDate, Readme)
 
-from cwts.models import CWT, USgrid
+from cwts.models import CWT, USgrid, CWT_recovery
 
 from .forms import GeoForm
 
@@ -109,7 +109,7 @@ def get_map2(event_points, roi=None):
     interest and returns a map that is zoomed to spatial extent of the
     roi.  The roi and all of the points it contains are rendered.
 
-    used by views Find_Events
+    used by views find_events
     
     Arguments: -
     `event_points`: a list of points objects and their event numbers
@@ -153,6 +153,60 @@ def get_map2(event_points, roi=None):
         mymap=None
     return mymap
 
+
+
+
+def get_recovery_map(stocking_points, recovery_points):
+
+    """This map function taks a list of stocking points and second
+    list of recoveries.
+
+    used by views cwt_detail
+
+    
+    Arguments: -
+    `stocking_points`: a list of points objects and their event numbers
+    'roi': region of interest used to select event points
+
+    """
+    layers = []
+    if len(stocking_points)>0:
+        for pt in stocking_points:
+            pt_layer = InfoLayer([[pt[1].wkt, str(pt[0])]],{'name':str(pt[0])})
+            try:
+                layers.extend(pt_layer)
+            except TypeError:
+                layers.append(pt_layer)
+
+    if recovery_points:
+        for pt in recovery_points:        
+            recovery_layer = InfoLayer([[pt[1].wkt, str(pt[0])]],
+                                   {'name':str(pt[0]),
+                                    'overlay_style': {'fill_color': '#00FF00',
+                                                      'fill_opacity': 0.2,
+                                                      'stroke_color':'#00FF00'},
+                                })
+            try:
+                layers.extend(recovery_layer)
+            except TypeError:
+                layers.append(recovery_layer)
+            
+    mymap = Map(
+        layers,
+        {'default_lat': 45,
+         'default_lon': -82.0,
+         'default_zoom':7,
+         'zoom_to_data_extent': False,
+         'map_div_style': {'width': '700px', 'height': '600px'},
+         
+            }
+            )
+    #else:
+    #    mymap=None
+    return mymap
+
+
+    
 
     
 
@@ -735,6 +789,20 @@ def find_events(request):
 
 
 
+def get_recovery_points(recoveries):
+    '''a helper function to extract the project composite key and the
+    point of recovery given a list/queryset of recoveries.
+    '''
+    if recoveries:
+        try:
+            recovery_points = [[x.composite_key, x.geom] for x in recoveries]
+        except:
+            recovery_points = [[recoveries.composite_key, recoveries.geom]]
+    else:
+        recovery_points = None
+    return recovery_points
+
+        
 def cwt_detail_view(request, cwt_number):
     '''The view returns all of the available information associated
     with a specific cwt number.  The view attemps to create a map
@@ -789,19 +857,29 @@ def cwt_detail_view(request, cwt_number):
             'seq_start','-stock_year')
         #return HttpResponseRedirect(reverse('cwt_list'))        
 
+    recoveries = CWT_recovery.objects.filter(cwt=cwt_number).order_by(
+        '-recovery_year','-recovery_date')
+
+    recovery_pts = get_recovery_points(recoveries)
+    
     events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number)
     #make the map
     if events:
         event_points = [[x.fs_event, x.geom] for x in events]
-        mymap = get_map(event_points)
+        #mymap = get_map(event_points)
+        mymap = get_recovery_map(event_points, recovery_pts)        
+        
     else:
         #see if there are us sites associated with this tag
         #import pdb; pdb.set_trace()
         if cwt:
-            mymap = get_map([["foo", cwt.us_grid_no.geom]])
+            #mymap = get_map([[cwt.agency, cwt.us_grid_no.geom]])
+            mymap = get_recovery_map([[cwt.agency, cwt.us_grid_no.geom]],
+                                     recovery_pts)
         else:
             event_points = [[x.fs_event, x.geom] for x in cwt_qs]
-            mymap = get_map(event_points)
+            #mymap = get_map(event_points)
+            mymap = get_recovery_map(event_points, recovery_pts)
 
     if cwt:
     #get age at capture dictionary    
@@ -810,6 +888,7 @@ def cwt_detail_view(request, cwt_number):
                               {'cwt': cwt,
                                'aac': aac,
                                'event_list':events,
+                               'recovery_list': recoveries,
                                'map': mymap,},
                               context_instance=RequestContext(request))        
     else:
@@ -822,6 +901,7 @@ def cwt_detail_view(request, cwt_number):
                                   {'cwt_number':cwt_number,
                                    'cwt_list': cwt_list,
                                    'event_list':events,
+                                   'recovery_list': recoveries,   
                                    'map': mymap,},
                                   context_instance=RequestContext(request))
             

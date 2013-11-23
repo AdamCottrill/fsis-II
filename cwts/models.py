@@ -39,6 +39,39 @@ class USgrid(models.Model):
     objects = models.GeoManager()
     
 
+class CWT_recovery(models.Model):
+    '''instances of cwt recoveries.  generated from 121 and 125 data
+    in Grandwazoo2
+
+    '''
+
+    cwt = models.CharField(max_length=6)
+    RECOVERY_SOURCE_CHOICES = (
+        ("AOFRC", "AOFRC"),
+        ("CF", "Catch Sampling"),
+        ("CWT", "CWT Cooperative"),
+        ("IA_Nearshore", "Nearshore Index"),
+        ("IA_Offshore", "Offshore Index"),
+        ("NAWASH", "Nawash"),
+        ("SportCreel", "Creels"),
+        ("SportFish","Sportfish"),
+    )
+    recovery_source = models.CharField(max_length=20,
+                                       choices=RECOVERY_SOURCE_CHOICES)
+    recovery_year = models.IntegerField()
+    recovery_date = models.DateField(null=True, blank=True)
+    recovery_grid= models.CharField(max_length=4)
+    composite_key = models.CharField(max_length=50)
+    flen = models.IntegerField(null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True)
+    geom = models.PointField(srid=4326,
+                             help_text='Represented as (longitude, latitude)')
+
+    objects = models.GeoManager()
+
+
+
+    
 class CWT(models.Model):
     
     stocked = models.BooleanField()
