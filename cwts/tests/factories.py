@@ -20,8 +20,8 @@ class CWTFactory(factory.DjangoModelFactory):
     development_stage = "51"
     year_class = 2005
     stock_year = 2006
-    plant_site = "Owen Sound"
-    ltrz = 10
+    plant_site = "Thunder Beach"
+    ltrz = 8
     hatchery = "CWC"
     agency = "OMNR"
     clipa = 5
