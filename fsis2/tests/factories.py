@@ -38,7 +38,7 @@ class ReadmeFactory(factory.DjangoModelFactory):
 class SpeciesFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Species
     #species_code = '81'
-    species_code = factory.Sequence(lambda n: n)    
+    species_code = factory.Sequence(lambda n: n)
     common_name = 'Lake Trout'
     scientific_name = 'Salvelinus nameychush'
 
@@ -55,14 +55,14 @@ class StrainFactory(factory.DjangoModelFactory):
 class ProponentFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Proponent
     
-    abbrev = 'MH'
+    abbrev = factory.Sequence(lambda n: "MH-{0:02d}".format(n))
     proponent_name = 'My Hatchery'
 
 
 class StockingSiteFactory(factory.DjangoModelFactory):
     FACTORY_FOR = StockingSite
     
-    fsis_site_id = '1234'
+    fsis_site_id = factory.Sequence(lambda n: "12{0:02d}".format(n))
     site_name = 'Honey Hole'
     stkwby = 'Lake Huron'
     stkwby_lid = 'what is this'
@@ -80,8 +80,7 @@ class LotFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Lot
     pass
 
-
-    fs_lot = '1234'
+    fs_lot = factory.Sequence(lambda n: "1{0:03d}".format(n))
     species = factory.SubFactory(SpeciesFactory)
     strain = factory.SubFactory(StrainFactory)
     spawn_year = 2010
@@ -96,7 +95,7 @@ class EventFactory(factory.DjangoModelFactory):
 
     lot = factory.SubFactory(LotFactory)
     prj_cd = 'LHA_FS11_111'
-    fs_event = '123'
+    fs_event = factory.Sequence(lambda n: "1{0:02d}".format(n))
     lotsam = '789'
     event_date = datetime.now()
     clipa = 5
@@ -107,14 +106,20 @@ class EventFactory(factory.DjangoModelFactory):
     reartem = 7.8
     sitem = 4.5
     transit_mortality_count = 10
-    site = factory.SubFactory(LotFactory)
+    site = factory.SubFactory(StockingSiteFactory)
     dd_lat = 45.25
     dd_lon = -81.5
     #geom = GEOSGeometry('POINT(-81.50 45.25)')
     development_stage = 51
     transit = 'TUG'
     stocking_method = 'SURFACE'
-    stocking_purpose = 'UNKNOWN'
+    stocking_purpose = 'UNKN'
+
+    @factory.lazy_attribute
+    def year(a):
+        year = a.event_date.year
+        return(year)
+
 
 
 class TaggingEventFactory(factory.DjangoModelFactory):
