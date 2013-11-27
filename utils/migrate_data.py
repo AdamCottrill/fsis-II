@@ -307,7 +307,7 @@ table = "Events"
 ##MS ACCESS SYNTAX:
 #sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
 #            FS_Events.SITE_ID, FS_Events.PRJ_CD, FS_Events.Event AS fs_event,
-#            FS_Events.LOTSAM, FS_Events.Event_Date, FS_Events.CLIPA,
+#            FS_Events.LOTSAM, FS_Events.Year, FS_Events.Event_Date, FS_Events.CLIPA,
 #            FS_Events.FISH_AGE, FS_Events.STKCNT, FS_Events.FISH_WT,
 #            FS_Events.RECORD_BIOMASS_CALC, FS_Events.REARTEM, FS_Events.SITEM,
 #            FS_Events.TRANSIT_MORTALITY_COUNT AS mortality, FS_Events.DD_LAT,
@@ -323,7 +323,7 @@ table = "Events"
 
 sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
             FS_Events.SITE_ID, FS_Events.PRJ_CD, FS_Events.Event AS fs_event,
-            FS_Events.LOTSAM, FS_Events.Event_Date, FS_Events.CLIPA,
+            FS_Events.LOTSAM, FS_Events.Year, FS_Events.Event_Date, FS_Events.CLIPA,
             FS_Events.FISH_AGE, FS_Events.STKCNT, FS_Events.FISH_WT,
             FS_Events.RECORD_BIOMASS_CALC, FS_Events.REARTEM, FS_Events.SITEM,
             FS_Events.TRANSIT_MORTALITY_COUNT AS mortality, FS_Events.DD_LAT,
@@ -352,6 +352,7 @@ for row in data:
         lot_id = lot.id,
         site_id = site.id,        
         prj_cd =  row['prj_cd'],
+        year = row['year'],
         fs_event = row['fs_event'],
         lotsam = row['lotsam'],
         event_date = datetime_or_none(row['event_date']),

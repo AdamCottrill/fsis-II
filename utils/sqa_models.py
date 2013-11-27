@@ -155,6 +155,7 @@ class Event(Base):
     #__table_args__={'extend_existing':True}
 
     id = Column(Integer, primary_key=True)
+    year = Column(Integer)
     prj_cd =  Column(String(13))
     fs_event = Column(Integer, unique=True)
     lotsam = Column(String(8))

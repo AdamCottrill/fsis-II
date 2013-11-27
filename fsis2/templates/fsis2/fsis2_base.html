@@ -63,12 +63,12 @@
             <ul class="dropdown-menu">
               <li><a href="{% url 'event_list' %}">Events</a> </li>
               <li class="divider"></li>
-              <li><a href="{% url 'event_create' %}">Enter New Event</a>  </li>
+              <li><a href="#">Enter New Event</a>  </li>
               <li><a href="#">Edit Event</a> </li>
               <li><a href="#">Approve Events</a> </li>
               <li class="divider"></li>
               <li><a href="{% url 'site_list' %}">Stocking Sites</a>  </li>
-              <li><a href="{% url 'site_create' %}">Add New Stocking Site</a> </li>
+              <li><a href="#">Add New Stocking Site</a> </li>
               <li class="divider"></li>
               <li><a href="{% url 'find_events' %}">Find by Location</a>  </li>
 
@@ -81,30 +81,29 @@
           <li class="dropdown">
             <a href="#"class="dropdown-toggle" data-toggle="dropdown">Summaries<b class="caret"></b></a>
             <ul class="dropdown-menu">
-              <li><a href="">CWT 'Master'</a> </li>
-              <li class="divider"></li>
               <li><a href="{% url 'hatchery_list' %}">By Hatchery</a>  </li>
               <li><a href="{% url 'species_list' %}">By Species</a> </li>
               <li><a href="#">D. Reid Spreadsheet</a> </li>
             </ul>             
           </li>
-          <li><a href="{% url 'about' %}">About</a>  </li>
 
           {% block navbar_other_apps %}
           {% endblock %}
 
+         {% if user.is_staff %}
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="{% url 'change_password' %}">Change Password</a></li>
-              {% if user.is_staff %}
+
               <li><a href="{% url 'admin:index' %}">Django Admin</a></li>
-              {% endif %}
+
               {% if user.is_superuser %}
               <li><a href="{% url 'password_reset' %}">Reset Password</a></li>
               {% endif %}
             </ul>
           </li>
+        {% endif %}
         </ul>
 
         {% if user.is_authenticated %}

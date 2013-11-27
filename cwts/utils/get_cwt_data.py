@@ -3,14 +3,14 @@
 c:/1work/Python/djcode/fsis2/cwts/utils/get_cwt_data.py
 Created: 21 Nov 2013 11:39:01
 
-
 DESCRIPTION:
 
 #this script migrates data from 'cwt master' and inserts into the
 #database associated with a django application (cwts).  The US and
 #Ontario tags are imported seperately and appended into the same
 #table.  The US tags come from a table "~/US_CWTs/WhatThe_USCWTS.mdb"
-#while the ontario tags are derived from a query **** WHERE ****
+#while the ontario tags are derived from a query in
+#~/CWTcodes_InventoryUGLMUv1.mdb
 
 
 A. Cottrill
@@ -22,11 +22,29 @@ import adodbapi
 import psycopg2
 
 
+def drop_cwts_cwt():
+    """'a helper function to drop table cwts_cwt.'
+    Arguments: - `spc_code`:
+
+    """
+    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
+    pgconn = psycopg2.connect(constr)
+    pgcur = pgconn.cursor()
+
+    pgcur.execute("DROP TABLE cwts_cwt")
+    pgconn.commit()
+    pgcur.close()
+    pgconn.close()
+
+    return None
 
 def get_spc_id(species_code):
-    '''a little helper function to get species id number from lookup
-    table in fsis2
-    '''
+    """'a helper function to get the id number for a given species
+    code.  the id number is queried from the species table in fsis2
+    application.'
+    Arguments: - `spc_code`:
+
+    """
     constr = "dbname={0} user={1}".format('fsis2', 'adam')            
     pgconn = psycopg2.connect(constr)
     pgcur = pgconn.cursor()
@@ -223,56 +241,3 @@ print 'OMNR tags committed and connection closed.'
 
 
 
-
-
-
-
-def get_spc_id(spc_code):
-    """'a helper function to get the id number for a given species
-    code.  the id number is queried from the species table in fsis2
-    application.'
-    Arguments: - `spc_code`:
-
-    """
-
-    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-    pgconn = psycopg2.connect(constr)
-    pgcur = pgconn.cursor()
-
-
-    sql = """select id from fsis2_species where species_code = {0}"""
-    sql = sql.format(int(spc_code))
-    pgcur.execute(sql)
-
-    try:
-        result = pgcur.fetchall()[0][0]
-    except IndexError:
-        result = None
-    pgcur.close()
-    pgconn.close()
-
-    return result
-
-
-def drop_cwts_cwt():
-    """'a helper function to drop table cwts_cwt.'
-    Arguments: - `spc_code`:
-
-    """
-    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-    pgconn = psycopg2.connect(constr)
-    pgcur = pgconn.cursor()
-
-    pgcur.execute("DROP TABLE cwts_cwt")
-    pgconn.commit()
-    pgcur.close()
-    pgconn.close()
-
-    return None
-
-
-
-
-
-    
-    

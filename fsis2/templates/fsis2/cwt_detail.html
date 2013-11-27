@@ -18,11 +18,6 @@
 
   <div class="row">
       <h2> CWT Number: {{ cwt }} </h2>
-      {% if cwt.count > 1 %}
-      <p>WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN
-      ONCE.  INTERPRET WITH CAUTION.</p>      
-      {% endif %}
-
 
       <div class="col-md-5">
         <ul class="nav nav-tabs">
@@ -149,7 +144,13 @@
       </tbody>
     </table>
     {% else %}
-    <p>There are no Ontario stocking events associated with cwt {{ cwt }} </p>
+      {% ifequal cwt.agency "OMNR" %} 
+    <div class="alert alert-danger">
+      <p>There are no Ontario stocking events associated with cwt {{ cwt }}.   According the the Agency code there should be. </p>
+    </div>
+      {% else %}
+      <p>There are no Ontario stocking events associated with cwt {{ cwt }}. </p>
+      {% endifequal %}
     {% endif %}    
   </div>
 
