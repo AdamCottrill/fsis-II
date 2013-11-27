@@ -11,10 +11,10 @@ sqlite.  FS_master is 32-bit ms access, and is not accessible from the
 
 first step - create a copy of the data structure
 
-loop over the tables in FS_master and then insert the results into teh
+loop over the tables in FS_master and then insert the results into the
 sqlite clone.
 
-the schema file used by this script was intiall generated using
+the schema file used by this script was initially generated using
 jet-tool.  The sql file was then edited to reflect the relatively
 simple datatypes available in sqlite (integer, real and text)
 

@@ -93,8 +93,8 @@ def get_map(event_points):
             geoms,
             {'default_lat': 45,
             'default_lon': -82.0,
-            'default_zoom':7,
-            'zoom_to_data_extent':False,
+            'default_zoom': 7,
+            'zoom_to_data_extent': False,
             'map_div_style': {'width': '700px', 'height': '600px'},
             }
             )
@@ -102,6 +102,22 @@ def get_map(event_points):
         map=None
     #import pdb; pdb.set_trace()
     return map
+
+
+def empty_map():
+    """
+    Arguments:
+    - `event_points`:
+    """
+    map = InfoMap(
+        None,
+        {'default_lat': 45,
+         'default_lon': -82.0,
+         'default_zoom': 7,
+         'zoom_to_data_extent': False,
+         'map_div_style': {'width': '700px', 'height': '600px'}})
+    return map
+
 
 
 def get_map2(event_points, roi=None):
@@ -150,7 +166,7 @@ def get_map2(event_points, roi=None):
             }
             )
     else:
-        mymap=None
+        mymap = empty_map()
     return mymap
 
 
@@ -170,9 +186,10 @@ def get_recovery_map(stocking_points, recovery_points):
 
     """
     layers = []
-    if len(stocking_points)>0:
+    if len(stocking_points) > 0:
         for pt in stocking_points:
-            pt_layer = InfoLayer([[pt[1].wkt, str(pt[0])]],{'name':str(pt[0])})
+            pt_layer = InfoLayer([[pt[1].wkt,
+                                   str(pt[0])]], {'name': str(pt[0])})
             try:
                 layers.extend(pt_layer)
             except TypeError:
@@ -190,22 +207,19 @@ def get_recovery_map(stocking_points, recovery_points):
                 layers.extend(recovery_layer)
             except TypeError:
                 layers.append(recovery_layer)
-            
-    mymap = Map(
-        layers,
-        {'default_lat': 45,
-         'default_lon': -82.0,
-         'default_zoom':7,
-         'zoom_to_data_extent': False,
-         'map_div_style': {'width': '700px', 'height': '600px'},
-         
-            }
-            )
-    #else:
-    #    mymap=None
+
+    if len(layers) > 0:
+        mymap = Map(
+            layers,
+            {'default_lat': 45,
+             'default_lon': -82.0,
+             'default_zoom': 7,
+             'zoom_to_data_extent': False,
+             'map_div_style': {'width': '700px', 'height': '600px'},
+            })
+    else:
+        mymap = empty_map()
     return mymap
-
-
     
 
     
@@ -280,6 +294,10 @@ class EventDetailView(DetailView):
 
         #import pdb; pdb.set_trace()
         event = kwargs.get('object')
+
+        cwts = [x.cwt for x in event.get_cwts()]
+        context['cwt_list'] = CWT.objects.filter(cwt__in=cwts)       
+        
         event_point = [[ event.fs_event, event.geom]]
         mymap = get_map(event_point)
         context['map'] = mymap
@@ -326,30 +344,14 @@ class EventListView(ListView):
             context['map'] = mymap
         return context
 
-
-    def dispatch(self, request, *args, **kwargs):
-       
-        event = self.request.GET.get("event")
-        #import pdb; pdb.set_trace()
-        if event:
-            event = get_object_or_404(Event,fs_event = event)        
-        if event:
-            url = reverse('event_detail', kwargs={'pk': event.id})
-            return HttpResponseRedirect(url)
-            #return redirect(url)
-        else:
-            return super(EventListView, self).dispatch(request, *args, **kwargs)
-        
     def get_queryset(self):
-        self.cwt = self.kwargs.get('cwt', None)
-        if self.cwt:
-            #get the list of tagging events associated with that tag number
-            te = TaggingEvent.objects.filter(
-                    cwts_applied__cwt=self.cwt).values_list('stocking_event')
-            #filter the stocking events to those in te
-            queryset = Event.objects.filter(id__in=te)
+        # Get the q GET parameter
+        event_id = self.request.GET.get("event")
+        if event_id:
+            # Return a filtered queryset
+            queryset = Event.objects.filter(fs_event=event_id)
         else:
-            queryset = Event.objects.all()
+            queryset = Event.objects.all().order_by('-year','event_date')
         return queryset
 
 
@@ -385,20 +387,19 @@ class SiteUpdateView(UpdateView):
 
 class LotListView(ListView):
     #includes any lots that don't have any events yet:
-    queryset = Lot.objects.filter(
-                        event__pk__isnull=False).distinct()
     template_name = "LotList.html"
     paginate_by = 20
 
-    def dispatch(self, request, *args, **kwargs):      
-        lot = self.request.GET.get("lot")
-        if lot:
-            lot = get_object_or_404(Lot,fs_lot = lot)        
-        if lot:
-            url = reverse('lot_detail', kwargs={'pk': lot.id})
-            return HttpResponseRedirect(url)
+    def get_queryset(self):
+        # Get the q GET parameter
+        lot_id = self.request.GET.get("lot")
+        if lot_id:
+            # Return a filtered queryset
+            queryset = Lot.objects.filter(fs_lot=lot_id)
         else:
-            return super(LotListView, self).dispatch(request, *args, **kwargs)
+            queryset = Lot.objects.filter(
+                        event__pk__isnull=False).distinct()
+        return queryset
     
     def get_context_data(self, **kwargs):
         context = super(LotListView, self).get_context_data(**kwargs)
@@ -844,65 +845,61 @@ def cwt_detail_view(request, cwt_number):
     :template:`fsis2/multiple_cwt_detail.html`
 
     '''
-
-
     
     cwt = None
     cwt_qs = None
-    
+
     try:
         cwt = CWT.objects.get(cwt=cwt_number)
     except MultipleObjectsReturned:
         cwt_qs = CWT.objects.filter(cwt=cwt_number).order_by(
-            'seq_start','-stock_year')
-        #return HttpResponseRedirect(reverse('cwt_list'))        
+            'seq_start', '-stock_year')
 
     recoveries = CWT_recovery.objects.filter(cwt=cwt_number).order_by(
-        '-recovery_year','-recovery_date')
-
+        '-recovery_year', '-recovery_date')
     recovery_pts = get_recovery_points(recoveries)
-    
+
     events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number)
     #make the map
     if events:
         event_points = [[x.fs_event, x.geom] for x in events]
-        #mymap = get_map(event_points)
-        mymap = get_recovery_map(event_points, recovery_pts)        
-        
+        mymap = get_recovery_map(event_points, recovery_pts)
+
     else:
-        #see if there are us sites associated with this tag
-        #import pdb; pdb.set_trace()
+        #see if there are US sites associated with this tag
         if cwt:
-            #mymap = get_map([[cwt.agency, cwt.us_grid_no.geom]])
-            mymap = get_recovery_map([[cwt.agency, cwt.us_grid_no.geom]],
-                                     recovery_pts)
+            if cwt.us_grid_no is None:
+                #if not, just pass in an empty list
+                events = []
+            else:
+                events = [[cwt.agency, cwt.us_grid_no.geom]]            
+            mymap = get_recovery_map(events, recovery_pts)
         else:
             event_points = [[x.fs_event, x.geom] for x in cwt_qs]
-            #mymap = get_map(event_points)
             mymap = get_recovery_map(event_points, recovery_pts)
 
     if cwt:
-    #get age at capture dictionary    
+    #get age at capture dictionary
         aac = calc_aac(cwt.year_class)
         return render_to_response('fsis2/cwt_detail.html',
-                              {'cwt': cwt,
-                               'aac': aac,
-                               'event_list':events,
-                               'recovery_list': recoveries,
-                               'map': mymap,},
-                              context_instance=RequestContext(request))        
+                                  {'cwt': cwt,
+                                   'aac': aac,
+                                   'event_list': events,
+                                   'recovery_list': recoveries,
+                                   'map': mymap},
+                                  context_instance=RequestContext(request))
     else:
         cwt_list = []
         for cwt in cwt_qs:
             aac = calc_aac(cwt.year_class)
             cwt_list.append({'cwt': cwt, 'aac': aac})
-        #import pdb; pdb.set_trace()                        
-        return render_to_response('fsis2/multiple_cwt_detail.html',        
-                                  {'cwt_number':cwt_number,
+        #import pdb; pdb.set_trace()
+        return render_to_response('fsis2/multiple_cwt_detail.html',
+                                  {'cwt_number': cwt_number,
                                    'cwt_list': cwt_list,
-                                   'event_list':events,
-                                   'recovery_list': recoveries,   
-                                   'map': mymap,},
+                                   'event_list': events,
+                                   'recovery_list': recoveries,
+                                   'map': mymap},
                                   context_instance=RequestContext(request))
             
             
