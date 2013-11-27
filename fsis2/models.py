@@ -5,6 +5,7 @@ import re
 from django.core.urlresolvers import reverse
 from django.contrib.gis.db import models
 
+from django.contrib.gis.geos import Point
 
 #from fsis2 import managers
 
@@ -267,7 +268,7 @@ class Event(models.Model):
                                       null=True, blank=True)
 
     STOCKING_PURPOSE_CHOICES = (
-        ('UNKNOWN', 'Unknown'),
+        ('UNKN', 'Unknown'),
         ('A', 'Rehabilitation'),
         ('AC', 'Rehabilitation/Supplemental'),
         ('AD', 'Rehabilitation/Research'),

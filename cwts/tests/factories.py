@@ -11,7 +11,7 @@ class CWTFactory(factory.DjangoModelFactory):
     FACTORY_FOR = CWT
 
     stocked = True
-    cwt = '631111'
+    cwt = factory.Sequence(lambda n: '6311{0:02d}'.format(n))
     tag_cnt = 10000
     tag_type = 6
     cwt_mfr = 'NMT'
