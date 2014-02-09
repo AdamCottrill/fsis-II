@@ -5,7 +5,12 @@ doc/*
 *.pyc
 db/*
 coverage/*
+simple_auth/*
 static/*
+staticfiles/*
 main/whoosh_index/*
 *.mdb
 *.ldb
+*TAGS
+*.db
+*flymake*

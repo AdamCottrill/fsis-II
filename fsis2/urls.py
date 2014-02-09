@@ -10,7 +10,11 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     EventUpdateView, EventCreateView,
                     LotDetailView, LotListView, LotCreateView, LotUpdateView,
                     SiteDetailView, SiteListView, SiteCreateView, 
-                    SiteUpdateView, CwtListView,)
+                    SiteUpdateView, CwtListView, AnnualTotalSpcView,
+                    AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
+                    ProponentListView, ProponentLotListView, SpeciesListView,
+                    AnnualStockingByHatcherySpcView, find_events,
+                    cwt_detail_view)
 
 urlpatterns = patterns("",
 
@@ -37,7 +41,6 @@ urlpatterns = patterns("",
             name='lot_list'
             ),
 
-
         #create lot 
         url(
             regex=r'^lot/add$',
@@ -51,8 +54,6 @@ urlpatterns = patterns("",
             view=LotUpdateView.as_view(),
             name='lot_update'
             ),
-
-
 
 
         #================
@@ -72,9 +73,9 @@ urlpatterns = patterns("",
             name="event_year_list"),
            
         #events associated with cwt
-        url(r'^events/(?P<cwt>\d{6})/$',
-            EventListView.as_view(template_name='fsis2/event_list.html'),
-            name="event_cwt_list"),
+        #url(r'^events/(?P<cwt>\d{6})/$',
+        #    EventListView.as_view(template_name='fsis2/event_list.html'),
+        #    name="event_cwt_list"),
 
 
         #event list <lot>
@@ -99,6 +100,9 @@ urlpatterns = patterns("",
             name='event_update'
             ),
 
+
+        url(r'^find_events/$', 'fsis2.views.find_events', name='find_events'),
+                       
         #================
         #    CWTs
 
@@ -109,6 +113,14 @@ urlpatterns = patterns("",
             name='cwt_list'
             ),
 
+        url(
+            #regex=r'^cwts/detail/(?P<cwt>\d{2}\-\d{2}-\d{2})$',
+            regex=r'^cwts/detail/(?P<cwt_number>\d{6})$',
+            view=cwt_detail_view,
+            name='cwt_detail'
+            ),
+
+                       
         #================
         #    STOCKING SITEs
 
@@ -140,12 +152,90 @@ urlpatterns = patterns("",
             name='site_detail'
             ),
 
+
+        #================                       
+        #Proponent List
+        url(
+            regex=r'^hatcheries/$',
+            view = ProponentListView.as_view(),
+            name='hatchery_list'
+            ),
+
+        url(
+            regex=r'^hatchery/lots/(?P<hatchery>\w{1,7})$',
+            view = ProponentLotListView.as_view(),
+            name='hatchery_lot_list'
+            ),
+
+#        url(
+#            regex=r'^hatchery/events/(?P<hatchery>\d{2})$',
+#            view = ProponentLotListView.as_view(),
+#            name='hatchery_event_list'
+#            ),
+#
+                       
+
+        #================                       
+        #SPECIES
+        url(
+            regex=r'^species/$',
+            view = SpeciesListView.as_view(),
+            name='species_list'
+            ),
+
+         # url(
+         #     regex=r'^species/lots/(?P<hatchery>\w{1,7})$',
+         #     view = ProponentLotListView.as_view(),
+         #     name='hatchery_lot_list'
+         #     ),
+
+                       
+
+                       
         #================
         #    ABOUT
         url(r'^about', TemplateView.as_view(template_name='about.html'),
          name='about'),
 
 
+        #================================
+        #    ANNUAL TOTAL BY SPECIES
 
+        #annual stocking by proponent
+        url(
+            regex=r'^annual/(?P<spc>\d{2,3})$',
+            view=AnnualTotalSpcView.as_view(),
+            name='annual_total_spc'
+            ),
+
+
+        # annual stocking by species - where did they go?
+        url(
+            regex=
+            r'^annual/(?P<spc>\d{2,3})/(?P<year>\d{4})$',
+            view = AnnualStockingBySpcView.as_view(),
+            name = 'annual_stocking_events_by_spc'
+            ),
+                       
+
+        # annual stocking by strain - where did they go?
+        url(
+            regex=
+            r'^annual/(?P<spc>\d{2,3})/(?P<strain>\w{2,4})/(?P<year>\d{4})$',
+            view = AnnualStockingBySpcStrainView.as_view(),
+            name = 'annual_stocking_events_by_strain'
+            ),
+
+
+
+        # annual stocking by species by proponent - where did they go?
+        url(
+            regex=
+            r'^annual/(?P<hatchery>\w{1,7})/(?P<spc>\d{2,3})/(?P<year>\d{4})$',
+            view = AnnualStockingByHatcherySpcView.as_view(),
+            name = 'annual_stocking_events_by_spc_hatchery'
+            ),
+
+                       
 
     )

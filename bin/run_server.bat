@@ -1,0 +1,1 @@
+python manage.py runserver 142.143.160.56:8000 --settings=main.settings.production
