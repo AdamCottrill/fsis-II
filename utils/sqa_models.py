@@ -18,7 +18,8 @@
 #=============================================================
 
 
-import sqlalchemy
+#import sqlalchemy
+from geoalchemy import *
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Column, Integer, String, Date, DateTime, ForeignKey,
@@ -108,7 +109,7 @@ class StockingSite(Base):
     fsis_site_id =  Column(Integer, unique=True)
     site_name = Column(String(50)) #this should be unique too
     stkwby  = Column(String(30))
-    stkwby_lid = Column(Integer)
+    stkwby_lid = Column(String(15))
     utm  = Column(String(20))
     grid = Column(String(4))
     dd_lat = Column(Float)
@@ -116,6 +117,7 @@ class StockingSite(Base):
     basin = Column(String(15))
     deswby_lid  = Column(String(15))
     deswby  = Column(String(10))
+    geom = GeometryColumn(Point(2))
 
     def __repr__(self):
         return "<%s (%s)>" % (self.site_name, self.site_id)
@@ -128,7 +130,7 @@ class Lot(Base):
 
     id = Column(Integer, primary_key=True)
     #prj_cd = Column(String(13))
-    fs_lot  = Column(Integer)
+    fs_lot  = Column(String(10))
     spawn_year = Column(Integer)
     rearloc = Column(String(30))
     rearloc_nm = Column(String(30))
@@ -153,6 +155,7 @@ class Event(Base):
     #__table_args__={'extend_existing':True}
 
     id = Column(Integer, primary_key=True)
+    year = Column(Integer)
     prj_cd =  Column(String(13))
     fs_event = Column(Integer, unique=True)
     lotsam = Column(String(8))
@@ -168,10 +171,11 @@ class Event(Base):
     transit_mortality_count = Column(Integer)
     dd_lat = Column(Float)
     dd_lon = Column(Float)
+    geom = GeometryColumn(Point(2))
     development_stage = Column(Integer)
-    transit = Column(String(10))
-    stocking_method = Column(String(10))
-    stocking_purpose = Column(String(10))
+    transit = Column(String(20))
+    stocking_method = Column(String(20))
+    stocking_purpose = Column(String(20))
 
     site_id = Column(Integer, ForeignKey('fsis2_stockingsite.id'))
     lot_id = Column(Integer, ForeignKey('fsis2_lot.id'))
