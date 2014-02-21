@@ -1,7 +1,6 @@
 #=============================================================
 # c:/1work/Python/djcode/fsis2/utils/data_migration.py
 # Created: 29 Aug 2013 09:11:14
-
 #
 # DESCRIPTION:
 #
@@ -9,6 +8,8 @@
 # database to a sqlite or postgres database that can be used by Django
 # to render the fsis2 webpages.
 #
+#  first run clone_fs_mater.py
+##
 # The script can be run from the command line by:
 #      ~/python migrate_data.py
 #
@@ -67,11 +68,12 @@ DEPLOY = False
 ## src_cur = src_conn.cursor()
 ## 
 
-#sqlite clone of FS_master:
-if DEPLOY:
-    src = r'c:/1work/djcode/fsis2/utils/data/FS_Master_clone.db'
-else:
-    src = r'c:/1work/Python/djcode/fsis2/utils/data/FS_Master_clone.db'
+src = r"C:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db"
+###sqlite clone of FS_master:
+##if DEPLOY:
+##    src = r'c:/1work/djcode/fsis2/utils/data/FS_Master_clone.db'
+##else:
+##    src = r'c:/1work/Python/djcode/fsis2/utils/data/FS_Master_clone.db'
     
 src_conn = sqlite3.connect(src)
 src_conn.row_factory = sqlite3.Row
@@ -92,9 +94,12 @@ src_cur = src_conn.cursor()
 #engine = create_engine('sqlite:///%s' % trgdb)
 
 if DEPLOY:
-    engine = create_engine('postgresql://adam:django@localhost/fsis2')
+    #engine = create_engine('postgresql://adam:django@localhost/fsis2')
+    #this will connect to post gres instance on the desktop machine
+    engine = create_engine('postgresql://adam:django@142.143.160.56/fsis2')
 else:
     engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
+
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -116,6 +121,7 @@ session = Session()
 #========================================
 #           README TABLE
 table = "readme"
+print "Uploading '%s'..."  % table
 
 sql = '''SELECT [__README].DATE, [__README].COMMENT, [__README].INIT
         FROM __README
@@ -143,6 +149,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #========================================
 #           SPECIES TABLE
 table = "species"
+print "Uploading '%s'..."  % table
 
 sql = '''SELECT SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC
          FROM FS_Events INNER JOIN SPC ON FS_Events.SPC = SPC.SPC
@@ -169,6 +176,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #========================================
 #           STRAINS TABLE
 table = "strains"
+print "Uploading '%s'..."  % table
 
 sql='''SELECT TL_Strains.SPC, TL_Strains.STO, TL_Strains.StrainCode,
        TL_Strains.StrainName
@@ -196,6 +204,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #========================================
 #         PROPONENT TABLE
 table = "Proponents"
+print "Uploading '%s'..."  % table
 
 sql = '''SELECT TL_ProponentNames.Short AS abbrev,
          TL_ProponentNames.PROPONENT_NAME_is AS name
@@ -224,6 +233,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #========================================
 #        STOCKING SITES
 table = "Stocking Sites"
+print "Uploading '%s'..."  % table
 
 sql = '''SELECT SITE_ID, SITE_NAME, STKWBY, STKWBY_LID, UTM, GRID,
              DD_LAT, DD_LON, BASIN, DESWBY_LID, DESWBY
@@ -262,6 +272,8 @@ print "'%s' Transaction Complete (%s)"  % \
 #========================================
 #        LOTS TABLE
 table = "Lots"
+print "Uploading '%s'..."  % table
+
 #note - query aggregates by strain, spawn year, rearing location
 # and does not include project code or year -
 
@@ -303,6 +315,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #       STOCKING EVENTS
 
 table = "Events"
+print "Uploading '%s'..."  % table
 
 ##MS ACCESS SYNTAX:
 #sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
@@ -386,6 +399,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #       TAGGING EVENTS
 
 table = "Tagging Events"
+print "Uploading '%s'..."  % table
 
 sql = '''SELECT EVENT AS fs_event, TAG_ID, RETENTION_RATE_PCT,
             RETENTION_RATE_SAMPLE_SIZE, RETENTION_RATE_POP_SIZE,
@@ -428,6 +442,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #       CWTs APPLIED
 
 table = "CWTs Applied"
+print "Uploading '%s'..."  % table
 
 sql = ''' SELECT TAG_ID AS fs_tagging_event_id, CWT
           FROM FS_CWTs_Applied;'''
