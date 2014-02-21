@@ -56,7 +56,7 @@ tables = src_cur.tables()
 tables = [row[2] for row in tables if row[3] == 'TABLE']
 
 for table in tables:
-    if not table == "TL_StockingSites":
+    if not table in ("TL_StockingSites", "TL_ActualStockingSites"):
         sql = '''select * from {0}'''.format(table)
 
         rs = src_cur.execute(sql)

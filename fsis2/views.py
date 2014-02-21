@@ -860,6 +860,7 @@ def cwt_detail_view(request, cwt_number):
     recovery_pts = get_recovery_points(recoveries)
 
     events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number)
+    #import pdb; pdb.set_trace()
     #make the map
     if events:
         event_points = [[x.fs_event, x.geom] for x in events]
@@ -870,10 +871,10 @@ def cwt_detail_view(request, cwt_number):
         if cwt:
             if cwt.us_grid_no is None:
                 #if not, just pass in an empty list
-                events = []
+                us_events = []
             else:
-                events = [[cwt.agency, cwt.us_grid_no.geom]]            
-            mymap = get_recovery_map(events, recovery_pts)
+                us_events = [[cwt.agency, cwt.us_grid_no.geom]]            
+            mymap = get_recovery_map(us_events, recovery_pts)
         else:
             event_points = [[x.fs_event, x.geom] for x in cwt_qs]
             mymap = get_recovery_map(event_points, recovery_pts)
