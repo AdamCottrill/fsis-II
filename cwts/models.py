@@ -37,7 +37,7 @@ class USgrid(models.Model):
                              help_text='Represented as (longitude, latitude)')
 
     objects = models.GeoManager()
-    
+
 
 class CWT_recovery(models.Model):
     '''instances of cwt recoveries.  generated from 121 and 125 data
@@ -70,10 +70,8 @@ class CWT_recovery(models.Model):
     objects = models.GeoManager()
 
 
-
-    
 class CWT(models.Model):
-    
+
     stocked = models.BooleanField()
     cwt = models.CharField(max_length=6)
     seq_start = models.IntegerField(default=0)
@@ -85,16 +83,16 @@ class CWT(models.Model):
 
     TAG_TYPE_CHOICES = (
         (6,'Coded Wire'),
-        (17,'Sequential Coded Wire'),        
+        (17,'Sequential Coded Wire'),
     )
-    
+
     tag_type = models.IntegerField(choices=TAG_TYPE_CHOICES,
                                    default=6)
-    
+
     MANUFACTURER_CHOICES = (
         ('MM', 'Micro Mark'),
         ('NMT', 'Northwest Marine Technologies'),)
-    
+
     cwt_mfr = models.CharField(max_length=10, choices=MANUFACTURER_CHOICES)
     #cwt_length = models.IntegerField()
     cwt_reused = models.BooleanField()
@@ -128,7 +126,7 @@ class CWT(models.Model):
                               choices=STRAIN_CHOICES,
                               null=True, blank=True)
     #strain = models.ForeignKey(Strain)
-    
+
     DEVELOPMENT_STAGE_CHOICES = (
         (99, 'Unknown'),
         (10, 'Egg (unknown stage)'),
@@ -141,17 +139,17 @@ class CWT(models.Model):
         (53, 'Adult (mature)'),
         (81, 'Sac Fry (0-1 month)'),
         )
-    
+
     development_stage = models.IntegerField(
                                       choices=DEVELOPMENT_STAGE_CHOICES,
                                       default=99, null=True, blank=True)
 
     year_class = models.IntegerField(null=True, blank=True)
-    stock_year = models.IntegerField(null=True, blank=True)  
+    stock_year = models.IntegerField(null=True, blank=True)
 
     #stocking_site = models.ForeignKey(StockingSite)
     plant_site = models.CharField(max_length=80, null=True, blank=True)
-    
+
     LTRZ_CHOICES = (
         (1, 'Western North Channel'),
         (2, 'Darch Islands'),
@@ -169,9 +167,9 @@ class CWT(models.Model):
         (14, 'SW Manitoulin Island'),
         (15, 'South Bay'),
         (16, 'Six Fathom Bank'),
-        (17, 'North Lake Huron Humps'),        
+        (17, 'North Lake Huron Humps'),
     )
-  
+
     ltrz =  models.IntegerField(choices=LTRZ_CHOICES, null=True, blank=True)
     #other = models.CharField(max_length=100, null=True, blank=True)
     #study_number = models.CharField(max_length=15, null=True, blank=True)
@@ -184,9 +182,9 @@ class CWT(models.Model):
         ('OMNR', 'Ontario Ministry of Natural Resources'),
         ('MDNR', 'Michigan Department of Natural Resources'),
         ('USFWS', 'U.S. Fish and Wildlife Service'),
-    )    
+    )
     agency = models.CharField(max_length=5, choices=AGENCY_CHOICES)
-    
+
     comments = models.TextField(null=True, blank=True)
 
     CLIP_CHOICES = (
@@ -194,11 +192,11 @@ class CWT(models.Model):
         (1, 'Right Pectoral'),
         (2, 'Left Pectoral'),
         (3, 'Right Pelvic'),
-        (4, 'Left Pelvic'),        
+        (4, 'Left Pelvic'),
         (14, 'Right Pectoral and Left Pelvic'),
         (23, 'Left Pectoral and Right Pelvic'),
-        (5, 'Adipose'))        
-    
+        (5, 'Adipose'))
+
     clipa = models.IntegerField(choices=CLIP_CHOICES,
                                       default=5, null=True, blank=True)
 
@@ -207,4 +205,3 @@ class CWT(models.Model):
         cwt = str(self.cwt)
         string = '-'.join((cwt[:2], cwt[2:4], cwt[4:]))
         return string
-    

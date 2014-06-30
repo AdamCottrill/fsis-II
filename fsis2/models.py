@@ -20,7 +20,7 @@ class BuildDate(models.Model):
     def __unicode__(self):
         return self.build_date.strftime("%d-%b-%Y")
 
-    
+
 class Readme(models.Model):
     #a table to hold all of the information regarding last FSIS
     #download and FS_Master rebuild (it appear as a footer on every
@@ -45,18 +45,18 @@ class Readme(models.Model):
         if datestring:
             xx = datestring.group()
             try:
-                formatted_date = datetime.strptime(xx, "%d-%b-%Y")          
+                formatted_date = datetime.strptime(xx, "%d-%b-%Y")
                 return formatted_date
             except ValueError:
                 pass
             try:
-                formatted_date = datetime.strptime(xx, "%m/%d/%Y")          
+                formatted_date = datetime.strptime(xx, "%m/%d/%Y")
                 return formatted_date
             except ValueError:
-                return None               
+                return None
         else:
             return None
-                
+
 
 class Species(models.Model):
     species_code = models.IntegerField(unique=True)
@@ -107,7 +107,7 @@ class Proponent(models.Model):
 
 class StockingSite(models.Model):
     #many of these should be choice fields or foreign keys to look-up tables
-    #eventually they will be replaced with spatail queries
+    #eventually they will be replaced with spatial queries
     fsis_site_id =  models.IntegerField(unique=True)
     site_name = models.CharField(max_length=50) #this should be unique
     stkwby  = models.CharField(max_length=30)
@@ -122,6 +122,7 @@ class StockingSite(models.Model):
 
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
+
 
     objects = models.GeoManager()
 
@@ -175,7 +176,7 @@ class Lot(models.Model):
 
 
     def get_year(self):
-            """          
+            """
             Arguments:
             - `self`:
             """
@@ -186,7 +187,7 @@ class Lot(models.Model):
             else:
                 yr = "20" + x[6:8]
             return yr
-                  
+
 
     def get_event_points(self):
         '''get the coordinates of events associated with this lot.  Returns a
