@@ -20,11 +20,14 @@
 
 #import sqlalchemy
 from geoalchemy import *
+#from geoalchemy2 import Geometry
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Column, Integer, String, Date, DateTime, ForeignKey,
                         Float)
 from sqlalchemy.orm import relationship, backref
+
+
 
 import datetime
 
@@ -118,6 +121,7 @@ class StockingSite(Base):
     deswby_lid  = Column(String(15))
     deswby  = Column(String(10))
     geom = GeometryColumn(Point(2))
+    #geom = Column(Geometry('POINT'))
 
     def __repr__(self):
         return "<%s (%s)>" % (self.site_name, self.site_id)
@@ -172,6 +176,7 @@ class Event(Base):
     dd_lat = Column(Float)
     dd_lon = Column(Float)
     geom = GeometryColumn(Point(2))
+    #geom = Column(Geomeytry('POINT'))
     development_stage = Column(Integer)
     transit = Column(String(20))
     stocking_method = Column(String(20))
