@@ -33,7 +33,7 @@ def timesince(dt, default="just now"):
 
     now = datetime.utcnow()
     diff = now - dt
-    
+
     periods = (
         (diff.days / 365, "year", "years"),
         (diff.days / 30, "month", "months"),
@@ -45,11 +45,11 @@ def timesince(dt, default="just now"):
     )
 
     for period, singular, plural in periods:
-        
+
         if period:
             return "%d %s ago" % (period, singular if period == 1 else plural)
 
-    return default    
+    return default
 
 
 def footer_string():
@@ -58,7 +58,7 @@ def footer_string():
     fsis.  This string will appear at the bottom of a number of
     standard views
     '''
-    
+
     build_date = BuildDate.objects.latest('build_date').build_date
     build_date = build_date.strftime("%b-%d-%Y")
 
@@ -66,26 +66,28 @@ def footer_string():
     download_date = download_date.get_download_date()
     delta = timesince(download_date) #lapse time
     download_date = download_date.strftime("%b-%d-%Y") #time as a string
-        
+
     ftr_str="FSIS-II built on {0} using data downloaded from FSIS on {1} ({2})"
     ftr_str = ftr_str.format(build_date, download_date, delta)
     return ftr_str
-   
+
 
 def prj_cd_Year(x):
     '''format LHA_IA12_000 as 2012'''
     if int(x[6:8]) > 60:
         yr = "".join(["19", x[6:8]])
     else:
-        yr = "".join(["20", x[6:8]])        
+        yr = "".join(["20", x[6:8]])
     return yr
 
 
 def get_map(event_points):
-    """
+    """a helper function that will return an info map object containing
+    the points in event_points
 
     Arguments:
     - `event_points`:
+
     """
     if len(event_points)>0:
         geoms = [[x[1],x[0]] for x in event_points]
@@ -100,7 +102,6 @@ def get_map(event_points):
             )
     else:
         map=None
-    #import pdb; pdb.set_trace()
     return map
 
 
@@ -126,14 +127,14 @@ def get_map2(event_points, roi=None):
     roi.  The roi and all of the points it contains are rendered.
 
     used by views find_events
-    
+
     Arguments: -
     `event_points`: a list of points objects and their event numbers
     'roi': region of interest used to select event points
 
     """
     layers = []
-    zoom_to_extent = False    
+    zoom_to_extent = False
     if len(event_points)>0:
         if roi:
             style = {'overlay_style': {'fill_color': '#0000FF',
@@ -154,7 +155,7 @@ def get_map2(event_points, roi=None):
                 layers.extend(pt_layer)
             except TypeError:
                 layers.append(pt_layer)
-            
+
         mymap = Map(
             layers,
             {'default_lat': 45,
@@ -162,7 +163,7 @@ def get_map2(event_points, roi=None):
             'default_zoom':7,
             'zoom_to_data_extent': zoom_to_extent,
             'map_div_style': {'width': '700px', 'height': '600px'},
-             
+
             }
             )
     else:
@@ -179,24 +180,15 @@ def get_recovery_map(stocking_points, recovery_points):
 
     used by views cwt_detail
 
-    
     Arguments: -
     `stocking_points`: a list of points objects and their event numbers
     'roi': region of interest used to select event points
 
     """
     layers = []
-    if len(stocking_points) > 0:
-        for pt in stocking_points:
-            pt_layer = InfoLayer([[pt[1].wkt,
-                                   str(pt[0])]], {'name': str(pt[0])})
-            try:
-                layers.extend(pt_layer)
-            except TypeError:
-                layers.append(pt_layer)
 
     if recovery_points:
-        for pt in recovery_points:        
+        for pt in recovery_points:
             recovery_layer = InfoLayer([[pt[1].wkt, str(pt[0])]],
                                    {'name':str(pt[0]),
                                     'overlay_style': {'fill_color': '#00FF00',
@@ -207,6 +199,15 @@ def get_recovery_map(stocking_points, recovery_points):
                 layers.extend(recovery_layer)
             except TypeError:
                 layers.append(recovery_layer)
+
+    if len(stocking_points) > 0:
+        for pt in stocking_points:
+            pt_layer = InfoLayer([[pt[1].wkt,
+                                   str(pt[0])]], {'name': str(pt[0])})
+            try:
+                layers.extend(pt_layer)
+            except TypeError:
+                layers.append(pt_layer)
 
     if len(layers) > 0:
         mymap = Map(
@@ -220,9 +221,9 @@ def get_recovery_map(stocking_points, recovery_points):
     else:
         mymap = empty_map()
     return mymap
-    
 
-    
+
+
 
 def get_basin_totals(year, spc, strain=None):
     '''A helper function to retrieve the number of fish stocked by
@@ -230,19 +231,19 @@ def get_basin_totals(year, spc, strain=None):
 
     This function uses raw sql - the django orm still doesn't seem to
     to aggregation well.'
-    
+
     Returns a dictionary that includes keys for 'North Channel',
     'Georgian Bay', 'Main Basin' and 'total''
 
     '''
     from django.db import connection
-        
+
     #spc ignoring strain
-    sql = '''select basin, sum(stkcnt) from fsis2_event 
+    sql = '''select basin, sum(stkcnt) from fsis2_event
          join fsis2_lot on fsis2_lot.id=fsis2_event.lot_id
          join fsis2_species on fsis2_species.id = fsis2_lot.species_id
          join fsis2_stockingsite on fsis2_stockingsite.id = fsis2_event.site_id
-         group by basin, year, species_code having 
+         group by basin, year, species_code having
          fsis2_event.year=%(year)s and
          fsis2_species.species_code=%(spc)s;
          '''
@@ -265,7 +266,7 @@ def get_basin_totals(year, spc, strain=None):
 def calc_aac(yc):
     """given a year class that a cwt was associated with calculate
     age-at-capture for every year between age 0 and today
-    
+
     returns a list of two element tuples.  each tuple contains the
     year and the age the fish would have been if it had been captured
     in that year.  If yc is greater than the current year it returns None.
@@ -283,7 +284,7 @@ def calc_aac(yc):
         return aac
 
 
-    
+
 
 class EventDetailView(DetailView):
 
@@ -296,8 +297,8 @@ class EventDetailView(DetailView):
         event = kwargs.get('object')
 
         cwts = [x.cwt for x in event.get_cwts()]
-        context['cwt_list'] = CWT.objects.filter(cwt__in=cwts)       
-        
+        context['cwt_list'] = CWT.objects.filter(cwt__in=cwts)
+
         event_point = [[ event.fs_event, event.geom]]
         mymap = get_map(event_point)
         context['map'] = mymap
@@ -311,7 +312,7 @@ class EventYearArchiveView(YearArchiveView):
     make_object_list = True
     allow_future = True
     paginate_by = 20
-    
+
     def get_context_data(self, **kwargs):
         context = super(EventYearArchiveView, self).get_context_data(**kwargs)
         context['footer'] = footer_string()
@@ -319,7 +320,7 @@ class EventYearArchiveView(YearArchiveView):
         context['years'] = years
         return context
 
-    
+
 class EventListView(ListView):
     '''render a list of events optionally filtered by year or lot'''
     queryset = Event.objects.all()
@@ -330,12 +331,12 @@ class EventListView(ListView):
         context = super(EventListView, self).get_context_data(**kwargs)
 
         years = Event.objects.values('year').distinct().order_by('-year')
-        
+
         cwt = self.kwargs.get('cwt',None)
         context['cwt'] = cwt
         context['footer'] = footer_string()
         context['years'] = years
-        
+
         #if this is cwt view, we want to include a map
         if cwt:
             events = kwargs.get('object_list')
@@ -357,12 +358,12 @@ class EventListView(ListView):
 
 class EventCreateView(CreateView):
     model = Event
-    
+
     def get_context_data(self, **kwargs):
         context = super(EventCreateView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
-    
+
 class EventUpdateView(UpdateView):
     model = Event
 
@@ -400,13 +401,13 @@ class LotListView(ListView):
             queryset = Lot.objects.filter(
                         event__pk__isnull=False).distinct()
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super(LotListView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
 
-    
+
 class LotDetailView(DetailView):
     model = Lot
 
@@ -416,14 +417,14 @@ class LotDetailView(DetailView):
         event_points = lot.get_event_points()
         mymap = get_map(event_points)
         context['map'] = mymap
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
 
 
 class CwtListView(ListView):
 
     model = CWT
-    
+
     template_name='fsis2/cwt_list.html'
     paginate_by = 30
 
@@ -441,10 +442,10 @@ class CwtListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(CwtListView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
 
-        
+
 
 class SiteListView(ListView):
     queryset = StockingSite.objects.all()
@@ -464,12 +465,26 @@ class SiteListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(SiteListView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
+
+        #sites = StockingSite.objects.all()
+        #site_points = [[x.site_name, x.geom] for x in sites]
+        #mymap = get_map(site_points)
+        #context['map'] = mymap
+
         return context
 
 
-        
+
 class SiteDetailView(DetailView):
+    '''a detail view that returns a map of stocking location (and events
+    associated with this location), a table of site attributes, and a
+    list of stocking events that have occurred here.  If there are
+    stocking events with lat-lon that differ from the lat-lon
+    associated with the stocking site lookup table they will be
+    plotted in a different colour around the stocking site.
+    '''
+
     model = StockingSite
     template_name = "fsis2/site_detail.html"
 
@@ -477,10 +492,67 @@ class SiteDetailView(DetailView):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
         site = kwargs.get('object')
         site_point = [[site.fsis_site_id, site.geom]]
-        mymap = get_map(site_point)
+        #some sites have events that have actual lat-long associated with them
+        sql = """select e.id, e.fs_event, e.geom from fsis2_event e join
+                 fsis2_stockingsite s on e.site_id=s.id
+                 where st_equals(e.geom, s.geom)=FALSE and s.site_name='{0}';"""
+        sql = sql.format(site.site_name)
+        stocking_pts = Event.objects.raw(sql)
+
+        stocking_pts = [[x.fs_event, x.geom] for x in stocking_pts]
+        #mymap = get_map(site_point)
+        mymap = get_recovery_map(site_point, stocking_pts)
+        events = (Event.objects.filter(site__site_name=site.site_name).order_by(
+            '-event_date'))
+        context['events'] = events
         context['map'] = mymap
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
+
+
+def find_sites(request):
+    '''render a map in a form and return a list of stocking sites
+    contained in the selected poygon.  If the form is valid, a map
+    containing the selected region and selected point are passed to a
+    different template.
+
+    '''
+
+    if request.method == 'POST':
+        form = GeoForm(request.POST)
+        if form.is_valid():
+            roi = form.cleaned_data['selection'][0]
+            species = form.cleaned_data.get('species')
+            #import pdb; pdb.set_trace()
+            if roi.geom_type=='Polygon':
+                if species:
+                    sites = StockingSite.objects.filter(
+                        event__lot__species__in=species).filter(
+                            geom__within=roi).distinct()
+                else:
+                    sites = StockingSite.objects.filter(
+                            geom__within=roi)
+
+                site_points = [[x.site_name, x.geom] for x in sites]
+                mymap = get_map2(event_points=site_points, roi=roi)
+
+            return render_to_response('fsis2/show_sites_gis.html',
+                              {'map':mymap,
+                               'object_list':sites,},
+                            context_instance = RequestContext(request))
+
+
+    else:
+        form = GeoForm() # An unbound form
+        return render_to_response('fsis2/find_events_gis.html',
+                                  {'form':form, 'what':'sites'},
+                                  context_instance = RequestContext(request)
+        )
+
+
+
+
+
 
 
 class AnnualTotalSpcView(ListView):
@@ -488,7 +560,7 @@ class AnnualTotalSpcView(ListView):
     annually by species and Proponent.  Spc is passed in as an
     argument.
     '''
-    
+
     template_name = "fsis2/annual_total_stkcnt_list.html"
 
     def get_queryset(self):
@@ -501,25 +573,25 @@ class AnnualTotalSpcView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AnnualTotalSpcView, self).get_context_data(**kwargs)
-        
+
         spc = self.kwargs.get('spc', None)
         context['species'] = get_object_or_404(Species, species_code=spc)
         context['species_list'] = Species.objects.all()
         context['strain_list'] = Strain.objects.filter(
             species__species_code=81).values('strain_name').distinct()
         context['footer'] = footer_string()
-      
+
         return context
 
 
-        
+
 class AnnualStockingBySpcStrainView(ListView):
     '''render a view that plots the stocking events associated with a
     strain and year on a map and summarizes those events in a
     table:'''
-    
+
     template_name = "fsis2/annual_stocking_events.html"
-    
+
     def get_queryset(self):
         self.spc = self.kwargs.get('spc', None)
         self.strain = self.kwargs.get('strain', None)
@@ -539,12 +611,12 @@ class AnnualStockingBySpcStrainView(ListView):
         event_points = [[x.fs_event, x.geom] for x in events]
         mymap = get_map(event_points)
         context['map'] = mymap
-        
+
         spc = self.kwargs.get('spc', None)
         strain = self.kwargs.get('strain', None)
         yr = self.kwargs.get('year', None)
 
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         context['year'] = yr
         context['species'] = get_object_or_404(Species, species_code=spc)
         context['strain'] = Strain.objects.filter(species__species_code=spc,
@@ -558,16 +630,16 @@ class AnnualStockingBySpcStrainView(ListView):
         context['species_list'] = Species.objects.all()
         context['strain_list'] = Strain.objects.filter(species__species_code=81
                                 ).values('strain_name','strain_code').distinct()
-        
+
         project_list = Event.objects.filter(lot__species__species_code=spc,
                                         lot__strain__strain_code=strain,
                                         ).values('prj_cd').distinct()
         year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
         #get unique values and return it to  list
-        year_list = list(set(year_list))        
+        year_list = list(set(year_list))
         year_list.sort(reverse=True)
         context['year_list'] = year_list
-       
+
         return context
 
 
@@ -583,7 +655,7 @@ class AnnualStockingBySpcView(ListView):
     the queryset is a subset of the other. - for now it works.
 
     '''
-    
+
     template_name = "fsis2/annual_stocking_events.html"
 
     def get_queryset(self):
@@ -604,19 +676,19 @@ class AnnualStockingBySpcView(ListView):
         mymap = get_map(event_points)
         context['map'] = mymap
         context['footer'] = footer_string()
-        
+
         spc = self.kwargs.get('spc', None)
         yr = self.kwargs.get('year', None)
 
         context['year'] = yr
         context['species'] = get_object_or_404(Species, species_code=spc)
-        
+
         #get the lists required for this view:
         context['species_list'] = Species.objects.all()
         context['strain_list'] = Strain.objects.filter(
             species__species_code=81).values(
                 'strain_name','strain_code').distinct()
-        
+
         project_list = Event.objects.filter(lot__species__species_code=spc,
                     ).values('prj_cd').distinct()
         year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
@@ -627,7 +699,7 @@ class AnnualStockingBySpcView(ListView):
 
         basin_totals = get_basin_totals(year=yr, spc=spc)
         context['basin_totals'] = basin_totals
-        
+
         return context
 
 
@@ -643,7 +715,7 @@ class AnnualStockingByHatcherySpcView(ListView):
     the queryset is a subset of the other. - for now it works.
 
     '''
-    
+
     template_name = "fsis2/annual_stocking_events.html"
 
     def get_queryset(self):
@@ -667,7 +739,7 @@ class AnnualStockingByHatcherySpcView(ListView):
         mymap = get_map(event_points)
         context['map'] = mymap
         context['footer'] = footer_string()
-        
+
         spc = self.kwargs.get('spc', None)
         yr = self.kwargs.get('year', None)
         hatchery = self.kwargs.get('hatchery', None)
@@ -675,13 +747,13 @@ class AnnualStockingByHatcherySpcView(ListView):
         context['year'] = yr
         context['species'] = get_object_or_404(Species, species_code=spc)
         context['hatchery'] = get_object_or_404(Proponent, abbrev=hatchery)
-        
+
         #get the lists required for this view:
         context['species_list'] = Species.objects.all()
         context['strain_list'] = Strain.objects.filter(
             species__species_code=81).values(
                 'strain_name','strain_code').distinct()
-        
+
         project_list = Event.objects.filter(lot__species__species_code=spc,
                     ).values('prj_cd').distinct()
         year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
@@ -689,21 +761,21 @@ class AnnualStockingByHatcherySpcView(ListView):
         year_list = list(set(year_list))
         year_list.sort(reverse=True)
         context['year_list'] = year_list
-       
+
         return context
 
-        
+
 
 class ProponentListView(ListView):
-    '''Render a list of proponents who have stocked fish'''    
+    '''Render a list of proponents who have stocked fish'''
     queryset = Proponent.objects.all()
     template_name = "fsis2/ProponentList.html"
-    
+
     def get_context_data(self, **kwargs):
         context = super(ProponentListView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
-    
+
 class ProponentLotListView(ListView):
     '''Render a list of lots stocked by a specific proponent'''
     template_name = "LotList.html"
@@ -715,24 +787,24 @@ class ProponentLotListView(ListView):
         '''
         lot = self.request.GET.get("lot")
         if lot:
-            lot = get_object_or_404(Lot, fs_lot = lot)        
+            lot = get_object_or_404(Lot, fs_lot = lot)
         if lot:
             url = reverse('lot_detail', kwargs={'pk': lot.id})
             return HttpResponseRedirect(url)
         else:
             return super(ProponentLotListView, self).dispatch(request,
                                                               *args, **kwargs)
-            
+
     def get_queryset(self, **kwargs):
         '''get a list of events associated with this hatchery'''
         self.hatchery = self.kwargs.get('hatchery', None)
         queryset = Lot.objects.filter(proponent__abbrev=self.hatchery)
-        return queryset  
-            
+        return queryset
+
     def get_context_data(self, **kwargs):
         '''add the timestamped footer to the page'''
         context = super(ProponentLotListView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
 
 
@@ -742,11 +814,11 @@ class SpeciesListView(ListView):
     '''
     queryset = Species.objects.all()
     template_name = "fsis2/SpeciesList.html"
-    
+
     def get_context_data(self, **kwargs):
-        '''add the timestamped footer to the page'''        
+        '''add the timestamped footer to the page'''
         context = super(SpeciesListView, self).get_context_data(**kwargs)
-        context['footer'] = footer_string()        
+        context['footer'] = footer_string()
         return context
 
 
@@ -761,7 +833,7 @@ def find_events(request):
         form = GeoForm(request.POST)
         if form.is_valid():
             roi = form.cleaned_data['selection'][0]
-            species = form.cleaned_data.get('species')            
+            species = form.cleaned_data.get('species')
             #import pdb; pdb.set_trace()
             if roi.geom_type=='Polygon':
                 if species:
@@ -774,19 +846,24 @@ def find_events(request):
 
                 event_points = [[x.fs_event, x.geom] for x in events]
                 mymap = get_map2(event_points=event_points, roi=roi)
-                                    
+
             return render_to_response('fsis2/show_events_gis.html',
                               {'map':mymap,
                                'object_list':events,},
                             context_instance = RequestContext(request))
 
-            
+
     else:
         form = GeoForm() # An unbound form
         return render_to_response('fsis2/find_events_gis.html',
-                                  {'form':form},
+                                  {'form':form, 'what':'events'},
                                   context_instance = RequestContext(request)
         )
+
+
+
+
+
 
 
 
@@ -803,7 +880,7 @@ def get_recovery_points(recoveries):
         recovery_points = None
     return recovery_points
 
-        
+
 def cwt_detail_view(request, cwt_number):
     '''The view returns all of the available information associated
     with a specific cwt number.  The view attemps to create a map
@@ -813,13 +890,13 @@ def cwt_detail_view(request, cwt_number):
     point.  If multiple events are found in cwts_cwt, a template
     accomodates that multiple tagging events and includes a warning is
     used instead.
-    
+
     **Context:**
 
     ``cwt``
         a :model:`cwts.CWT` object if only one cwt is found in cwt
 
-    ``aac``    
+    ``aac``
         a dictionary contain year of catpture and age pairs calculated
         for this cwt based on its year class.  Dynamically calculated
         when view is called.
@@ -827,25 +904,25 @@ def cwt_detail_view(request, cwt_number):
     ``cwt_number``
         only returned if multiple cwt records are found. Used to label
         multiple cwt template.
-    
+
     ``cwt_list``
         a query set of :model:`cwts.CWT` filtered by cwt_number.  None
         if cwt_number returns only one record.
-    
+
     ``event_list``
         a list of :model:`fsis2.Event` objects associated with this
         cwt.
 
     ``map``
         a olwidget map contain stocking points associated with this cwt.
-    
+
     **Templates:**
 
     :template:`fsis2/cwt_detail.html`
     :template:`fsis2/multiple_cwt_detail.html`
 
     '''
-    
+
     cwt = None
     cwt_qs = None
 
@@ -873,7 +950,7 @@ def cwt_detail_view(request, cwt_number):
                 #if not, just pass in an empty list
                 us_events = []
             else:
-                us_events = [[cwt.agency, cwt.us_grid_no.geom]]            
+                us_events = [[cwt.agency, cwt.us_grid_no.geom]]
             mymap = get_recovery_map(us_events, recovery_pts)
         else:
             event_points = [[x.fs_event, x.geom] for x in cwt_qs]
@@ -902,5 +979,3 @@ def cwt_detail_view(request, cwt_number):
                                    'recovery_list': recoveries,
                                    'map': mymap},
                                   context_instance=RequestContext(request))
-            
-            

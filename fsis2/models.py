@@ -326,7 +326,6 @@ class Event(models.Model):
         return(yr)
 
 
-
 class TaggingEvent(models.Model):
     stocking_event= models.ForeignKey(Event)
     fs_tagging_event_id = models.IntegerField(unique=True)
