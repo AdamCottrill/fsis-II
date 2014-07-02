@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>  {% block title  %} FSIS II  {% endblock %}  </title>
 
@@ -11,7 +11,7 @@
     <script src="{{ STATIC_URL }}js/html5shiv.js"></script>
     <script src="{{ STATIC_URL }}js/respond.min.js"></script>
 
-    <script src="{{ STATIC_URL }}js/jquery-1.9.1.js"></script>    
+    <script src="{{ STATIC_URL }}js/jquery-1.9.1.js"></script>
     <script src="{{ STATIC_URL }}js/jquery-1.10.2.min.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
 
@@ -20,12 +20,12 @@
        width: 600px;
        float: right;
       }
-    
+
     </style>
 
     {% block extrahead %}
     {% endblock %}
-    
+
   </head>
 
   <body>
@@ -38,7 +38,7 @@
       .navbar-inverse .navbar-inner {
       filter: none;
       background-image: none;
-      } 
+      }
     </style>
 
     <header class="navbar navbar-default" role="navigation">
@@ -56,7 +56,7 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse navbar-ex1-collapse">
         <ul class="nav navbar-nav">
-          <li><a href="{% url 'lot_list' %}">Fish Lots</a> </li>         
+          <li><a href="{% url 'lot_list' %}">Fish Lots</a> </li>
 
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Stocking Events<b class="caret"></b></a>
@@ -67,12 +67,20 @@
               <li><a href="#">Edit Event</a> </li>
               <li><a href="#">Approve Events</a> </li>
               <li class="divider"></li>
-              <li><a href="{% url 'site_list' %}">Stocking Sites</a>  </li>
-              <li><a href="#">Add New Stocking Site</a> </li>
-              <li class="divider"></li>
               <li><a href="{% url 'find_events' %}">Find by Location</a>  </li>
 
-            </ul>             
+            </ul>
+          </li>
+
+          <li class="dropdown">
+            <a href="#"class="dropdown-toggle" data-toggle="dropdown">Stocking Sites<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="{% url 'site_list' %}">Stocking Sites</a>  </li>
+              <li><a href="{% url 'find_sites' %}">Find by Region</a> </li>
+              <li><a href="#">Find Closest Site</a> </li>
+              <li class="divider"></li>
+              <li><a href="#">Add New Stocking Site</a> </li>
+            </ul>
           </li>
 
 
@@ -84,7 +92,7 @@
               <li><a href="{% url 'hatchery_list' %}">By Hatchery</a>  </li>
               <li><a href="{% url 'species_list' %}">By Species</a> </li>
               <li><a href="#">D. Reid Spreadsheet</a> </li>
-            </ul>             
+            </ul>
           </li>
 
           {% block navbar_other_apps %}
@@ -107,10 +115,10 @@
         </ul>
 
         {% if user.is_authenticated %}
-        <p class="navbar-text">Welcome 
-          {% if user.first_name %} 
+        <p class="navbar-text">Welcome
+          {% if user.first_name %}
           {{ user.first_name }}!
-          {% else %} 
+          {% else %}
           {{ user.username }}!
           {% endif %} </p>
         <p class="navbar-text"><a href="{% url 'logout' %}?next=/">Logout</a> </p>
@@ -141,7 +149,7 @@
     </div> <!-- /container -->
 
     {% block footer %}
-    {% if footer %}    
+    {% if footer %}
     <hr />
     <div id="footer">
       <div class="container well ">

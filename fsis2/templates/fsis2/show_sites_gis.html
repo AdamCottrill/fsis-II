@@ -1,0 +1,90 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+<!-- {% block pages %}
+
+
+{% endblock %}
+-->
+
+{% block extrahead %}
+
+{{ map.media }}
+
+<!-- tablesorter plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
+
+
+{% endblock %}
+
+
+{% block content %}
+{% load humanize %}
+{% load fsis2_filters %}
+
+
+<div class="row">
+  <div class="col-md-10 col-md-offset-1">
+    {{ map }}
+  </div>
+</div>
+
+ {% if object_list %}
+
+<br />
+<h4>{{ object_list|length }} sites found.</h4>
+<br />
+
+  <table id="myTable" class="table tablesorter">
+    <thead><tr>
+        <td>FSIS Site ID</td>
+        <td>Site Name</td>
+        <td>Basin</td>
+        <td>Grid</td>
+        <td>Latitude</td>
+        <td>Longitude</td>
+    </thead>
+    <tbody>
+      {% for site in object_list %}
+      <tr class="{% cycle row1,row2 %}">
+        <td> <a href="{% url 'site_detail'  site.id  %}">{{ site.fsis_site_id }}</a> </td>
+        <td> {{ site.site_name }} </td>
+        <td> {{ site.basin }} </td>
+        <td> {{ site.grid }} </td>
+        {% autoescape off %}
+        <td> {{ site.dd_lat|format_ddlat }} </td>
+        <td> {{ site.dd_lon|format_ddlon }} </td>
+        {% endautoescape %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% else %}
+  <h3>Sorry no sites match that criteria.</h3>
+  {% endif %}
+
+
+
+<script type="text/javascript">
+
+  $(".tablesorter").tablesorter({
+  theme: 'bootstrap',
+  widthFixed: true,
+  showProcessing: true,
+  headerTemplate: '{content} {icon}',
+  widgets: ['zebra', 'uitheme', 'scroller'],
+  widgetOptions: {
+  scroller_height: 300,
+  scroller_barWidth: 17,
+  scroller_jumpToHeader: true,
+  scroller_idPrefix: 's_'
+  }
+  });
+
+</script>
+
+
+
+{% endblock %}

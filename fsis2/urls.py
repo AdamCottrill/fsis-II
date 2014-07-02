@@ -6,10 +6,10 @@ from django.views.generic import TemplateView
 #from django.views.generic.detail import DetailView
 
 
-from .views import (EventDetailView, EventListView, EventYearArchiveView, 
+from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     EventUpdateView, EventCreateView,
                     LotDetailView, LotListView, LotCreateView, LotUpdateView,
-                    SiteDetailView, SiteListView, SiteCreateView, 
+                    SiteDetailView, SiteListView, SiteCreateView,
                     SiteUpdateView, CwtListView, AnnualTotalSpcView,
                     AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
                     ProponentListView, ProponentLotListView, SpeciesListView,
@@ -41,14 +41,14 @@ urlpatterns = patterns("",
             name='lot_list'
             ),
 
-        #create lot 
+        #create lot
         url(
             regex=r'^lot/add$',
             view=LotCreateView.as_view(),
             name='lot_create'
             ),
 
-        #update lot 
+        #update lot
         url(
             regex=r'^lot/update/(?P<pk>\d+)$',
             view=LotUpdateView.as_view(),
@@ -64,14 +64,14 @@ urlpatterns = patterns("",
             view=EventDetailView.as_view(),
             name='event_detail'
             ),
-            
+
         #event list
         #event list <year>
 
         url(r'^events/(?P<year>\d{4})/$',
             EventYearArchiveView.as_view(template_name='fsis2/event_list.html'),
             name="event_year_list"),
-           
+
         #events associated with cwt
         #url(r'^events/(?P<cwt>\d{6})/$',
         #    EventListView.as_view(template_name='fsis2/event_list.html'),
@@ -86,14 +86,14 @@ urlpatterns = patterns("",
             ),
 
 
-        #create event 
+        #create event
         url(
             regex=r'^event/add$',
             view=EventCreateView.as_view(),
             name='event_create'
             ),
 
-        #update event 
+        #update event
         url(
             regex=r'^event/update/(?P<pk>\d+)$',
             view=EventUpdateView.as_view(),
@@ -102,7 +102,7 @@ urlpatterns = patterns("",
 
 
         url(r'^find_events/$', 'fsis2.views.find_events', name='find_events'),
-                       
+
         #================
         #    CWTs
 
@@ -120,7 +120,7 @@ urlpatterns = patterns("",
             name='cwt_detail'
             ),
 
-                       
+
         #================
         #    STOCKING SITEs
 
@@ -153,7 +153,11 @@ urlpatterns = patterns("",
             ),
 
 
-        #================                       
+        url(regex=r'^find_sites/$',
+            view='fsis2.views.find_sites',
+            name='find_sites'),
+
+        #================
         #Proponent List
         url(
             regex=r'^hatcheries/$',
@@ -173,9 +177,9 @@ urlpatterns = patterns("",
 #            name='hatchery_event_list'
 #            ),
 #
-                       
 
-        #================                       
+
+        #================
         #SPECIES
         url(
             regex=r'^species/$',
@@ -189,9 +193,9 @@ urlpatterns = patterns("",
          #     name='hatchery_lot_list'
          #     ),
 
-                       
 
-                       
+
+
         #================
         #    ABOUT
         url(r'^about', TemplateView.as_view(template_name='about.html'),
@@ -216,7 +220,7 @@ urlpatterns = patterns("",
             view = AnnualStockingBySpcView.as_view(),
             name = 'annual_stocking_events_by_spc'
             ),
-                       
+
 
         # annual stocking by strain - where did they go?
         url(
@@ -236,6 +240,6 @@ urlpatterns = patterns("",
             name = 'annual_stocking_events_by_spc_hatchery'
             ),
 
-                       
+
 
     )

@@ -6,7 +6,7 @@
 {% endblock %}
 -->
 
-{% block extrahead %} 
+{% block extrahead %}
 
 {{ form.media }}
 
@@ -28,22 +28,26 @@
     <form method="post" id="" action="">{% csrf_token %}
       <div class="row">
         <div class="col-md-7">
-          {{ form.selection }}            
+          {{ form.selection }}
         </div>
         <div class="col-md-5">
           <div class="panel panel-default">
             <div class="panel-body">
           <h4>Select Species:</h4>
           <p>(leave blank for all species)</p>
-          {{ form.species }}                         
-            </div>            
+          {{ form.species }}
+            </div>
           </div>
+          {% if what == "sites" %}
+          <a href="{% url 'find_sites' %}" class="btn btn-default">Reset</a>
+          {% else %}
           <a href="{% url 'find_events' %}" class="btn btn-default">Reset</a>
-          <button type="submit" class="btn  btn-success">Submit</button>          
+          {% endif %}
+          <button type="submit" class="btn  btn-success">Submit</button>
 
         </div>
       </div>
-    </form>    
+    </form>
   </div>
 
 
@@ -68,5 +72,3 @@
 
 
 {% endblock %}
-
-

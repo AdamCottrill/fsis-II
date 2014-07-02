@@ -7,12 +7,13 @@
 
 {% block title %} {{ object.title  }}  {% endblock %}
 
-{% block header %} 
+{% block header %}
 <h2> Named Stocking Site: {{ object.site_name }} </h2>
 <hr />
 {% endblock %}
 
 {% block content %}
+{% load humanize %}
 {% load fsis2_filters %}
 
 <div class="container">
@@ -66,17 +67,46 @@
           <td><b>UTM:</b></td>
           <td> {{ object.utm }}</td>
         </tr>
-        
+
       </table>
-      
+
     </div>
     <div class="col-md-8">
       {{ map }}
     </div>
-    
+
   </div>
 
   <hr />
+
+  <div id="event_list" class="row">
+    <h3>Stocking Events: </h3>
+    {% if events %}
+    <table id="myTable" class="table tablesorter">
+      <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
+          <td>Species</td> <td>Strain</td> <td>Clip Applied</td> <td>Development Stage</td></tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr class="{% cycle row1,row2 %}">
+          <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
+          <td> {{ event.stkcnt|intcomma }} </td>
+          <td> {{ event.event_date|date }} </td>
+          <td> {{ event.lot.species }} </td>
+          <td> {{ event.lot.strain.strain_name }} </td>
+          <td> {{ event.clipa }} </td>
+          <td> {{ event.get_development_stage_display }} </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>There are currenly No events associated with location </p>
+    {% endif %}
+
+  </div>
+
+
 
 
 </div>
