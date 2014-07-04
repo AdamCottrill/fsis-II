@@ -18,7 +18,7 @@ from django.db.models import Sum
 from olwidget.widgets import InfoMap, InfoLayer, Map
 
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
-                     Proponent, Species, Strain, BuildDate, Readme)
+                     Proponent, Species, Strain, BuildDate, Readme, QMA, LTRZ)
 
 from cwts.models import CWT, USgrid, CWT_recovery
 
@@ -175,7 +175,7 @@ def get_map2(event_points, roi=None):
 
 def get_recovery_map(stocking_points, recovery_points):
 
-    """This map function taks a list of stocking points and second
+    """This map function takes a list of stocking points and second
     list of recoveries.
 
     used by views cwt_detail
@@ -978,4 +978,138 @@ def cwt_detail_view(request, cwt_number):
                                    'event_list': events,
                                    'recovery_list': recoveries,
                                    'map': mymap},
+                                  context_instance=RequestContext(request))
+
+
+def cwt_recovered_qma(request, qma):
+    """a view to find all of the cwt recovered in a qma and their
+    associated stocking information
+
+    **Context:**
+
+    ``qma`` a Quota Management Area name.  Used to select
+        appropriate qma polygon from fsis2_QMA table.  Only cwt
+        numbers recovered inside the qma are returned and plotted on
+        map.
+
+    :template:`fsis2/cwt_recovered_qma.html`
+
+
+    """
+
+    yr=2012 #hard code to a single year for now - keep it simple for development
+
+    qma_poly = QMA.objects.get(qma=qma)
+
+    recoveries = CWT_recovery.objects.filter(geom__within=qma_poly.geom)
+
+    #these are all of the cwt recoveries - all strains and species
+    recoveries = recoveries.filter(recovery_year=yr)
+
+    cwts = []
+    [cwts.append(x.cwt) for x in recoveries]
+    cwts= list(set(cwts))
+
+    #now that we have a list cwts recovered in the roi and year
+    #get the stocking events associated with them and filter by the strain:
+    filtered_cwts=[]
+
+    #canadian stocking events
+    events = (Event.objects.filter(taggingevent__cwts_applied__cwt__in=cwts).
+              distinct().order_by('fs_event'))
+
+    #events = events.filter(lot__strain__strain_code=strain)
+
+    for event in events:
+        tmp = event.get_cwts()
+        if tmp:
+            filtered_cwts.extend([x.cwt for x in tmp])
+
+    filtered_cwts = list(set(filtered_cwts))
+
+    #US stocking events
+    US_events = (CWT.objects.filter(cwt__in=cwts).exclude(agency='OMNR').
+                 order_by('year_class'))
+    #US_events = US_events.filter(strain=strain)
+    for event in US_events:
+        print(event.cwt, event.stock_year-1, event.strain, event.plant_site)
+
+    filtered_cwts.extend(list(set([x.cwt for x in US_events])))
+
+    #now prepare the map by getting lists of recovery and stocking event points:
+
+    event_points = [[x.fs_event, x.geom] for x in events]
+    if US_events:
+        for event in US_events:
+            event_points.append([event.plant_site, event.us_grid_no.geom])
+
+    recovery_pts = [[x.composite_key, x.geom] for x in recoveries]
+    mymap = get_recovery_map(event_points, recovery_pts)
+
+    return render_to_response('fsis2/cwt_recovered_qma.html',
+                              {'qma':qma,
+                               'map':mymap,
+                               'cwts':filtered_cwts,
+                               'recoveries':recoveries,
+                               'events':events,
+                               'US_events':US_events},
+                                  context_instance=RequestContext(request))
+
+
+
+def cwt_recovered_ltrz(request, ltrz):
+    """a view to find all of the cwt recovered in a ltrz and their
+    associated stocking information
+
+    **Context:**
+
+    ``ltrz`` a lake trout rehabiliation zone number.  Used to select
+        appropriate ltrz polygon from fsis2_LTRZ table.  Only cwt
+        numbers recovered inside the ltrz are returned and plotted on
+        map.
+
+    :template:`fsis2/cwt_recovered_ltrz.html`
+
+    """
+    return render_to_response('fsis2/cwt_recovered_ltrz.html',
+                              {'ltrz':ltrz},
+                                  context_instance=RequestContext(request))
+
+
+def cwt_stocked_qma(request, qma):
+    """a view to find all of the cwts stocked in a qma and their
+    associated recovery information
+
+    **Context:**
+
+    ``qma`` a Quota Management Area name.  Used to select
+        appropriate qma polygon from fsis2_QMA table.  Only cwt
+        numbers stocked inside the qma are returned and plotted on
+        map.
+
+    :template:`fsis2/cwt_stocked_qma.html`
+
+
+    """
+    return render_to_response('fsis2/cwt_recovered_qma.html',
+                              {'qma':qma},
+                                  context_instance=RequestContext(request))
+
+
+def cwt_stocked_ltrz(request, ltrz):
+    """a view to find all of the cwt stocked in a ltrz and their
+    associated recovery information
+
+    **Context:**
+
+    ``ltrz`` a lake trout rehabiliation zone number.  Used to select
+        appropriate ltrz polygon from fsis2_LTRZ table.  Only cwt
+        numbers stocked inside the ltrz are returned and plotted on
+        map.
+
+    :template:`fsis2/cwt_stocked_ltrz.html`
+
+    """
+    return render_to_response('fsis2/cwt_recovered_ltrz.html',
+                              {'ltrz':ltrz},
                                   context_instance=RequestContext(request))

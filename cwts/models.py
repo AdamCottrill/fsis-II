@@ -38,6 +38,9 @@ class USgrid(models.Model):
 
     objects = models.GeoManager()
 
+    def __unicode__(self):
+        return self.us_grid_no
+
 
 class CWT_recovery(models.Model):
     '''instances of cwt recoveries.  generated from 121 and 125 data
