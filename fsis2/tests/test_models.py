@@ -13,7 +13,7 @@ class TestLot(TestCase):
 
     def test_language_unicode(self):
         pass
-            
+
     def tearDown(self):
         pass
 
@@ -26,10 +26,10 @@ class TestReadme(TestCase):
         self.comment1 = "good date with slashes 08/20/2012."
         self.readme1 = ReadmeFactory(comment = self.comment1)
 
-        self.comment2 = "good date with slashes 20-Aug-2012."        
+        self.comment2 = "good date with slashes 20-Aug-2012."
         self.readme2 = ReadmeFactory(comment = self.comment2)
 
-        self.comment3 = "Bad date with  20-20-2012."                
+        self.comment3 = "Bad date with  20-20-2012."
         self.readme3 = ReadmeFactory(comment = self.comment3)
 
         self.comment4 = "No date."
@@ -37,7 +37,7 @@ class TestReadme(TestCase):
 
         self.comment5 = ""
         self.readme5 = ReadmeFactory(comment = self.comment5)
-        
+
     def test_download_date_unicode(self):
 
         '''Verify that the get download date method on readme objects
@@ -45,7 +45,7 @@ class TestReadme(TestCase):
         format is encountered, that it returns none.
 
         '''
-        
+
         shouldbe = datetime.strptime("08/20/2012","%m/%d/%Y")
         download_date = self.readme1.get_download_date()
         self.assertEqual(download_date,shouldbe)
@@ -61,8 +61,8 @@ class TestReadme(TestCase):
 
         download_date = self.readme5.get_download_date()
         self.assertEqual(download_date,None)
-        
-        
+
+
     def tearDown(self):
         pass
 
@@ -87,9 +87,9 @@ class TestSpecies(TestCase):
 
         shouldbe = "{0} ({1})".format(self.common_name, self.scientific_name)
         self.assertEqual(str(self.spc1), shouldbe)
-        
+
         self.assertEqual(str(self.spc2), self.common_name)
-        
+
     def tearDown(self):
         pass
 
@@ -118,7 +118,7 @@ class TestStrain(TestCase):
 
         shouldbe = "{0} {1}".format( self.strain_name, self.common_name)
         self.assertEqual(str(self.strain), shouldbe)
-        
+
     def tearDown(self):
         pass
 
@@ -131,7 +131,7 @@ class TestProponent(TestCase):
         self.proponent_name = "Homer J. Simpson"
 
         self.proponent = ProponentFactory(proponent_name=self.proponent_name,
-                                          abbrev=self.abbrev)
+                                        abbrev=self.abbrev)
 
     def test_proponent_name_unicode(self):
         '''The unicode method for proponent should be the propent name
@@ -139,7 +139,7 @@ class TestProponent(TestCase):
 
         shouldbe = "{0} ({1})".format(self.proponent_name, self.abbrev)
         self.assertEqual(str(self.proponent), shouldbe)
-                
+
     def tearDown(self):
         pass
 
@@ -153,8 +153,35 @@ class TestLot(TestCase):
 
     def test_language_unicode(self):
         pass
-            
+
     def tearDown(self):
         pass
 
-        
+
+
+class TestLTRZ(TestCase):
+    """verify that the unicode method of ltrz returns a string of the form
+    'LTRZ-4'
+    """
+    def test_ltrz_unicode(self):
+        ltrz = LTRZ(ltrz=4)
+        shouldbe = "LTRZ-4"
+        self.assertEqual(str(ltrz), shouldbe)
+
+        ltrz = LTRZ(ltrz=14)
+        shouldbe = "LTRZ-14"
+        self.assertEqual(str(ltrz), shouldbe)
+
+
+class TestQMA(TestCase):
+    """verify that the unicode method of qma returns a string of the form
+    'QMA-4'
+    """
+    def test_qma_unicode(self):
+        qma = QMA(qma='4-4')
+        shouldbe = "4-4"
+        self.assertEqual(str(qma), shouldbe)
+
+        qma = QMA(qma='Zone1')
+        shouldbe = "Zone1"
+        self.assertEqual(str(qma), shouldbe)

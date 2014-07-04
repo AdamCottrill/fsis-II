@@ -14,7 +14,8 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
                     ProponentListView, ProponentLotListView, SpeciesListView,
                     AnnualStockingByHatcherySpcView, find_events,
-                    cwt_detail_view)
+                    cwt_detail_view, cwt_stocked_qma, cwt_recovered_qma,
+                    cwt_stocked_ltrz, cwt_recovered_ltrz)
 
 urlpatterns = patterns("",
 
@@ -118,6 +119,35 @@ urlpatterns = patterns("",
             regex=r'^cwts/detail/(?P<cwt_number>\d{6})$',
             view=cwt_detail_view,
             name='cwt_detail'
+            ),
+
+
+        #recoveries by stocked qma
+        url(
+            regex=r'^cwts/stocked_qma/(?P<qma>(\d\-\d)|([A-Za-z]{4}\d))$',
+            view=cwt_stocked_qma,
+            name='cwt_stocked_qma'
+            ),
+
+        #recoveries by stocked ltrz
+        url(
+            regex=r'^cwts/stocked_ltrz/(?P<ltrz>(\d+))$',
+            view=cwt_stocked_ltrz,
+            name='cwt_stocked_ltrz'
+            ),
+
+        #recoveries by recovered qma
+        url(
+            regex=r'^cwts/recovered_qma/(?P<qma>(\d\-\d)|([A-Za-z]{4}\d))$',
+            view=cwt_recovered_qma,
+            name='cwt_recovered_qma'
+            ),
+
+        #recoveries by recovered ltrz
+        url(
+            regex=r'^cwts/recovered_ltrz/(?P<ltrz>(\d+))$',
+            view=cwt_recovered_ltrz,
+            name='cwt_recovered_ltrz'
             ),
 
 

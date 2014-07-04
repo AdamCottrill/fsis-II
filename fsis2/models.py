@@ -400,3 +400,31 @@ class CWTs_Applied(models.Model):
         #def get_absolute_url(self):
         #
         #return ('cwt_events', self.cwt)
+
+    def get_stocking_events(self):
+        pass
+
+
+class LTRZ(models.Model):
+    '''a class to hold geometries associated wth lake trout rehab-zones.
+    Used to find stocking events, cwts, and cwt recoveries occurred in
+    (or potentially near) specific LTRZs.
+    '''
+    ltrz = models.IntegerField('LTRZ')
+    geom = models.MultiPolygonField(srid=26917)
+
+    def __unicode__(self):
+        ret = 'LTRZ-{0}'.format(self.ltrz)
+        return ret
+
+
+class QMA(models.Model):
+    '''a class to hold geometries associated wth Quota Management Areas.
+    Used to find stocking events, cwts, and cwt recoveries that
+    occurred in (or potentially near) specific areas.
+    '''
+    qma = models.CharField('QMA', max_length=6)
+    geom = models.MultiPolygonField(srid=26917)
+
+    def __unicode__(self):
+        return self.qma
