@@ -1,0 +1,164 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+{% block extrahead %}
+{{ map.media }}
+{% endblock %}
+
+{% block title %} {{ object.title  }}  {% endblock %}
+
+{% block content %}
+{% load humanize %}
+
+
+<div class="container">
+
+  <div class="row">
+    <h2> Management Unit: {{ mu }} </h2>
+
+      {{ map }}
+
+<hr />
+
+  <ul class="nav nav-tabs">
+    <li><a href="#cwts" data-toggle="tab">CWT Information</a></li>
+    <li><a href="#recoveries" data-toggle="tab">Recoveries</a></li>
+    <li><a href="#stocking_events" data-toggle="tab">StockingEvents</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane active" id="cwts">
+      {% if cwts %}
+      <h3>CWT Numbers:</h3>
+      <table id="myTable" class="table tablesorter table-striped">
+        <thead>
+          <tr>
+            <td>Tag Number</td>
+            <td>Year Class</td>
+            <td>Stocking Year</td>
+            <td>Species </td>
+            <td>Strain </td>
+            <td>Lifestage </td>
+            <td>Agency</td>
+            <td>Stocking Location </td>
+            <td>Recovery Count </td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cwt in cwts %}
+          <tr>
+            <td> <a href="{% url 'cwt_detail' cwt.cwt %}"> {{ cwt }} </a> </td>
+            <td>{{ cwt.year_class }} </td>
+            <td>{{ cwt.stock_year }} </td>
+            <td>{{ cwt.spc.common_name }} </td>
+            <td>{{ cwt.get_strain_display }} </td>
+            <td>{{ cwt.get_development_stage_display }} </td>
+            <td>{{ cwt.agency }} </td>
+            <td>{{ cwt.plant_site|title }} </td>
+            <td>{{ cwt.recovery_count }} </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <br />
+      <p>No cwts have been recovered in {{ mu }}. </p>
+      {% endif %}
+
+    </div>
+
+    <div class="tab-pane" id="recoveries">
+      <h3>Recoveries: (n= {{ recoveries.count }})</h3>
+      {% if recoveries %}
+      <table id="myTable" class="table tablesorter">
+        <thead><tr><td>CWT</td><td>Year</td><td>Source</td>
+            <td>Recovery Date</td><td>5-Minute Grid</td>
+            <td>Project Key</td><td>Fork Length(mm)</td> <td>Age</td></tr>
+        </thead>
+        <tbody>
+          {% for recovery in recoveries %}
+          <tr class="{% cycle row1,row2 %}">
+            <td> <a href="{% url 'cwt_detail' recovery.cwt %}"> {{ recovery.cwt }} </a> </td>
+            <td> {{ recovery.recovery_year }} </td>
+            <td> {{ recovery.get_recovery_source_display }} </td>
+            <td> {{ recovery.recovery_date|date }} </td>
+            <td> {{ recovery.recovery_grid }} </td>
+            <td> {{ recovery.composite_key }} </td>
+            <td> {{ recovery.flen }} </td>
+            <td> {{ recovery.age }} </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+
+      <p>No cwts have been recovered in {{ mu }}</p>
+      {% endif %}
+    </div>
+
+    <div class="tab-pane" id="stocking_events">
+      <h3>Ontario Stocking Events (n={{ events.count }}):</h3>
+      {% if events %}
+      <table id="myTable" class="table tablesorter">
+        <thead><tr><td>FSIS Event</td><td>Species</td><td>Strain</td>
+            <td>Number Stocked</td> <td>Event Date</td>
+            <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
+        </thead>
+        <tbody>
+          {% for event in events %}
+          <tr class="{% cycle row1,row2 %}">
+            <td> <a href="{% url 'event_detail' event.id %}">{{event.fs_event }}</a> </td>
+            <td> {{ event.lot.species.common_name }} </td>
+            <td> {{ event.lot.strain.strain_name }} </td>
+            <td> {{ event.stkcnt|intcomma }} </td>
+            <td> {{ event.event_date|date }} </td>
+            <td> {{ event.site.site_name }} </td>
+            <td> {{ event.clipa }} </td>
+            <td> {{ event.get_development_stage_display }} </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>No OMNR tags have been recovered in {{ mu }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+
+</div>
+
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
+
+
+<script type="text/javascript">
+  $(".tablesorter").tablesorter({
+  theme: 'bootstrap',
+  widthFixed: true,
+  showProcessing: true,
+  headerTemplate: '{content} {icon}',
+  widgets: ['zebra', 'uitheme', 'scroller'],
+  widgetOptions: {
+  scroller_height: 300,
+  scroller_barWidth: 17,
+  scroller_jumpToHeader: true,
+  scroller_idPrefix: 's_'
+  }
+  });
+</script>
+
+<script type="text/javascript">
+  $('#myTab a').click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+</script>
+
+
+{% endblock %}

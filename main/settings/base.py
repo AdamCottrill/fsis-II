@@ -132,7 +132,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 TEMPLATE_DIRS = (
     root('templates'),
     root('fsis/templates'),
-    root('simple_auth/templates'),    
+    root('simple_auth/templates'),
 )
 
 LOGIN_REDIRECT_URL = "/"
@@ -154,13 +154,13 @@ THIRDPARTY_APPS = (
 #    'taggit',
 #    'haystack',
     'passwords',
-    'olwidget',        
+    'olwidget',
     )
 
 CRISPY_FAIL_SILENTLY = not DEBUG
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
-MY_APPS =(    
+MY_APPS =(
     'simple_auth',
     'fsis2',
     'cwts',
@@ -210,4 +210,4 @@ LOGGING = {
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_COMPLEXITY = { "UPPER":  1, "LOWER":  1, "DIGITS": 1 }
 
-POSTGIS_VERSION = (2, 1)
+POSTGIS_VERSION = (2, 1, 8)

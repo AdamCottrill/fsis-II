@@ -5,12 +5,8 @@
 {% endblock %}
 -->
 
-{% block extrahead %} 
+{% block extrahead %}
 {{ map.media }}
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script> 
 {% endblock %}
 
 {% block content %}
@@ -44,11 +40,11 @@
 
   <br />
   <div class="row">
-    <div class="col-md-3">    
+    <div class="col-md-3">
 
       <heading>
         <h4> {{ year }} - {{ strain }} {{species}}</h4>
-        <heading>      
+        <heading>
           <br />
 
           <table class="table table-striped">
@@ -87,7 +83,7 @@
             </tr>
 
 
-          </table>          
+          </table>
 
 
     </div>
@@ -98,7 +94,7 @@
       {% else %}
       <h3>Sorry no events match that criteria.</h3>
       {% endif %}
-    </div> 
+    </div>
   </div>
 
 <br />
@@ -114,23 +110,33 @@
           {% for event in object_list %}
           <tr class="{% cycle row1,row2 %}">
             <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
-            <td> {{ event.stkcnt|intcomma }} </td> 
-            <td> {{ event.event_date|date }} </td>
-            <td> {{ event.site.site_name }} </td> 
-            <td> {{ event.clipa }} </td> 
+            <td> {{ event.stkcnt|intcomma }} </td>
+            {% if event.event_date %}
+              <td> {{ event.event_date|date }} </td>
+            {% else %}
+              <td> {{ event.year }} </td>
+            {% endif %}
+            <td> {{ event.site.site_name }} </td>
+            <td> {{ event.clipa }} </td>
             <td> {{ event.get_development_stage_display }} </td>
             <td> {{ event.lot.proponent.proponent_name|title }} </td>
           </tr>
           {% endfor %}
         </tbody>
-      </table>    
-      {% endif %}    
-    </div>  
+      </table>
+      {% endif %}
+    </div>
 
 </center>
 
 </div>   <!-- container -->
 
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 <script type="text/javascript">
   $(".tablesorter").tablesorter({
@@ -150,5 +156,3 @@
 
 
 {% endblock %}
-
-

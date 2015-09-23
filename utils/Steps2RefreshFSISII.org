@@ -1,0 +1,7 @@
+* Fish Stocking Data
+1. Download FSIS and Rebuild FS_Master
+2. Clone FS_Master
+3. Migrate sqlite clone to postgres
+* CWT Recoveries
+
+* Spatial Data and Shapefiles

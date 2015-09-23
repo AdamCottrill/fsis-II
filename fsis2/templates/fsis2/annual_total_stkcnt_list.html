@@ -1,15 +1,5 @@
 {% extends "fsis2/fsis2_base.html" %}
 
-{% block extrahead %} 
-
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
- 
-{% endblock %}
-
-
 {% block content %}
 
 {% load humanize %}
@@ -17,7 +7,7 @@
 
 
 <div class="contaier">
-  
+
 
   <h2>Total Annual Stocking of {{species}} by Proponent</h2>
 
@@ -56,13 +46,13 @@
       {% for row in object_list %}
       <tr class="{% cycle row1,row2 %}">
         <td> <a href="{% url 'annual_stocking_events_by_spc' spc=species.species_code  year=row.lot__event__prj_cd|prj_cd_Year %}">
-            {{row.lot__event__prj_cd | prj_cd_Year}} </a> </td> 
-        <td> {{ row.proponent_name | title }} </td> 
-        <td> {% if row.total %} 
-          {{ row.total|intcomma }} 
-          {% else %} 
+            {{row.lot__event__prj_cd | prj_cd_Year}} </a> </td>
+        <td> {{ row.proponent_name | title }} </td>
+        <td> {% if row.total %}
+          {{ row.total|intcomma }}
+          {% else %}
           0
-          {% endif%}</td> 
+          {% endif%}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -73,6 +63,12 @@
   {% endif %}
 
 </div>
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 <script type="text/javascript">
 
@@ -95,5 +91,3 @@
 
 
 {% endblock %}
-
-

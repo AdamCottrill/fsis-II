@@ -19,7 +19,7 @@
 # tables later in the script often have a large number of foreign key
 # dependencies on earlier tables.
 #
-# Each table 'chunk' is structured followin a similiar pattern:
+# Each table 'chunk' is structured following a similiar pattern:
 # - the source database is queried using a raw sql string
 # - a loop is then used to iterate over the rows of the recordset.
 #   Any associated objects are returned from the database and related to
@@ -29,14 +29,20 @@
 # A. Cottrill
 #=============================================================
 
+import os
+
+os.chdir('c:/1work/Python/djcode/fsis2/utils/')
+
 import pytz
 from datetime import datetime
 import sqlite3
+
 #import adodbapi
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from geoalchemy.base import WKTSpatialElement
+#from geoalchemy.base import WKTSpatialElement
+from geoalchemy2.elements import WKTElement
 
 
 from sqa_models import *
@@ -54,6 +60,7 @@ TAG_POSITIONS = {
 
 #are we working in the deployment machine or just locally?
 DEPLOY = False
+#DEPLOY = True
 
 
 #========================================
@@ -62,19 +69,20 @@ DEPLOY = False
 #here is where the data will be coming from:
 #source db
 ## srcdb = "C:/1work/Python/djcode/fsis2/utils/FS_Master_to_FSIS2.mdb"
-## 
+##
 ## src_constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source=%s'  % srcdb
 ## src_conn = adodbapi.connect(src_constr)
 ## src_cur = src_conn.cursor()
-## 
+##
 
-src = r"C:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db"
+#src = r"C:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db"
+src = r'c:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db'
 ###sqlite clone of FS_master:
 ##if DEPLOY:
 ##    src = r'c:/1work/djcode/fsis2/utils/data/FS_Master_clone.db'
 ##else:
 ##    src = r'c:/1work/Python/djcode/fsis2/utils/data/FS_Master_clone.db'
-    
+
 src_conn = sqlite3.connect(src)
 src_conn.row_factory = sqlite3.Row
 
@@ -98,7 +106,8 @@ if DEPLOY:
     #this will connect to post gres instance on the desktop machine
     engine = create_engine('postgresql://adam:django@142.143.160.56/fsis2')
 else:
-    engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
+    #engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
+    engine = create_engine('postgresql://cottrillad:django@localhost/fsis2')
 
 
 Session = sessionmaker(bind=engine)
@@ -121,7 +130,7 @@ session = Session()
 #========================================
 #           README TABLE
 table = "readme"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 sql = '''SELECT [__README].DATE, [__README].COMMENT, [__README].INIT
         FROM __README
@@ -141,15 +150,15 @@ for row in data:
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 
 #========================================
 #           SPECIES TABLE
 table = "species"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 sql = '''SELECT SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC
          FROM FS_Events INNER JOIN SPC ON FS_Events.SPC = SPC.SPC
@@ -167,8 +176,8 @@ for row in data:
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 
@@ -176,7 +185,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #========================================
 #           STRAINS TABLE
 table = "strains"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 sql='''SELECT TL_Strains.SPC, TL_Strains.STO, TL_Strains.StrainCode,
        TL_Strains.StrainName
@@ -197,14 +206,14 @@ for row in data:
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 #========================================
 #         PROPONENT TABLE
 table = "Proponents"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 sql = '''SELECT TL_ProponentNames.Short AS abbrev,
          TL_ProponentNames.PROPONENT_NAME_is AS name
@@ -225,15 +234,15 @@ for row in data:
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 
 #========================================
 #        STOCKING SITES
 table = "Stocking Sites"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 sql = '''SELECT SITE_ID, SITE_NAME, STKWBY, STKWBY_LID, UTM, GRID,
              DD_LAT, DD_LON, BASIN, DESWBY_LID, DESWBY
@@ -258,21 +267,21 @@ for row in data:
         basin = row['BASIN'],
         deswby_lid  = row['DESWBY_LID'],
         deswby  = row['DESWBY'],
-        geom = WKTSpatialElement(pt),
+        #geom = WKTSpatialElement(pt),
+        geom = WKTElement(pt, srid=4326),
         )
     session.add(item)
 
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
-
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 #========================================
 #        LOTS TABLE
 table = "Lots"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 #note - query aggregates by strain, spawn year, rearing location
 # and does not include project code or year -
@@ -289,7 +298,7 @@ data = src_cur.fetchall()
 for row in data:
     spc = session.query(Species).filter_by(species_code=row['SPC']).one()
     strain = session.query(Strain).filter_by(species_id=spc.id,
-                                             sto_code=row['STO'].upper()).one()
+                                         sto_code=row['STO'].upper()).one()
     proponent = session.query(Proponent).filter_by(abbrev=row['abbrev']).one()
     item = Lot(
     #prj_cd = row.prj_cd,
@@ -307,15 +316,15 @@ for row in data:
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 #========================================
 #       STOCKING EVENTS
 
 table = "Events"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 ##MS ACCESS SYNTAX:
 #sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
@@ -363,7 +372,7 @@ for row in data:
         fsis_site_id=row['site_id']).one()
     item = Event(
         lot_id = lot.id,
-        site_id = site.id,        
+        site_id = site.id,
         prj_cd =  row['prj_cd'],
         year = row['year'],
         fs_event = row['fs_event'],
@@ -383,15 +392,16 @@ for row in data:
         stocking_purpose = upper_or_none(row['stkpur']),
         dd_lat = row['dd_lat'],
         dd_lon = row['dd_lon'],
-        geom = WKTSpatialElement(pt),        
+        #geom = WKTSpatialElement(pt),
+        geom = WKTElement(pt, srid=4326),
     )
     session.add(item)
 
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 
@@ -399,7 +409,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #       TAGGING EVENTS
 
 table = "Tagging Events"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 sql = '''SELECT EVENT AS fs_event, TAG_ID, RETENTION_RATE_PCT,
             RETENTION_RATE_SAMPLE_SIZE, RETENTION_RATE_POP_SIZE,
@@ -431,10 +441,8 @@ for row in data:
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
-
-
+print("'%s' Transaction Complete (%s)"  % \
+      (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 
@@ -442,7 +450,7 @@ print "'%s' Transaction Complete (%s)"  % \
 #       CWTs APPLIED
 
 table = "CWTs Applied"
-print "Uploading '%s'..."  % table
+print("Uploading '%s'..."  % table)
 
 sql = ''' SELECT TAG_ID AS fs_tagging_event_id, CWT
           FROM FS_CWTs_Applied;'''
@@ -465,8 +473,8 @@ for row in data:
 session.commit()
 
 now = datetime.datetime.now()
-print "'%s' Transaction Complete (%s)"  % \
-  (table, now.strftime('%Y-%m-%d %H:%M:%S'))
+print("'%s' Transaction Complete (%s)"  % \
+  (table, now.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 #========================================
@@ -475,6 +483,6 @@ build_date = BuildDate(build_date = datetime.datetime.utcnow())
 session.add(build_date)
 session.commit()
 
-print "All Migrations Complete ({0})".format(build_date)
+print("All Migrations Complete ({0})".format(build_date))
 
 session.close()

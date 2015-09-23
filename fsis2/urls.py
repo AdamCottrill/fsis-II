@@ -13,9 +13,9 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     SiteUpdateView, CwtListView, AnnualTotalSpcView,
                     AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
                     ProponentListView, ProponentLotListView, SpeciesListView,
-                    AnnualStockingByHatcherySpcView, find_events,
-                    cwt_detail_view, cwt_stocked_qma, cwt_recovered_qma,
-                    cwt_stocked_ltrz, cwt_recovered_ltrz)
+                    AnnualStockingByHatcherySpcView,
+                    find_events,ManagementUnitListView,
+                    cwt_detail_view, cwt_stocked_mu, cwt_recovered_mu)
 
 urlpatterns = patterns("",
 
@@ -104,6 +104,16 @@ urlpatterns = patterns("",
 
         url(r'^find_events/$', 'fsis2.views.find_events', name='find_events'),
 
+
+        #================
+        #Managment Unit list
+        url(
+            regex=r'^management_units/$',
+            view=ManagementUnitListView.as_view(),
+            name='mu_list'
+            ),
+
+
         #================
         #    CWTs
 
@@ -121,33 +131,18 @@ urlpatterns = patterns("",
             name='cwt_detail'
             ),
 
-
-        #recoveries by stocked qma
+        #recoveries in management unit
         url(
-            regex=r'^cwts/stocked_qma/(?P<qma>(\d\-\d)|([A-Za-z]{4}\d))$',
-            view=cwt_stocked_qma,
-            name='cwt_stocked_qma'
+            regex=r'^cwts/stocked_managment_unit/(?P<slug>[-_A-Za-z0-9]+)$',
+            view=cwt_stocked_mu,
+            name='cwt_stocked_mu'
             ),
 
-        #recoveries by stocked ltrz
+        #recoveries of cwt stocked in cwt
         url(
-            regex=r'^cwts/stocked_ltrz/(?P<ltrz>(\d+))$',
-            view=cwt_stocked_ltrz,
-            name='cwt_stocked_ltrz'
-            ),
-
-        #recoveries by recovered qma
-        url(
-            regex=r'^cwts/recovered_qma/(?P<qma>(\d\-\d)|([A-Za-z]{4}\d))$',
-            view=cwt_recovered_qma,
-            name='cwt_recovered_qma'
-            ),
-
-        #recoveries by recovered ltrz
-        url(
-            regex=r'^cwts/recovered_ltrz/(?P<ltrz>(\d+))$',
-            view=cwt_recovered_ltrz,
-            name='cwt_recovered_ltrz'
+            regex=r'^cwts/recovered_managment_unit/(?P<slug>[-_A-Za-z0-9]+)$',
+            view=cwt_recovered_mu,
+            name='cwt_recovered_mu'
             ),
 
 

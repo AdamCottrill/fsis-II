@@ -1,7 +1,7 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
-{{ map.media }} 
+{{ map.media }}
 {% endblock %}
 
 {% block title %} {{ object.title  }}  {% endblock %}
@@ -22,7 +22,7 @@
         </tr>
 
         <tr>
-          <td>  <b>FSIS Lot Number:</b> 
+          <td>  <b>FSIS Lot Number:</b>
           <td> <a href="{% url 'lot_detail' object.lot.id %}">{{ object.lot.fs_lot }}</a> </td>
         </tr>
 
@@ -35,10 +35,14 @@
           <td>  <b>Strain:</b></td>
           <td>{{ object.lot.strain.strain_name }} ({{object.lot.strain.sto_code}}) </td>
         </tr>
-        
+
         <tr>
           <td>  <b>Stocking Date:</b></td>
-          <td>{{ object.event_date|date }} </td>
+          {% if object.event_date %}
+            <td>{{ object.event_date|date }} </td>
+          {% else %}
+            <td>{{ object.year }} </td>
+          {% endif %}
         </tr>
 
         <tr>
@@ -89,7 +93,7 @@
         {% endautoescape %}
 
         <tr>
-          <td>  <b>Closest Named Stocking Site:</b> </td> 
+          <td>  <b>Closest Named Stocking Site:</b> </td>
           <td>  <a href="{% url 'site_detail' object.site.id %}">{{ object.site.site_name }} ({{ object.site.fsis_site_id }})</a></td>
         </tr>
 
@@ -101,7 +105,7 @@
         <tr>
           <td>  <b>Grid Number:</b></td>
           <td>{{ object.site.grid }} </td>
-        </tr>        
+        </tr>
       </table>
     </div>
     <div class="col-md-8">
@@ -115,10 +119,10 @@
 
     <h3>Tags associated with this stocking event: </h3>
 
-    {% if cwt_list %}  
+    {% if cwt_list %}
       <table id="myTable" class="table tablesorter table-striped">
         <thead>
-          <tr>    
+          <tr>
             <td>Tag Number</td>
             <td>Year Class</td>
             <td>Stocking Year</td>

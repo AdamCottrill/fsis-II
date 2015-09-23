@@ -2,6 +2,7 @@ import factory
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
+from django.contrib.gis.geos import GEOSGeometry
 
 from fsis2.models import *
 
@@ -11,7 +12,7 @@ class UserFactory(factory.DjangoModelFactory):
     first_name = 'John'
     last_name = 'Doe'
     username = 'johndoe'
-    email = 'johndoe@hotmail.com'    
+    email = 'johndoe@hotmail.com'
     #admin = False
     password = 'Abcdef12'
 
@@ -34,6 +35,10 @@ class ReadmeFactory(factory.DjangoModelFactory):
     comment = "Database compiled with FSIS data downloaded on 08/20/2013."
 
 
+class LakeFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = Lake
+    lake = "Lake Huron"
+
 
 class SpeciesFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Species
@@ -50,18 +55,18 @@ class StrainFactory(factory.DjangoModelFactory):
     sto_code = "SNCW"
     strain_code = "SN"
     strain_name = "Seneca"
-    
+
 
 class ProponentFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Proponent
-    
+
     abbrev = factory.Sequence(lambda n: "MH-{0:02d}".format(n))
     proponent_name = 'My Hatchery'
 
 
 class StockingSiteFactory(factory.DjangoModelFactory):
     FACTORY_FOR = StockingSite
-    
+
     fsis_site_id = factory.Sequence(lambda n: "12{0:02d}".format(n))
     site_name = 'Honey Hole'
     stkwby = 'Lake Huron'
@@ -141,15 +146,18 @@ class CWTsAppliedFactory(factory.DjangoModelFactory):
     cwt = factory.Sequence(lambda n: '63-01-{0:02d}'.format(n))
 
 
+class ManagementUnitFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = ManagementUnit
 
 
+    label = '10'
+    lake = factory.SubFactory(LakeFactory)
+    mu_type = 'ltrz'
 
-
-
-
-
-
-
-
-
-
+    #grid 2030
+    geom = GEOSGeometry(
+        "MULTIPOLYGON(((-81.6666641580675 44.6666679086515,"
+                       "-81.7500000331451 44.6666679086515,"
+                       "-81.7500000331451 44.7499999712291,"
+                       "-81.6666641580675 44.7499999712292,"
+                       "-81.6666641580675 44.6666679086515)))")

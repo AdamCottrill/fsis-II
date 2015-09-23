@@ -1,6 +1,8 @@
 from django.test import TestCase
 from datetime import datetime
 
+from django.db import IntegrityError
+
 from fsis2.models import *
 from fsis2.tests.factories import *
 
@@ -158,30 +160,74 @@ class TestLot(TestCase):
         pass
 
 
-
-class TestLTRZ(TestCase):
-    """verify that the unicode method of ltrz returns a string of the form
-    'LTRZ-4'
+class TestManagementUnit(TestCase):
+    """verify that the unicode, name, and get_slug methods of ManagementUnit returns a string of the correct format.  Additionally, verify that if a duplicate slug is created, an error is thown.
     """
-    def test_ltrz_unicode(self):
-        ltrz = LTRZ(ltrz=4)
-        shouldbe = "LTRZ-4"
-        self.assertEqual(str(ltrz), shouldbe)
 
-        ltrz = LTRZ(ltrz=14)
-        shouldbe = "LTRZ-14"
-        self.assertEqual(str(ltrz), shouldbe)
+    def setUp(self):
+        self.lake = LakeFactory()
 
+    def test_management_unit_slug(self):
 
-class TestQMA(TestCase):
-    """verify that the unicode method of qma returns a string of the form
-    'QMA-4'
-    """
-    def test_qma_unicode(self):
-        qma = QMA(qma='4-4')
-        shouldbe = "4-4"
-        self.assertEqual(str(qma), shouldbe)
+        mu = ManagementUnit(mu_type='ltrz', lake=self.lake, label='8')
+        shouldbe = "huron_ltrz_8"
+        self.assertEqual(mu.get_slug(), shouldbe)
 
-        qma = QMA(qma='Zone1')
-        shouldbe = "Zone1"
-        self.assertEqual(str(qma), shouldbe)
+        mu = ManagementUnit(mu_type='ltrz', lake=self.lake, label='14')
+        shouldbe = "huron_ltrz_14"
+        self.assertEqual(mu.get_slug(), shouldbe)
+
+        mu = ManagementUnit(mu_type='qma', lake=self.lake, label='4-1')
+        shouldbe = "huron_qma_4-1"
+        self.assertEqual(mu.get_slug(), shouldbe)
+
+    def test_management_unit_unicode(self):
+
+        mu = ManagementUnit(mu_type='ltrz', lake=self.lake, label='8')
+        shouldbe = "Lake Huron LTRZ 8"
+        self.assertEqual(str(mu), shouldbe)
+
+        mu = ManagementUnit(mu_type='ltrz', lake=self.lake, label='14')
+        shouldbe = "Lake Huron LTRZ 14"
+        self.assertEqual(str(mu), shouldbe)
+
+        mu = ManagementUnit(mu_type='qma', lake=self.lake, label='4-1')
+        shouldbe = "Lake Huron QMA 4-1"
+        self.assertEqual(str(mu), shouldbe)
+
+    def test_management_unit_name(self):
+
+        mu = ManagementUnit(mu_type='ltrz', lake=self.lake, label='8')
+        shouldbe = "Lake Huron LTRZ 8"
+        self.assertEqual(mu.name(), shouldbe)
+
+        mu = ManagementUnit(mu_type='ltrz', lake=self.lake, label='14')
+        shouldbe = "Lake Huron LTRZ 14"
+        self.assertEqual(mu.name(), shouldbe)
+
+        mu = ManagementUnit(mu_type='qma', lake=self.lake, label='4-1')
+        shouldbe = "Lake Huron QMA 4-1"
+        self.assertEqual(mu.name(), shouldbe)
+
+    def test_duplicate_slug_throws_error(self):
+        '''an error should be thrown if we try to create a management unit
+        that already exists'''
+        mu1 = ManagementUnitFactory(mu_type='ltrz', lake=self.lake, label='8')
+        mu1.save()
+        #mu2 = ManagementUnitFactory.create(mu_type='ltrz', lake=self.lake,
+        #                                   label='8')
+        #self.assertRaises(IntegrityError, mu2.save())
+
+        with self.assertRaises(IntegrityError):
+            mu2 = ManagementUnitFactory(mu_type='ltrz', lake=self.lake,
+                                        label='8')
+
+    def test_update_to_duplicate_slug_throws_error(self):
+        '''an error should be thrown if we try to update a management unit
+        to one already exists'''
+        mu1 = ManagementUnitFactory(mu_type='ltrz', lake=self.lake, label='8')
+        mu2 = ManagementUnitFactory(mu_type='ltrz', lake=self.lake,
+                                        label='9')
+        mu2.label = '8'
+        with self.assertRaises(IntegrityError):
+            mu2.save()
