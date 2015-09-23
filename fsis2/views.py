@@ -822,6 +822,21 @@ class ProponentLotListView(ListView):
         return context
 
 
+def proponent_annual_events(request, hatchery, year):
+    """Render a view with all of the stocking events associated with a
+    particular proponent in a particular year.  This view will
+    complement the annual stocking event report.
+    """
+    proponent = Proponent.objects.get(abbrev=hatchery)
+    events = Event.objects.filter(lot__proponent=proponent, year=year).\
+             order_by('lot__species__common_name').all()
+
+    return render_to_response('fsis2/hatchery_annual_events.html',
+                              {#'map':mymap,
+                               'object_list':events,},
+                              context_instance=RequestContext(request))
+
+
 class SpeciesListView(ListView):
     '''render a list of species that have stocking events associated
     with them

@@ -223,6 +223,11 @@ class Event(models.Model):
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
 
+    #a field to hold the text that will be displayed when we click on
+    #a stocking event - saving it as a field reduces the number of
+    #database queries when the pages are rendered.
+    popup_text = models.CharField(max_length=100)
+
     DEVELOPMENT_STAGE_CHOICES = (
         (99, 'Unknown'),
         (10, 'Egg (unknown stage)'),
@@ -300,10 +305,16 @@ class Event(models.Model):
     def get_absolute_url(self):
         return ('event_detail', (), {'pk':self.id})
 
+    def get_popup_text(self):
+        '''The popup text will be displayed when the user clicks on a stocking
+        event on a map.  For now, just return the fs_event number.'''
+        return self.fs_event
+
 
     def save(self, *args, **kwargs):
         if not self.geom:
             self.geom = Point(float(self.dd_lon), float(self.dd_lat))
+            self.popup_text = self.get_popup_text()
         super(Event, self).save( *args, **kwargs)
 
 
