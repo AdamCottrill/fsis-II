@@ -1,24 +1,25 @@
 from datetime import datetime
 #from django.contrib.auth.models import User
 #from django.core.context_processors import csrf
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.urlresolvers import reverse
+from django.db.models import Sum
+from django.db.models.aggregates import Max
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
-from django.core.exceptions import MultipleObjectsReturned
-
-from django.core.urlresolvers import reverse
+from django.views.generic import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.dates import YearArchiveView
 from django.views.generic import CreateView, UpdateView
-from django.db.models import Sum
-
 
 from olwidget.widgets import InfoMap, InfoLayer, Map
 
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
-                     Proponent, Species, Strain, BuildDate, Readme, QMA, LTRZ)
+                     Proponent, Species, Strain, BuildDate, Readme,
+                     ManagementUnit, Lake)
 
 from cwts.models import CWT, USgrid, CWT_recovery
 
@@ -106,9 +107,11 @@ def get_map(event_points):
 
 
 def empty_map():
-    """
+    """returns and empty map zoomed to Lake Huron.  Used when no points
+    are available.
     Arguments:
-    - `event_points`:
+    - None
+
     """
     map = InfoMap(
         None,
@@ -171,21 +174,34 @@ def get_map2(event_points, roi=None):
     return mymap
 
 
-
-
-def get_recovery_map(stocking_points, recovery_points):
+def get_recovery_map(stocking_points, recovery_points, roi=None):
 
     """This map function takes a list of stocking points and second
-    list of recoveries.
+    list of recovery points.
 
-    used by views cwt_detail
+    used by views cwt_detail to illustrate where a cwt was stocked and
+    subsequently recovered.
 
     Arguments: -
     `stocking_points`: a list of points objects and their event numbers
+    `recovery_points`: a list of recovery point objects and their id string
     'roi': region of interest used to select event points
 
     """
     layers = []
+
+    if roi:
+        #if there was a region of interest, add it first so its on the bottom
+        style = {'overlay_style': {'fill_color': '#7DF9FF',
+                           'fill_opacity': 0,
+                           'stroke_color':'#7DF9FF'},
+                 'name':'Region of Interest'}
+        #polygon = InfoLayer([roi,style])
+        polygon =  InfoLayer([[roi.wkt, "Region Of Interest"]] ,style)
+        try:
+            layers.extend(polygon)
+        except TypeError:
+            layers.append(polygon)
 
     if recovery_points:
         for pt in recovery_points:
@@ -282,8 +298,6 @@ def calc_aac(yc):
         aac = list(enumerate(yrs, start=0))
         aac.sort(reverse=True, key=lambda x: x[1])
         return aac
-
-
 
 
 class EventDetailView(DetailView):
@@ -812,7 +826,9 @@ class SpeciesListView(ListView):
     '''render a list of species that have stocking events associated
     with them
     '''
-    queryset = Species.objects.all()
+    #queryset = Species.objects.all()
+    #add on the most recent stocking year for each species:
+    queryset = Species.objects.annotate(latest=Max('lot__event__year'))
     template_name = "fsis2/SpeciesList.html"
 
     def get_context_data(self, **kwargs):
@@ -820,6 +836,47 @@ class SpeciesListView(ListView):
         context = super(SpeciesListView, self).get_context_data(**kwargs)
         context['footer'] = footer_string()
         return context
+
+
+class ManagementUnitListView(TemplateView):
+#class ManagementUnitListView(ListView):
+    '''render a list of species that have stocking events associated
+    with them
+    '''
+    #queryset = ManagementUnit.objects.all().order_by('lake','mu_type','label')
+    #queryset = Lake.objects.all()
+    template_name = "fsis2/ManagementUnitList.html"
+
+    def get_context_data(self, **kwargs):
+        '''add the timestamped footer to the page'''
+        context = super(ManagementUnitListView, self).get_context_data(**kwargs)
+        context['footer'] = footer_string()
+        context['object_list'] = get_management_unit_dict()
+        return context
+
+
+def get_management_unit_dict():
+    '''get a nested dictionary of dictionaries containing the management
+    unit labels and types in each lake.
+    1st level - lake name
+    2nd level - management unit type
+    3rd level - management unit labels
+
+    dictionary is iterated over in managment list template. - one tab
+    per list, collapsing panels containing management unit labels
+
+    '''
+    lakes = Lake.objects.all()
+    object_dict = {}
+    for lake in lakes:
+        mus = ManagementUnit.objects.filter(lake=lake).order_by('mu_type',
+                                                                'label')
+        mu_dict = {}
+        for mu in mus:
+            mu_dict.setdefault(mu.get_mu_type_display(), []).append(
+                dict(slug=mu.slug, label=mu.label))
+        object_dict[lake.lake] = mu_dict
+    return object_dict
 
 
 def find_events(request):
@@ -862,14 +919,12 @@ def find_events(request):
 
 
 
-
-
-
-
-
 def get_recovery_points(recoveries):
     '''a helper function to extract the project composite key and the
     point of recovery given a list/queryset of recoveries.
+
+    returns a list of list pairs of the form [composite key, geom]
+
     '''
     if recoveries:
         try:
@@ -877,8 +932,26 @@ def get_recovery_points(recoveries):
         except:
             recovery_points = [[recoveries.composite_key, recoveries.geom]]
     else:
-        recovery_points = None
+        recovery_points = []
     return recovery_points
+
+
+def get_stocking_points(stocking_events):
+    '''a helper function to extract the stocking event identifier and point
+    geometry given a list/queryset of stocking events.
+
+    returns a list of list pairs of the form [fs_event, geom]
+
+    '''
+    if stocking_events:
+        try:
+            event_points = [[x.fs_event, x.geom] for x in stocking_events]
+        except:
+            event_points = [[stocking_event.fs_event, stocking_event.geom]]
+    else:
+        event_points = []
+    return event_points
+
 
 
 def cwt_detail_view(request, cwt_number):
@@ -888,7 +961,7 @@ def cwt_detail_view(request, cwt_number):
     first looks for associated stocking events, if no events are
     found, it will query usgrid for an associated grid number and
     point.  If multiple events are found in cwts_cwt, a template
-    accomodates that multiple tagging events and includes a warning is
+    tha accomodates multiple tagging events and includes a warning is
     used instead.
 
     **Context:**
@@ -937,7 +1010,7 @@ def cwt_detail_view(request, cwt_number):
     recovery_pts = get_recovery_points(recoveries)
 
     events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number)
-    #import pdb; pdb.set_trace()
+
     #make the map
     if events:
         event_points = [[x.fs_event, x.geom] for x in events]
@@ -971,7 +1044,6 @@ def cwt_detail_view(request, cwt_number):
         for cwt in cwt_qs:
             aac = calc_aac(cwt.year_class)
             cwt_list.append({'cwt': cwt, 'aac': aac})
-        #import pdb; pdb.set_trace()
         return render_to_response('fsis2/multiple_cwt_detail.html',
                                   {'cwt_number': cwt_number,
                                    'cwt_list': cwt_list,
@@ -981,34 +1053,80 @@ def cwt_detail_view(request, cwt_number):
                                   context_instance=RequestContext(request))
 
 
-def cwt_recovered_qma(request, qma):
-    """a view to find all of the cwt recovered in a qma and their
+def cwt_recovered_mu(request, slug):
+    """a view to find all of the cwt recovered in a managment unit and their
     associated stocking information
 
     **Context:**
 
-    ``qma`` a Quota Management Area name.  Used to select
-        appropriate qma polygon from fsis2_QMA table.  Only cwt
-        numbers recovered inside the qma are returned and plotted on
-        map.
+    ``slug`` a slug representing a unique management unit name.
+        Management unit slugs are derived from their lake, management
+        unit type and label.  It must be defined as a multi-polygon in
+        the table ManagementUnits.  Only cwt numbers recovered inside
+        the management unit are returned and plotted on map.
 
-    :template:`fsis2/cwt_recovered_qma.html`
-
+    :template:`fsis2/cwt_recovered_mu.html`
 
     """
 
-    yr=2012 #hard code to a single year for now - keep it simple for development
+    mu_poly = ManagementUnit.objects.get(slug=slug)
 
-    qma_poly = QMA.objects.get(qma=qma)
+    recovered_cwts = get_recovered_cwts(mu_poly)
 
-    recoveries = CWT_recovery.objects.filter(geom__within=qma_poly.geom)
+    #pull out the elements we need to make our map
+    recovery_pts = get_recovery_points(recovered_cwts['recoveries'])
+
+    event_pts = get_stocking_points(recovered_cwts['events'])
+
+    US_events = recovered_cwts['US_events']
+    #if there are US events, add them to the list of points to be plotted:
+    if US_events:
+        for event in US_events:
+            if event.us_grid_no:
+                event_pts.append([event.plant_site, event.us_grid_no.geom])
+    #make the map
+    mymap = get_recovery_map(event_pts, recovery_pts,
+                             roi=mu_poly.geom)
+
+    #add the map and management unit name to the context dictionary
+    recovered_cwts['map'] = mymap
+    recovered_cwts['mu'] = mu_poly
+
+    return render_to_response('fsis2/cwt_recovered_mu.html',
+                              recovered_cwts,
+
+                   context_instance=RequestContext(request))
+
+
+def get_recovered_cwts(mu_poly, year=None, strain=None):
+    """A helper function to actually get the cwt stocking and recovery
+    data.  Given a management unit polygon, find all of the cwt
+    recoveries from that polygon as well as their associated stocking events.
+
+    Returns a dictionary containing the following keys:
+
+    cwts = a cwt queryset of that contains only those cwts recovered
+    in this management unit
+    recoveries = recovery events for this managemnet unit(year and strain)
+    events = Ontario stocking events associated with the cwts recovered
+    US_events = U.S stocking events associated with the cwts recovered
+
+    """
+
+    recoveries = CWT_recovery.objects.filter(geom__within=mu_poly.geom)
 
     #these are all of the cwt recoveries - all strains and species
-    recoveries = recoveries.filter(recovery_year=yr)
+    if year:
+        recoveries = recoveries.filter(recovery_year=year)
 
-    cwts = []
-    [cwts.append(x.cwt) for x in recoveries]
-    cwts= list(set(cwts))
+    #cwts = []
+    #[cwts.append(x.cwt) for x in recoveries]
+    #cwts= list(set(cwts))
+
+    cwts = [x.cwt for x in recoveries]
+    recovery_count = dict([(i, cwts.count(i)) for i in set(cwts)])
+
+    cwts = recovery_count.keys()
 
     #now that we have a list cwts recovered in the roi and year
     #get the stocking events associated with them and filter by the strain:
@@ -1017,99 +1135,119 @@ def cwt_recovered_qma(request, qma):
     #canadian stocking events
     events = (Event.objects.filter(taggingevent__cwts_applied__cwt__in=cwts).
               distinct().order_by('fs_event'))
-
-    #events = events.filter(lot__strain__strain_code=strain)
+    if strain:
+        events = events.filter(lot__strain__strain_code=strain)
 
     for event in events:
         tmp = event.get_cwts()
         if tmp:
             filtered_cwts.extend([x.cwt for x in tmp])
 
-    filtered_cwts = list(set(filtered_cwts))
+    #filtered cwts include only those cwts we recovered in this roi
+    #and have stocking event associated with them (this eliminates cwts
+    #that may not have been recovered but are associated with same
+    #stocking events)
+    filtered_cwts = list(set(filtered_cwts).intersection(set(cwts)))
 
     #US stocking events
     US_events = (CWT.objects.filter(cwt__in=cwts).exclude(agency='OMNR').
                  order_by('year_class'))
-    #US_events = US_events.filter(strain=strain)
-    for event in US_events:
-        print(event.cwt, event.stock_year-1, event.strain, event.plant_site)
 
     filtered_cwts.extend(list(set([x.cwt for x in US_events])))
 
-    #now prepare the map by getting lists of recovery and stocking event points:
+    filtered_cwts = CWT.objects.filter(cwt__in=filtered_cwts)
+    for x in filtered_cwts:
+        x.recovery_count = recovery_count.get(x.cwt, 0)
 
-    event_points = [[x.fs_event, x.geom] for x in events]
-    if US_events:
-        for event in US_events:
-            event_points.append([event.plant_site, event.us_grid_no.geom])
+    #add recovery_count to each of the cwt numbers:
+    #import pdb; pdb.set_trace()
 
-    recovery_pts = [[x.composite_key, x.geom] for x in recoveries]
-    mymap = get_recovery_map(event_points, recovery_pts)
+    ret = dict( cwts = filtered_cwts,
+                 recoveries = recoveries, events = events,
+                 US_events = US_events)
 
-    return render_to_response('fsis2/cwt_recovered_qma.html',
-                              {'qma':qma,
-                               'map':mymap,
-                               'cwts':filtered_cwts,
-                               'recoveries':recoveries,
-                               'events':events,
-                               'US_events':US_events},
-                                  context_instance=RequestContext(request))
+    return(ret)
 
 
 
-def cwt_recovered_ltrz(request, ltrz):
-    """a view to find all of the cwt recovered in a ltrz and their
-    associated stocking information
-
-    **Context:**
-
-    ``ltrz`` a lake trout rehabiliation zone number.  Used to select
-        appropriate ltrz polygon from fsis2_LTRZ table.  Only cwt
-        numbers recovered inside the ltrz are returned and plotted on
-        map.
-
-    :template:`fsis2/cwt_recovered_ltrz.html`
-
-    """
-    return render_to_response('fsis2/cwt_recovered_ltrz.html',
-                              {'ltrz':ltrz},
-                                  context_instance=RequestContext(request))
-
-
-def cwt_stocked_qma(request, qma):
-    """a view to find all of the cwts stocked in a qma and their
+def cwt_stocked_mu(request, slug):
+    """a view to find all of the cwts stocked in a mu and their
     associated recovery information
 
     **Context:**
 
-    ``qma`` a Quota Management Area name.  Used to select
-        appropriate qma polygon from fsis2_QMA table.  Only cwt
-        numbers stocked inside the qma are returned and plotted on
+    ``mu`` a Management Unit name.  Used to select
+        appropriate mu polygon from fsis2_MU table.  Only cwt
+        numbers stocked inside the mu are returned and plotted on
         map.
 
-    :template:`fsis2/cwt_stocked_qma.html`
+    :template:`fsis2/cwt_stocked_mu.html`
 
 
     """
-    return render_to_response('fsis2/cwt_recovered_qma.html',
-                              {'qma':qma},
-                                  context_instance=RequestContext(request))
+    mu_poly = ManagementUnit.objects.get(slug=slug)
+
+    stocked_cwts = get_cwts_stocked_mu(mu_poly)
+
+    #pull out the elements we need to make our map
+    recovery_pts = get_recovery_points(stocked_cwts['recoveries'])
+    event_pts = get_stocking_points(stocked_cwts['events'])
+
+    mymap = get_recovery_map(event_pts, recovery_pts,
+                             roi=mu_poly.geom)
+
+    #add the name of the management unit and the map we just created
+    #to the stocked_cwt dictionary.
+    stocked_cwts['mu'] = mu_poly
+    stocked_cwts['map'] = mymap
+
+    return render_to_response('fsis2/cwt_stocked_mu.html',
+                              stocked_cwts,
+                              context_instance=RequestContext(request))
 
 
-def cwt_stocked_ltrz(request, ltrz):
-    """a view to find all of the cwt stocked in a ltrz and their
-    associated recovery information
+def get_cwts_stocked_mu(mu_poly, year=None, strain=None):
+    """A helper function to actually get the cwt stocking and recovery
+    data for cwts stocked in a management unit.  Given a management unit
+    polygon, find all of the stocking events that have occured inside
+    of it, and then get all of their associated recovery events.
 
-    **Context:**
-
-    ``ltrz`` a lake trout rehabiliation zone number.  Used to select
-        appropriate ltrz polygon from fsis2_LTRZ table.  Only cwt
-        numbers stocked inside the ltrz are returned and plotted on
-        map.
-
-    :template:`fsis2/cwt_stocked_ltrz.html`
+    Returns a dictionary containing the following keys:
+    cwts = set of unique cwt numbers recovered in this management unit
+    recoveries = recovery events for this management unit (year and strain)
+    events = Ontario stocking events associated with the cwts recovered
 
     """
-    return render_to_response('fsis2/cwt_recovered_ltrz.html',
-                              {'ltrz':ltrz},
-                                  context_instance=RequestContext(request))
+    #get all of the stocking events with a cwt tagging event that have
+    #occured in the management unit
+    events = (Event.objects.filter(taggingevent__tag_type=6).
+              filter(geom__within=mu_poly.geom))
+    if year:
+        events = events.filter(year=year)
+    if strain:
+        events = events.filter(lot__strain__strain_code='SI')
+
+    #extract the unique cwts associated with those events
+    cwt_numbers = []
+    for event in events:
+        tmp = event.get_cwts()
+        if tmp:
+            cwt_numbers.extend([x.cwt for x in tmp])
+    cwt_numbers=list(set(cwt_numbers))
+
+    #get the all recovery instances from the set of cwts
+    recoveries = CWT_recovery.objects.filter(cwt__in=cwt_numbers)
+    cwts = CWT.objects.filter(cwt__in=cwt_numbers)
+
+    #we need to add the number of recoveries to each cwt instance:
+
+    #pull out just the cwt numbers and put them in a list
+    foo = [x.cwt for x in recoveries]
+    #create a dictionary of counts by cwt number
+    recovery_counts = dict([(i, foo.count(i)) for i in set(foo)])
+
+    for x in cwts:
+        x.recovery_count = recovery_counts.get(x.cwt, 0)
+
+    return(dict( cwts=cwts, events = events,
+                 recoveries = recoveries))

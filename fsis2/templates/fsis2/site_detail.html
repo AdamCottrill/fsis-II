@@ -91,7 +91,11 @@
         <tr class="{% cycle row1,row2 %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
           <td> {{ event.stkcnt|intcomma }} </td>
-          <td> {{ event.event_date|date }} </td>
+          {% if event.event_date %}
+            <td> {{ event.event_date|date }} </td>
+          {% else %}
+            <td> {{ event.year }} </td>
+          {% endif %}
           <td> {{ event.lot.species }} </td>
           <td> {{ event.lot.strain.strain_name }} </td>
           <td> {{ event.clipa }} </td>

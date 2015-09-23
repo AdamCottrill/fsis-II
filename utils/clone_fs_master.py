@@ -28,13 +28,18 @@ import os
 import shutil
 import sqlite3
 
+
+DEPLOY = FALSE
+
 #here is where we will place the clone after we make it:
 deploy_dir = r'X:/djcode/fsis2/utils/data'
+#deploy_dir = r'C:/1work/python/djcode/fsis2/utils/data'
 
 #trg =  r'C:/1work/ScrapBook/clone_fs_master/FS_Master.db'
 trg = r'c:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db'
 #recreate the target database:
-cmd = 'sqlite3 {0} < FS_master_schema.sql'.format(trg)
+sql = "C:/1work/Python/djcode/fsis2/utils/FS_master_schema.sql"
+cmd = 'sqlite3 {0} < {1}'.format(trg, sql)
 os.system(cmd)
 
 #open a connection to our new target database:
@@ -43,9 +48,9 @@ trg_cur = trg_conn.cursor()
 
 
 #open a connection to the source database and create a cursor
-#src = r'C:/1work/ScrapBook/clone_fs_master/FS_Master.mdb'
+src = r'C:/1work/data_warehouse/fs_master.mdb'
 #src = r"C:/1work/Python/djcode/fsis2/utils/FS_Master_copy.mdb"
-src = r"Y:/Information Resources/Dataset_Utilities/FS_Maker/FS_Master.mdb"
+#src = r"Y:/Information Resources/Dataset_Utilities/FS_Maker/FS_Master.mdb"
 src_conn = pyodbc.connect(r"DRIVER={Microsoft Access Driver (*.mdb)};" \
                      "DBQ=%s" % src)
 src_cur = src_conn.cursor()
@@ -64,24 +69,25 @@ for table in tables:
 
         fldcnt = len(jj[0])
         sql2 = '''insert into {0} values({1}?)'''.format(
-            table, "?," * (fldcnt -1))
+            table, "?," * (fldcnt-1))
 
         trg_cur.executemany(sql2, jj)
         trg_conn.commit()
 
-        print "Successfully ported {0}".format(table)
+        print("Successfully ported {0}".format(table))
 
 src_cur.close()
 src_conn.close()
 
 #==========================
 #we need to get the species table too:
-src = r"Z:/Data Warehouse/Utilities/Code Tables/LookupTables/LookupTables.mdb"
+src = r"C:/1work/data_warehouse/LookupTables.mdb"
 src_conn = pyodbc.connect(r"DRIVER={Microsoft Access Driver (*.mdb)};" \
                      "DBQ=%s" % src)
 src_cur = src_conn.cursor()
 
-sql = '''select * from SPC'''
+sql = '''select SPC, SPC_LAB, SPC_NM, SPC_NMCO, SPC_NMSC,
+         SPC_NMFAM, COMMENT, Quota_Flag from SPC'''
 rs = src_cur.execute(sql)
 jj = rs.fetchall()
 
@@ -99,14 +105,11 @@ src_cur.close()
 trg_conn.close()
 src_conn.close()
 
-#
-print "Copying clone to deployment directory..."
-os.remove(os.path.join(deploy_dir, os.path.split(trg)[1]))
-#os.rename(trg,os.path.join(deploy_dir, os.path.split(trg)[1]))
-destination = os.path.join(deploy_dir, os.path.split(trg)[1])
-shutil.copy(trg, destination)
-print "Done! ({0})".format(datetime.datetime.now().strftime("%b-%d-%Y %H:%M"))
 
-
-
-
+if DEPLOY:
+    print("Copying clone to deployment directory...")
+    os.remove(os.path.join(deploy_dir, os.path.split(trg)[1]))
+    #os.rename(trg,os.path.join(deploy_dir, os.path.split(trg)[1]))
+    destination = os.path.join(deploy_dir, os.path.split(trg)[1])
+    shutil.copy(trg, destination)
+    print ("Done! ({0})".format(datetime.datetime.now().strftime("%b-%d-%Y %H:%M")))

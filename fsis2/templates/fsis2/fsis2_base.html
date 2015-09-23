@@ -5,15 +5,10 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>  {% block title  %} FSIS II  {% endblock %}  </title>
 
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-theme.min.css">
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <script src="{{ STATIC_URL }}js/html5shiv.js"></script>
-    <script src="{{ STATIC_URL }}js/respond.min.js"></script>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 
-    <script src="{{ STATIC_URL }}js/jquery-1.9.1.js"></script>
-    <script src="{{ STATIC_URL }}js/jquery-1.10.2.min.js"></script>
-    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 
      <style type="text/css" media="screen">
       #map {
@@ -76,6 +71,7 @@
             <a href="#"class="dropdown-toggle" data-toggle="dropdown">Stocking Sites<b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="{% url 'site_list' %}">Stocking Sites</a>  </li>
+              <li class="divider"></li>
               <li><a href="{% url 'find_sites' %}">Find by Region</a> </li>
               <li><a href="#">Find Closest Site</a> </li>
               <li class="divider"></li>
@@ -83,19 +79,13 @@
             </ul>
           </li>
 
-
-
-
           <li class="dropdown">
             <a href="#"class="dropdown-toggle" data-toggle="dropdown">CWTS<b class="caret"></b></a>
             <ul class="dropdown-menu">
               <li><a href="{% url 'cwt_list' %}">CWT List</a>  </li>
               <li class="divider"></li>
-              <li><a href="#">Stocked by LTRZ</a> </li>
-              <li><a href="#">Stocked by Region</a> </li>
-              <li class="divider"></li>
-              <li><a href="#">Recovered by LTRZ</a> </li>
-              <li><a href="#">Recovered by Region</a> </li>
+              <li><a href="{% url 'mu_list' %}">By Mgt. Unit</a> </li>
+              <li><a href="#">By by Region</a> </li>
             </ul>
           </li>
 
@@ -173,6 +163,8 @@
     </div>
     {% endif %}
     {% endblock %}
+
+
 
   </body>
 </html>

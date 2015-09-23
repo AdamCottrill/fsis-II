@@ -29,7 +29,8 @@ from fsis2.models import (StockingSite, Proponent, Species, Strain)
 
 
 class USgrid(models.Model):
-    '''Centroids of us 10-minute grids - thee are used as APPROXIMATE stocking locations for US cwts.
+    '''Centroids of us 10-minute grids - thee are used as APPROXIMATE
+    stocking locations for US cwts.
     '''
 
     us_grid_no = models.CharField(max_length=4)
