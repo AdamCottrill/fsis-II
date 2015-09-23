@@ -1,3 +1,4 @@
+
 #=============================================================
 # c:/1work/Python/djcode/fsis2/utils/helper_fcts.py
 # Created: 30 Aug 2013 09:39:45
@@ -17,13 +18,33 @@
 # datetime_or_none - if a value is present, it parses assuming that it
 #     is formatted either as dd/mm/yyyy, mmm-dd-yyyy or dd-mmm-yyyy.
 #     Otherwise it returns None.
-#     
+#
 #
 # A. Cottrill
 #=============================================================
 
 import datetime
 import unittest
+
+def clear_tables(session):
+    """A little function to reset our database.
+
+    Arguments:
+    - `session`:
+    """
+    #session.query(BuildDate).delete()
+    session.query(Readme).delete()
+    session.query(CWTs_Applied).delete()
+    session.query(TaggingEvent).delete()
+    session.query(Event).delete()
+    session.query(Species).delete()
+    session.query(StockingSite).delete()
+    session.query(Lot).delete()
+    session.query(Proponent).delete()
+    session.query(Strain).delete()
+    session.query(Species).delete()
+    session.commit()
+
 
 def upper_or_none(x):
     '''a little helper function to ensure that constants enter the
@@ -40,47 +61,57 @@ def datetime_or_none(x):
     timestamp) or are returned as None.'''
     from datetime import datetime
 
+    #datetime objects get returned unchanged:
+    if x.__class__ == datetime:
+        return x
+
     if x:
+
+        #how dates are returned from sqlite database:
+        try:
+            x = datetime.strptime(x,'%Y-%m-%d %H:%M:%S')
+            return x
+        except ValueError:
+            pass
 
         #04/14/2012
         try:
             x = datetime.strptime(x,'%m/%d/%Y %H:%M:%S.0')
-            return(x)
+            return x
         except ValueError:
             pass
         try:
             x = datetime.strptime(x,'%m/%d/%Y')
-            return(x)
+            return x
         except ValueError:
             pass
 
-        
         #Apr-14-2012
         try:
             x = datetime.strptime(x,'%b-%d-%Y %H:%M:%S.0')
-            return(x)
+            return x
         except ValueError:
             pass
         try:
             x = datetime.strptime(x,'%b-%d-%Y')
-            return(x)
+            return x
         except ValueError:
             pass
 
         # 14-04-2014
         try:
             x = datetime.strptime(x,'%d-%b-%Y')
-            return(x)
+            return x
         except ValueError:
-            pass                
+            pass
         try:
             x = datetime.strptime(x,'%d-%b-%Y %H:%M:%S.0')
-            return(x)
+            return x
         except ValueError:
             return None
     else:
         return None
-            
+
 #[date_time_or_none(x) for x in samples]
 
 
@@ -96,6 +127,16 @@ class TestDateTimeOrNone(unittest.TestCase):
         '''
 
         from datetime import datetime
+        #actual dates should be returned unchanged:
+        now = datetime.now()
+        x = datetime_or_none(now)
+        self.assertEqual(x,now)
+
+        #how dates are returned from sqlite database:
+        datestring = '2014-04-09 00:00:00'
+        dt = datetime.strptime(datestring,'%Y-%m-%d %H:%M:%S')
+        x = datetime_or_none(datestring)
+        self.assertEqual(x,dt)
 
         datestring = "04/18/2011"
         dt = datetime.strptime(datestring,'%m/%d/%Y')
@@ -106,7 +147,7 @@ class TestDateTimeOrNone(unittest.TestCase):
         dt = datetime.strptime(datestring,'%m/%d/%Y %H:%M:%S.0')
         x = datetime_or_none(datestring)
         self.assertEqual(x,dt)
-        
+
         datestring = "18-Apr-2011"
         dt = datetime.strptime(datestring,'%d-%b-%Y')
         x = datetime_or_none(datestring)
@@ -126,17 +167,16 @@ class TestDateTimeOrNone(unittest.TestCase):
         dt = datetime.strptime(datestring,'%b-%d-%Y %H:%M:%S.0')
         x = datetime_or_none(datestring)
         self.assertEqual(x,dt)
-        
+
         x = datetime_or_none('')
-        self.assertIsNone(x)              
+        self.assertIsNone(x)
 
         x = datetime_or_none(None)
-        self.assertIsNone(x)              
+        self.assertIsNone(x)
 
-        
+
 def main():
     unittest.main()
 
 if __name__ == '__main__':
     main()
-        

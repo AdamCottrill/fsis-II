@@ -2,10 +2,6 @@
 
 {% block extrahead %}
 {{ map.media }}
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
 {% endblock %}
 
 {% block title %} {{ object.title  }}  {% endblock %}
@@ -186,6 +182,14 @@
 
 
 </div>
+
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
+
 
 <script type="text/javascript">
   $(".tablesorter").tablesorter({

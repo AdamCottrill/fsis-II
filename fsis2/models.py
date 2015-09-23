@@ -1,7 +1,7 @@
 import re
 #from django.db import models
 #from django.contrib.auth.models import User
-#from django.template.defaultfilters import slugify
+from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
 from django.contrib.gis.db import models
 
@@ -405,26 +405,89 @@ class CWTs_Applied(models.Model):
         pass
 
 
-class LTRZ(models.Model):
-    '''a class to hold geometries associated wth lake trout rehab-zones.
-    Used to find stocking events, cwts, and cwt recoveries occurred in
-    (or potentially near) specific LTRZs.
-    '''
-    ltrz = models.IntegerField('LTRZ')
-    geom = models.MultiPolygonField(srid=26917)
+
+class Lake(models.Model):
+    '''A lookup table to hold the names of the different lakes'''
+    lake = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "Lake"
 
     def __unicode__(self):
-        ret = 'LTRZ-{0}'.format(self.ltrz)
-        return ret
+        '''return the lake name as its string representation'''
+        return self.lake
 
 
-class QMA(models.Model):
-    '''a class to hold geometries associated wth Quota Management Areas.
-    Used to find stocking events, cwts, and cwt recoveries that
-    occurred in (or potentially near) specific areas.
+class ManagementUnit(models.Model):
+    '''a class to hold geometries associated with arbirary ManagementUnits
+    that can be represented as polygons.  Examples include quota
+    management units and lake trout rehabilitation zones.  Used to find
+    stocking events, cwts, and cwt recoveries occurred in (or
+    potentially near) specific management Units.
+
     '''
-    qma = models.CharField('QMA', max_length=6)
-    geom = models.MultiPolygonField(srid=26917)
+    label = models.CharField(max_length=25)
+    slug = models.SlugField(blank=True, unique=True, editable=False)
+    geom = models.MultiPolygonField(srid=4326)
+    lake = models.ForeignKey(Lake, default=1)
+
+    MU_TYPE_CHOICES = (
+       ('ltrz', 'Lake Trout Rehabilitation Zone'),
+       ('qma', 'Quota Management Area'),
+        #       ('stat_dist', 'Statistical District'),
+       )
+
+    mu_type =  models.CharField(max_length=10,
+                                choices=MU_TYPE_CHOICES,
+                                default='qma')
+
+    class Meta:
+        ordering = ['mu_type','label']
+
+    def get_slug(self):
+        '''the name is a concatenation of lake base name, the managemnet unit
+        type and and the management unit label'''
+        lake = str(self.lake)
+        lake = lake.lower().replace('lake','').strip()
+        return slugify('_'.join([lake, self.mu_type, self.label]))
+
+    def name(self):
+        return ' '.join([str(self.lake), self.mu_type.upper(), self.label])
 
     def __unicode__(self):
-        return self.qma
+        return self.name()
+
+    def save(self, *args, **kwargs):
+        """
+        Populate slug when we save the object.
+        """
+        #if not self.slug:
+        self.slug = self.get_slug()
+        super(ManagementUnit, self).save( *args, **kwargs)
+
+
+##
+##
+## class LTRZ(models.Model):
+##     '''a class to hold geometries associated wth lake trout rehab-zones.
+##     Used to find stocking events, cwts, and cwt recoveries occurred in
+##     (or potentially near) specific LTRZs.
+##     '''
+##     ltrz = models.IntegerField('LTRZ')
+##     geom = models.MultiPolygonField(srid=26917)
+##
+##     def __unicode__(self):
+##         ret = 'LTRZ-{0}'.format(self.ltrz)
+##         return ret
+##
+##
+## class QMA(models.Model):
+##     '''a class to hold geometries associated wth Quota Management Areas.
+##     Used to find stocking events, cwts, and cwt recoveries that
+##     occurred in (or potentially near) specific areas.
+##     '''
+##     qma = models.CharField('QMA', max_length=6)
+##     geom = models.MultiPolygonField(srid=26917)
+##
+##     def __unicode__(self):
+##         return self.qma

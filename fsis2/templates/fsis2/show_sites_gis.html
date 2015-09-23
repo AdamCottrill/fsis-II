@@ -1,28 +1,12 @@
 {% extends "fsis2/fsis2_base.html" %}
 
-<!-- {% block pages %}
-
-
-{% endblock %}
--->
-
 {% block extrahead %}
-
-{{ map.media }}
-
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
-
-
+  {{ map.media }}
 {% endblock %}
-
 
 {% block content %}
 {% load humanize %}
 {% load fsis2_filters %}
-
 
 <div class="row">
   <div class="col-md-10 col-md-offset-1">
@@ -65,7 +49,11 @@
   <h3>Sorry no sites match that criteria.</h3>
   {% endif %}
 
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
 
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 <script type="text/javascript">
 

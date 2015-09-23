@@ -2,10 +2,6 @@
 
 {% block extrahead %}
 {{ map.media }}
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script> 
 {% endblock %}
 
 {% block title %} {{ object.title  }}  {% endblock %}
@@ -23,14 +19,14 @@
     <h2> CWT Number: {{ cwt_number|format_cwt }} </h2>
 
     <div class="alert alert-danger">
-      WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN  ONCE.  INTERPRET WITH CAUTION.</p>      
+      WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN  ONCE.  INTERPRET WITH CAUTION.</p>
     </div>
 
 <div class="col-md-5">
   <ul class="nav nav-pills">
     {% for cwt in cwt_list %}
     <li><a href="#{{ forloop.counter }}" data-toggle="tab">{{ forloop.counter }}</a></li>
-    {% endfor %}       
+    {% endfor %}
   </ul>
 
   <div class="tab-content">
@@ -46,7 +42,7 @@
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="details{{ forloop.counter }}">
-            <table class="table">        
+            <table class="table">
               <tr>
                 <td>  <b>Species:</b></td>
                 <td> {{ cwt.cwt.spc.common_name }}
@@ -121,7 +117,7 @@
 
           <div class="tab-pane" id="ageatcapture{{ forloop.counter }}">
             {% if cwt.aac %}
-            <table class="table">        
+            <table class="table">
               <tr>
                 <td>  <b>Year of Capture</b></td>
                 <td> <b>Age</b></td>
@@ -136,7 +132,7 @@
             <p>Age at capture is not currently available for cwt.cwt.cwt.</p>
             {% endif %}
           </div>
-        </div>        
+        </div>
         <script type="text/javascript">
           $('#myTab{{ forloop.counter }} a').click(function (e) {
           e.preventDefault()
@@ -154,9 +150,9 @@
   </div>
 
   <div id="event_list" class="row">
-    <hr />  
+    <hr />
     <h3>Stocking Events: </h3>
-    {% if event_list %}  
+    {% if event_list %}
     <table id="myTable" class="table tablesorter">
       <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
           <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
@@ -165,57 +161,65 @@
         {% for event in event_list %}
         <tr class="{% cycle row1,row2 %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
-          <td> {{ event.stkcnt|intcomma }} </td> 
+          <td> {{ event.stkcnt|intcomma }} </td>
           <td> {{ event.event_date|date }} </td>
-          <td> {{ event.site.site_name }} </td> 
-          <td> {{ event.clipa }} </td> 
+          <td> {{ event.site.site_name }} </td>
+          <td> {{ event.clipa }} </td>
           <td> {{ event.get_development_stage_display }} </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
     {% else %}
-      {% ifequal cwt.agency "OMNR" %} 
+      {% ifequal cwt.agency "OMNR" %}
     <div class="alert alert-danger">
       <p>There are no Ontario stocking events associated with cwt {{ cwt }}.   According the the Agency code there should be. </p>
     </div>
       {% else %}
       <p>There are no Ontario stocking events associated with cwt {{ cwt }}. </p>
       {% endifequal %}
-    {% endif %}    
+    {% endif %}
   </div>
 
   <div id="recovery_list" class="row">
-    <hr />  
+    <hr />
     <h3>Recoveries: {% if recovery_list %} (n = {{ recovery_list.count }}) {% endif %}</h3>
-    {% if recovery_list %}  
+    {% if recovery_list %}
     <table id="myTable" class="table tablesorter">
-      <thead><tr><td>Year</td><td>Source</td> 
+      <thead><tr><td>Year</td><td>Source</td>
           <td>Recovery Date</td><td>5-Minute Grid</td>
           <td>Project Key</td><td>Fork Length(mm)</td> <td>Age</td></tr>
       </thead>
       <tbody>
         {% for recovery in recovery_list %}
         <tr class="{% cycle row1,row2 %}">
-          <td> {{ recovery.recovery_year }} </td> 
-          <td> {{ recovery.get_recovery_source_display }} </td> 
+          <td> {{ recovery.recovery_year }} </td>
+          <td> {{ recovery.get_recovery_source_display }} </td>
           <td> {{ recovery.recovery_date|date }} </td>
           <td> {{ recovery.recovery_grid }} </td>
-          <td> {{ recovery.composite_key }} </td> 
-          <td> {{ recovery.flen }} </td> 
-          <td> {{ recovery.age }} </td> 
+          <td> {{ recovery.composite_key }} </td>
+          <td> {{ recovery.flen }} </td>
+          <td> {{ recovery.age }} </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
     {% else %}
     <p>This cwt has not been recovered (yet)</p>
-    {% endif %}    
+    {% endif %}
   </div>
 
 
 
 </div>
+
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
+
 
 <script type="text/javascript">
   $(".tablesorter").tablesorter({
