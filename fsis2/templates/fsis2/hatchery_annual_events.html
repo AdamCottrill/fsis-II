@@ -11,12 +11,13 @@
 {% block content %}
 <div class="container">
 
+{% if object_list %}
+    <h4>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year}}:</h4>
 
-
-{% regroup object_list by lot.species as species_list %}
+    {% regroup object_list by lot.species as species_list %}
 
     {% for species in species_list %}
-    <h3>{{ species.grouper }}</h3>
+    <h3>{{ species.grouper }} (N={{ species.list|length }})</h3>
 
     <table id="myTable {{ species.grouper }}" class="table tablesorter">
         <thead><tr>
@@ -46,7 +47,41 @@
     </table>
     {% endfor %}
 
+{% else %}
+
+   <h4> {{ proponent.proponent_name}} ({{ proponent.abbrev}}) did not stock any fish in {{ year}}.</h4>
+
+{% endif %}
+
 </div>
+
+
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
+
+
+<script type="text/javascript">
+
+  $(".tablesorter").tablesorter({
+  theme: 'bootstrap',
+  widthFixed: true,
+  showProcessing: true,
+  headerTemplate: '{content} {icon}',
+  widgets: ['zebra', 'uitheme', 'scroller'],
+  widgetOptions: {
+  scroller_height: 300,
+  scroller_barWidth: 17,
+  scroller_jumpToHeader: true,
+  scroller_idPrefix: 's_'
+  }
+  });
+
+</script>
+
 
 
 {% endblock %}
