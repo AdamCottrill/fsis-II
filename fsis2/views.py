@@ -9,6 +9,9 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
+from django.contrib import messages
+from django.http import Http404
+
 from django.views.generic import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -827,13 +830,27 @@ def proponent_annual_events(request, hatchery, year):
     particular proponent in a particular year.  This view will
     complement the annual stocking event report.
     """
-    proponent = Proponent.objects.get(abbrev=hatchery)
+
+
+    try:
+        proponent = Proponent.objects.get(abbrev=hatchery)
+    except Proponent.DoesNotExist:
+        msg = "Proponent with abbeviation {} does not exist.".format(hatchery)
+        messages.error(request, msg)
+        raise Http404()
+
+    if int(year) > datetime.today().year:
+        msg = "Dates in the future not allowed!!"
+        messages.error(request, msg)
+        raise Http404()
+
     events = Event.objects.filter(lot__proponent=proponent, year=year).\
              order_by('lot__species__common_name').all()
 
     return render_to_response('fsis2/hatchery_annual_events.html',
                               {#'map':mymap,
-                               'object_list':events,},
+                                  'object_list':events,
+                                  'proponent':proponent, 'year':year},
                               context_instance=RequestContext(request))
 
 
