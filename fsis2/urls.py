@@ -201,7 +201,7 @@ urlpatterns = patterns("",
         url(
             regex=r'^hatchery/events/(?P<hatchery>\w{1,7})/(?P<year>\d{4})$',
             view = proponent_annual_events,
-            name='hatchery_annual_event'
+            name='hatchery_annual_events'
             ),
 
 
