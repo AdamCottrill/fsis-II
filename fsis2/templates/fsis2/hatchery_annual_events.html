@@ -3,30 +3,30 @@
 
 {% block extrahead %}
 
-  {% load geojson_tags %}
-  {% load leaflet_tags %}
+{% load humanize %}
+{% load fsis2_filters %}
+{% load geojson_tags %}
+{% load leaflet_tags %}
 
-  {% leaflet_js %}
-  {% leaflet_css %}
+{% leaflet_js %}
+{% leaflet_css %}
 
-  <script src="/static/Leaflet.MakiMarkers.js"></script>
+<script src="/static/Leaflet.MakiMarkers.js"></script>
 
 <style>
 
-    #mymap {  /* all maps */
-        width:  700px;
-        height: 600px;
-    }
+ #mymap {  /* all maps */
+     width:  700px;
+     height: 600px;
+ }
 
-    td {
-        padding: 0px 10px 2px 0px;}
+ td {
+     padding: 0px 10px 2px 0px;}
 
 </style>
 
 {% endblock extrahead %}
 
-
-{% load humanize %}
 
 {% block content %}
 
@@ -41,11 +41,10 @@
 
 
  function onEachFeature(feature, layer) {
-    if (feature.properties && feature.properties.popup_text) {
-      layer.bindPopup(feature.properties.popup_text);
-    }
-  }
-
+     if (feature.properties && feature.properties.popup_text) {
+         layer.bindPopup(feature.properties.popup_text);
+     }
+ }
 
  function map_init(map, options) {
      L.geoJson(events, {
@@ -91,48 +90,74 @@
 
 
 
-{% leaflet_map "mymap" callback="window.map_init" %}
+    {% leaflet_map "mymap" callback="window.map_init" %}
 
-{% if object_list %}
 
-    {% regroup object_list by lot.species as species_list %}
+    <br />
 
-    {% for species in species_list %}
-    <h4>{{ species.grouper }} (N={{ species.list|length }})</h4>
+    {% if object_list %}
 
-    <table id="myTable {{ species.grouper }}" class="table tablesorter">
-        <thead><tr>
-            <td>FSIS Event</td>
-            <td>Species</td>
-            <td>Strain</td>
-            <td>Number Stocked</td>
-            <td>Event Date</td>
-            <td>Site Name</td>
-            <td>Clip Applied</td>
-            <td>Development Stage</td></tr>
-        </thead>
-        <tbody>
-            {% for event in species.list %}
-            <tr class="{% cycle row1,row2 %}">
-                <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
-                <td> {{ event.lot.species.common_name | title }} </td>
-                <td> {{ event.lot.strain.strain_name | title }} </td>
-                <td> {{ event.stkcnt|intcomma }} </td>
-                <td> {{ event.event_date|date }} </td>
-                <td> {{ event.site.site_name }} </td>
-                <td> {{ event.clipa }} </td>
-                <td> {{ event.get_development_stage_display }} </td>
-            </tr>
+    {% regroup object_list by lot.species as species_list2 %}
+
+    <div>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+
+            {% for species in species_list2 %}
+            <li role="presentation" {% if forloop.first %}class="active"{% endif %}><a href="#{{ species.grouper|scrub_spc }}" aria-controls="{{ species.grouper|scrub_spc }}" role="tab" data-toggle="tab">{{ species.grouper }} (N={{ species.list|length }})</a></li>
+
             {% endfor %}
-        </tbody>
-    </table>
-    {% endfor %}
+        </ul>
 
-{% else %}
 
-   <h4> {{ proponent.proponent_name}} ({{ proponent.abbrev}}) did not stock any fish in {{ year}}.</h4>
+        <!-- Tab panes -->
+        <div class="tab-content">
+            {% for species in species_list2 %}
+            <div role="tabpanel" class="tab-pane {% if forloop.first %}active{% endif %}" id="{{ species.grouper|scrub_spc }}">
 
-{% endif %}
+                <table id="myTable {{ species.grouper|scrub_spc }}" class="table tablesorter">
+                    <thead><tr>
+                        <td>FSIS Event</td>
+                        <td>Species</td>
+                        <td>Strain</td>
+                        <td>Number Stocked</td>
+                        <td>Event Date</td>
+                        <td>Site Name</td>
+                        <td>Clip Applied</td>
+                        <td>Development Stage</td></tr>
+                    </thead>
+                    <tbody>
+                        {% for event in species.list %}
+                        <tr class="{% cycle row1,row2 %}">
+                            <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
+                            <td> {{ event.lot.species.common_name | title }} </td>
+                            <td> {{ event.lot.strain.strain_name | title }} </td>
+                            <td> {{ event.stkcnt|intcomma }} </td>
+                            <td> {{ event.event_date|date }} </td>
+                            <td> {{ event.site.site_name }} </td>
+                            <td> {{ event.clipa }} </td>
+                            <td> {{ event.get_development_stage_display }} </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+
+
+
+
+
+    {% else %}
+
+    <h4> {{ proponent.proponent_name}} ({{ proponent.abbrev}}) did not stock any fish in {{ year}}.</h4>
+
+    {% endif %}
 
 </div>
 
@@ -147,19 +172,24 @@
 
 <script type="text/javascript">
 
-  $(".tablesorter").tablesorter({
-  theme: 'bootstrap',
-  widthFixed: true,
-  showProcessing: true,
-  headerTemplate: '{content} {icon}',
-  widgets: ['zebra', 'uitheme', 'scroller'],
-  widgetOptions: {
-  scroller_height: 300,
-  scroller_barWidth: 17,
-  scroller_jumpToHeader: true,
-  scroller_idPrefix: 's_'
-  }
-  });
+ $(".tablesorter").tablesorter({
+     theme: 'bootstrap',
+     widthFixed: true,
+     showProcessing: true,
+     headerTemplate: '{content} {icon}',
+     widgets: ['zebra', 'uitheme', 'scroller'],
+     widgetOptions: {
+         scroller_height: 300,
+         scroller_barWidth: 17,
+         scroller_jumpToHeader: true,
+         scroller_idPrefix: 's_'
+     }
+ });
+
+ $('#myTabs a').click(function (e) {
+     e.preventDefault()
+         $(this).tab('show')
+ })
 
 </script>
 

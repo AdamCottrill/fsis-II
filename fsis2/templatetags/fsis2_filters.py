@@ -42,3 +42,26 @@ def prj_cd_Year(x):
     else:
         yr = "20" + x[6:8]
     return yr
+
+
+@register.filter(name='scrub_spc')
+def scrub_spc(x):
+    '''format convert speceis name to lower case name without spaces -
+    suitable for use in html tags.
+
+    Sockeye Salmon (Oncorhynchus nerka) --> sockeyesalmon
+    Chinook Salmon (Oncorhynchus tshawytscha) --> chinooksalmon
+    Rainbow Trout (Oncorhynchus mykiss) --> rainbowtrout
+    Brown Trout (Salmo trutta) --> browntrout
+    Brook Trout (Salvelinus fontinalis) --> brooktrout
+    Lake Trout (Salvelinus namaycush) --> laketrout
+    Splake (Salvelinus fontinalis x Salvelinus namaycush) --> splake
+    Lake Trout Backcross () --> laketroutbackcross
+    Muskellunge (Esox masquinongy) --> muskellunge
+    Smallmouth Bass (Micropterus dolomieu) --> smallmouthbass
+    Walleye (Sander vitreum) --> walleye
+
+    '''
+    nm = str(x)
+
+    return nm[:nm.find('(')].lower().replace(' ','')
