@@ -310,6 +310,24 @@ class Event(models.Model):
         event on a map.  For now, just return the fs_event number.'''
         return self.fs_event
 
+    @property
+    def spc_code(self):
+        '''we need to return the species code for a stocking event so that we
+        can display them on the map using different colours.'''
+        return self.lot.species.species_code
+
+    @property
+    def strain_code(self):
+        '''we need to return the strain code for a stocking event so that we
+        can display them on the map using different colours.'''
+        return self.lot.strain.strain_code
+
+    @property
+    def hatchery_code(self):
+        '''we need to return the hatchery code for a stocking event so that we
+        can display them on the map using different colours.'''
+        return self.lot.proponent.abbrev
+
 
     def save(self, *args, **kwargs):
         if not self.geom:

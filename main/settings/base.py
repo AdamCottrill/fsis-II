@@ -22,7 +22,7 @@ here = lambda * x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
 root = lambda * x: os.path.join(os.path.abspath(PROJECT_ROOT), *x)
 
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -155,6 +155,9 @@ THIRDPARTY_APPS = (
 #    'haystack',
     'passwords',
     'olwidget',
+    'djgeojson',
+    'leaflet',
+
     )
 
 CRISPY_FAIL_SILENTLY = not DEBUG
@@ -211,3 +214,14 @@ PASSWORD_MIN_LENGTH = 8
 PASSWORD_COMPLEXITY = { "UPPER":  1, "LOWER":  1, "DIGITS": 1 }
 
 POSTGIS_VERSION = (2, 1, 8)
+
+LEAFLET_CONFIG = {
+    #minx, miny, maxx,maxy
+    #'SPATIAL_EXTENT': (-84.0, 43.0,-80.0, 47.0),
+    'DEFAULT_CENTER': (45.0,-82.0),
+    'DEFAULT_ZOOM': 8,
+    #'MIN_ZOOM': 3,
+    #'MAX_ZOOM': 18,
+    'RESET_VIEW': True,
+
+}
