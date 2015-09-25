@@ -1,23 +1,104 @@
 {% extends "fsis2/fsis2_base.html" %}
 
-<!-- {% block pages %}
 
+{% block extrahead %}
 
-{% endblock %}
--->
+  {% load geojson_tags %}
+  {% load leaflet_tags %}
+
+  {% leaflet_js %}
+  {% leaflet_css %}
+
+  <script src="/static/Leaflet.MakiMarkers.js"></script>
+
+<style>
+
+    #mymap {  /* all maps */
+        width:  700px;
+        height: 600px;
+    }
+
+    td {
+        padding: 0px 10px 2px 0px;}
+
+</style>
+
+{% endblock extrahead %}
+
 
 {% load humanize %}
 
 {% block content %}
+
+
+
+<script type="text/javascript">
+ var events = {{ object_list|geojsonfeature:"popup_text,spc_code"|safe }};
+
+ var rainbow = L.MakiMarkers.icon({icon: "circle", color: "#b0b", size: "s"});
+ var lakeTrout = L.MakiMarkers.icon({icon: "square", color: "#0a0", size: "s"});
+ var Chinook = L.MakiMarkers.icon({icon: "star", color: "#00f", size: "s"});
+
+
+ function onEachFeature(feature, layer) {
+    if (feature.properties && feature.properties.popup_text) {
+      layer.bindPopup(feature.properties.popup_text);
+    }
+  }
+
+
+ function map_init(map, options) {
+     L.geoJson(events, {
+         style: function(feature) {
+             switch (feature.properties.spc_code) {
+                     //bright pink
+                 case 74: return {color: "#FF3399", fillColor:"#FF3399"};
+                     // purple - light purple
+                 case 75: return {color: "#6600CC", fillColor:"#CC99FF"};
+                     // red - yellow fill
+                 case 76: return {color: "#FF0000", fillColor:"#FFFF66"};
+                     // orange -- orange fill
+                 case 78: return {color: "#CC3300", fillColor:"#FF9933"};
+                     // green -- dk green
+                 case 80: return {color: "#00CC00", fillColor:"#006600"};
+                     //green - yellow fill
+                 case 81: return {color: "#00CC00", fillColor:"#FFFF66"};
+                     // green - light green
+                 case 82: return {color: "#00CC00", fillColor:"#CCFFCC"};
+                     // green - bright pink
+                 case 87: return {color: "#00CC00", fillColor:"#FF66CC"};
+                     // red - red fill
+                 case 132: return {color: "#FF0000", fillColor:"#FF0000"};
+                     // blue - blue fill
+                 case 316: return {color: "#0000FF", fillColor:"#0000FF"};
+                     // blue -- yellow fill
+                 case 334: return {color: "#0000FF", fillColor:"#FFFF00"};
+                     // purple - light yellow fill
+                 default: return {color: "#6600CC", fillColor:"#FFFF99"};
+             }},
+         pointToLayer: function(feature, latlng) {
+             return new L.CircleMarker(latlng, {radius: 5, fillOpacity: 0.75});
+         },
+         onEachFeature: onEachFeature}).addTo(map);
+ }
+</script>
+
+
+
 <div class="container">
 
+    <h3>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year}}:</h3>
+
+
+
+{% leaflet_map "mymap" callback="window.map_init" %}
+
 {% if object_list %}
-    <h4>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year}}:</h4>
 
     {% regroup object_list by lot.species as species_list %}
 
     {% for species in species_list %}
-    <h3>{{ species.grouper }} (N={{ species.list|length }})</h3>
+    <h4>{{ species.grouper }} (N={{ species.list|length }})</h4>
 
     <table id="myTable {{ species.grouper }}" class="table tablesorter">
         <thead><tr>
