@@ -825,12 +825,23 @@ class ProponentLotListView(ListView):
         return context
 
 
+def proponent_most_recent_events(request, hatchery):
+    """Get the most recent year of stocking for the requested hatchery and
+    pass the information onto our proponent_annual_events view.
+    """
+
+    latest = Event.objects.filter(lot__proponent__abbrev=hatchery).\
+                 aggregate(Max('year'))
+    year = latest.get('year__max')
+
+    return proponent_annual_events(request, hatchery, year)
+
+
 def proponent_annual_events(request, hatchery, year):
     """Render a view with all of the stocking events associated with a
     particular proponent in a particular year.  This view will
     complement the annual stocking event report.
     """
-
 
     try:
         proponent = Proponent.objects.get(abbrev=hatchery)
@@ -839,7 +850,9 @@ def proponent_annual_events(request, hatchery, year):
         messages.error(request, msg)
         raise Http404()
 
-    if int(year) > datetime.today().year:
+    year = int(year)
+
+    if year > datetime.today().year:
         msg = "Dates in the future not allowed!!"
         messages.error(request, msg)
         raise Http404()
@@ -847,10 +860,18 @@ def proponent_annual_events(request, hatchery, year):
     events = Event.objects.filter(lot__proponent=proponent, year=year).\
              order_by('lot__species__common_name').all()
 
+
+    tmp = Event.objects.filter(lot__proponent=proponent).\
+          order_by('-year').values('year').distinct('year')
+
+    other_years = [x['year'] for x in tmp]
+
+
     return render_to_response('fsis2/hatchery_annual_events.html',
-                              {#'map':mymap,
-                                  'object_list':events,
-                                  'proponent':proponent, 'year':year},
+                              {   'object_list':events,
+                                  'proponent':proponent,
+                                  'year':year,
+                                  'other_years':other_years},
                               context_instance=RequestContext(request))
 
 
