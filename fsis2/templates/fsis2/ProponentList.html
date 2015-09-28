@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="container">
-  
+
 <div class="row">
 <h2>Fish Hatcheries/Proponents</h2>
 </div>
@@ -18,10 +18,10 @@
 
 {% if object_list %}
 <table class="table">
-  
+
   {% for object in object_list %}
   {% cycle '<tr>' '' %}
-    <td> <a href="{% url 'hatchery_lot_list' object.abbrev %}"> {{ object.proponent_name }} </a></td>
+    <td> <a href="{% url 'hatchery_most_recent_events' object.abbrev %}"> {{ object.proponent_name }} </a></td>
     {% cycle '' '</tr>' %}
   {% endfor %}
 
@@ -37,5 +37,3 @@
 
 
 {% endblock %}
-
-
