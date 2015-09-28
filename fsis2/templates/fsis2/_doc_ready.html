@@ -26,6 +26,12 @@ Be sure to inlude  a map div in your main template:
          }
      }
 
+
+    // TODO: make the colours associated with each strain, hatchery and spc
+    // dynamic relative to the number of characteristics returned by the  query
+    // there are too many in the database to hard-code them all, but there will rarely be more than
+    // 10 or so in any given view.
+
      var  byspecies = L.geoJson(events, {
          style: function(feature) {
              switch (feature.properties.spc_code) {

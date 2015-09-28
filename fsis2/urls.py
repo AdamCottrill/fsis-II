@@ -16,7 +16,8 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     AnnualStockingByHatcherySpcView,
                     find_events,ManagementUnitListView,
                     cwt_detail_view, cwt_stocked_mu, cwt_recovered_mu,
-                    proponent_annual_events)
+                    proponent_annual_events,
+                    proponent_most_recent_events,)
 
 urlpatterns = patterns("",
 
@@ -202,6 +203,13 @@ urlpatterns = patterns("",
             regex=r'^hatchery/events/(?P<hatchery>\w{1,7})/(?P<year>\d{4})$',
             view = proponent_annual_events,
             name='hatchery_annual_events'
+            ),
+
+
+        url(
+            regex=r'^hatchery/events/most_recent/(?P<hatchery>\w{1,7})$',
+            view = proponent_most_recent_events,
+            name='hatchery_most_recent_events'
             ),
 
 

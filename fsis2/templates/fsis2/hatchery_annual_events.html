@@ -27,20 +27,33 @@
 
 <div class="container">
 
-    <h3>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year}}:</h3>
+    <h3>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year }}:</h3>
     <br />
 
     <div id="maprow" class="row" >
         <div class="col-md-11" >
-            <div id="main_map" style="width: 800px; height: 700px;"></div>
-        </div>
-
-        <div class="col-md-1" >
-            <div class="btn-group-vertical" role="group" aria-label="plotby">
+            <div id="main_map" style="width: 900px; height: 700px;"></div>
+            <div class="btn-group" role="group" aria-label="plotby">
                 <button type="button" id="byspecies" class="btn btn-primary">By Species</button>
                 <button type="button" id="bystrain" class="btn btn-default">By Strain</button>
                 <button type="button" id="byhatchery" class="btn btn-default" >By Hatchery</button>
             </div>
+
+        </div>
+
+        <div class="col-md-1" >
+            <div class="btn-group-vertical" role="group" aria-label="plotby">
+
+            {% for yr in other_years %}
+                {% if yr == year %}
+                <a class="btn btn-primary" href="#">{{ yr }}</a>
+                {% else %}
+                <a class="btn btn-default" href="{% url 'hatchery_annual_events' proponent.abbrev yr %}">{{ yr }}</a>
+                {% endif %}
+            {% endfor %}
+
+            </div>
+
         </div>
     </div>
 
@@ -113,7 +126,7 @@
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 
-{% include "fsis2/doc_ready.html" %}
+{% include "fsis2/_doc_ready.html" %}
 
 
 
