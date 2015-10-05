@@ -828,7 +828,7 @@ class ProponentLotListView(ListView):
 def proponent_most_recent_events(request, hatchery):
     """Get the most recent year of stocking for the requested hatchery and
     pass the information onto our proponent_annual_events view.
-    """
+o    """
 
     latest = Event.objects.filter(lot__proponent__abbrev=hatchery).\
                  aggregate(Max('year'))
@@ -867,12 +867,45 @@ def proponent_annual_events(request, hatchery, year):
     other_years = [x['year'] for x in tmp]
 
 
-    return render_to_response('fsis2/hatchery_annual_events.html',
+    return render_to_response('fsis2/annual_events.html',
                               {   'object_list':events,
                                   'proponent':proponent,
                                   'year':year,
                                   'other_years':other_years},
                               context_instance=RequestContext(request))
+
+
+def annual_events(request, year):
+    """Render a view with all of the stocking events associated in a
+    particular year.  Events for all species and hatcheries will be
+    returned along with a list of other_years with stocking data.
+
+    """
+
+    year = int(year)
+
+    if year > datetime.today().year:
+        msg = "Dates in the future not allowed!!"
+        messages.error(request, msg)
+        raise Http404()
+
+    events = Event.objects.filter(year=year).\
+             order_by('lot__species__common_name').all()
+
+    tmp = Event.objects.all().\
+          order_by('-year').values('year').distinct('year')
+
+    other_years = [x['year'] for x in tmp]
+
+    return render_to_response('fsis2/annual_events.html',
+                              {   'object_list':events,
+                                  'year':year,
+                                  'other_years':other_years},
+                              context_instance=RequestContext(request))
+
+
+
+
 
 
 class SpeciesListView(ListView):

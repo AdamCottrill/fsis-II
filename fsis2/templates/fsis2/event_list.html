@@ -23,11 +23,11 @@
 
   {% if not cwt %}
 
-  <div class="row">
+    <div class="row">
     <div class="col-sm-9">
       <div class="btn-group btn-group-xs">
         {% for yr in years|slice:":10" %}
-        <a href="{% url 'event_year_list' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a>
+        <a href="{% url 'annual_events' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a>
         {% endfor %}
         <div class="btn-group">
           <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
@@ -35,7 +35,7 @@
           </button>
           <ul class="dropdown-menu">
             {% for yr in years|slice:"10:" %}
-            <li> <a href="{% url 'event_year_list' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a></li>
+            <li> <a href="{% url 'annual_events' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a></li>
             {% endfor %}
           </ul>
         </div>
