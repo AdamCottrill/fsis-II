@@ -6,7 +6,8 @@ from django.views.generic import TemplateView
 #from django.views.generic.detail import DetailView
 
 
-from .views import (EventDetailView, EventListView, EventYearArchiveView,
+from .views import (EventDetailView, EventListView,
+                   #EventYearArchiveView,
                     EventUpdateView, EventCreateView,
                     LotDetailView, LotListView, LotCreateView, LotUpdateView,
                     SiteDetailView, SiteListView, SiteCreateView,
@@ -16,6 +17,7 @@ from .views import (EventDetailView, EventListView, EventYearArchiveView,
                     AnnualStockingByHatcherySpcView,
                     find_events,ManagementUnitListView,
                     cwt_detail_view, cwt_stocked_mu, cwt_recovered_mu,
+                    annual_events,
                     proponent_annual_events,
                     proponent_most_recent_events,)
 
@@ -72,8 +74,12 @@ urlpatterns = patterns("",
         #event list <year>
 
         url(r'^events/(?P<year>\d{4})/$',
-            EventYearArchiveView.as_view(template_name='fsis2/event_list.html'),
-            name="event_year_list"),
+            #EventYearArchiveView.as_view(template_name='fsis2/event_list.html'),
+            view=annual_events,
+            #name="event_year_list"), #TODO replace event_year_list with annual_events
+            name="annual_events"),
+
+
 
         #events associated with cwt
         #url(r'^events/(?P<cwt>\d{6})/$',

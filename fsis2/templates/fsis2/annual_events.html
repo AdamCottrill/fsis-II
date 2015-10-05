@@ -26,8 +26,11 @@
 
 
 <div class="container">
-
+     {% if proponent %}
     <h3>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year }}:</h3>
+    {% else %}
+    <h3>Stocking events for {{ year }}:</h3>
+    {% endif %}
     <br />
 
     <div id="maprow" class="row" >
@@ -44,13 +47,35 @@
         <div class="col-md-1" >
             <div class="btn-group-vertical" role="group" aria-label="plotby">
 
-            {% for yr in other_years %}
+            {% for yr in other_years|slice:":15" %}
                 {% if yr == year %}
                 <a class="btn btn-primary" href="#">{{ yr }}</a>
                 {% else %}
-                <a class="btn btn-default" href="{% url 'hatchery_annual_events' proponent.abbrev yr %}">{{ yr }}</a>
+                  {% if proponent %}
+                    <a class="btn btn-default" href="{% url 'hatchery_annual_events' proponent.abbrev yr %}">{{ yr }}</a>
+                  {% else %}
+                    <a class="btn btn-default" href="{% url 'annual_events' yr %}">{{ yr }}</a>
+                  {% endif %}
                 {% endif %}
             {% endfor %}
+
+
+             <div class="btn-group" role="group">
+                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                       Older
+                       <span class="caret"></span>
+                       </button>
+                            <ul class="dropdown-menu">
+            {% for yr in other_years|slice:"15:" %}
+                  {% if proponent %}
+                    <li><a href="{% url 'hatchery_annual_events' proponent.abbrev yr %}">{{ yr }}</a></li>
+                  {% else %}
+                    <li><a href="{% url 'annual_events' yr %}">{{ yr }}</a></li>
+                  {% endif %}
+            {% endfor %}
+                  </ul>
+      </div>
+
 
             </div>
 
@@ -87,6 +112,9 @@
                         <td>Event Date</td>
                         <td>Site Name</td>
                         <td>Clip Applied</td>
+                        {% if not proponent %}
+                        <td>Hatchery</td>
+                        {% endif %}
                         <td>Development Stage</td></tr>
                     </thead>
                     <tbody>
@@ -99,6 +127,13 @@
                             <td> {{ event.event_date|date }} </td>
                             <td> {{ event.site.site_name }} </td>
                             <td> {{ event.clipa }} </td>
+                            {% if not proponent %}
+                               <td>
+                                   <a href="{% url 'hatchery_annual_events' event.lot.proponent.abbrev  year %}">
+                                       {{ event.lot.proponent.abbrev }}</a>
+                               </td>
+                            {% endif %}
+
                             <td> {{ event.get_development_stage_display }} </td>
                         </tr>
                         {% endfor %}
@@ -112,7 +147,11 @@
 
     {% else %}
 
+    {% if proponent %}
     <h4> {{ proponent.proponent_name}} ({{ proponent.abbrev}}) did not stock any fish in {{ year}}.</h4>
+    {% else %}
+    <h4> There do not appear to have been any fish stocked in {{ year}}.</h4>
+    {% endif %}
 
     {% endif %}
 
