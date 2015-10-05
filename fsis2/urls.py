@@ -12,14 +12,16 @@ from .views import (EventDetailView, EventListView,
                     LotDetailView, LotListView, LotCreateView, LotUpdateView,
                     SiteDetailView, SiteListView, SiteCreateView,
                     SiteUpdateView, CwtListView, AnnualTotalSpcView,
-                    AnnualStockingBySpcStrainView, AnnualStockingBySpcView,
+                    AnnualStockingBySpcStrainView,
+                    #AnnualStockingBySpcView,
                     ProponentListView, ProponentLotListView, SpeciesListView,
                     AnnualStockingByHatcherySpcView,
                     find_events,ManagementUnitListView,
                     cwt_detail_view, cwt_stocked_mu, cwt_recovered_mu,
                     annual_events,
                     proponent_annual_events,
-                    proponent_most_recent_events,)
+                    proponent_most_recent_events,
+                    species_annual_events)
 
 urlpatterns = patterns("",
 
@@ -261,14 +263,21 @@ urlpatterns = patterns("",
             name='annual_total_spc'
             ),
 
+#        # annual stocking by species - where did they go?
+#        url(
+#            regex=
+#            r'^annual/(?P<spc>\d{2,3})/(?P<year>\d{4})$',
+#            view = AnnualStockingBySpcView.as_view(),
+#            name = 'annual_stocking_events_by_spc'
+#            ),
 
-        # annual stocking by species - where did they go?
         url(
-            regex=
-            r'^annual/(?P<spc>\d{2,3})/(?P<year>\d{4})$',
-            view = AnnualStockingBySpcView.as_view(),
-            name = 'annual_stocking_events_by_spc'
+            #regex=r'^hatchery/events/(?P<hatchery>\w{1,7})/(?P<year>\d{4})$',
+            regex = r'^annual/(?P<spc>\d{2,3})/(?P<year>\d{4})$',
+            view = species_annual_events,
+            name='species_annual_events'
             ),
+
 
 
         # annual stocking by strain - where did they go?
