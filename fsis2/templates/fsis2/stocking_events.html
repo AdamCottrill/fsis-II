@@ -25,14 +25,14 @@
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-          <li><a href="{% url 'annual_stocking_events_by_spc' spc=81 year=year %}">All Lake Trout</a></li>
+          <li><a href="{% url 'species_annual_events' spc=81 year=year %}">All Lake Trout</a></li>
             {% for strain in strain_list %}
             <li> <a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain.strain_code year=year %}"> {{ strain.strain_name }}</a> </li>
             {% endfor %}
         </ul>
       </div>
       {% else %}
-      <a href="{% url 'annual_stocking_events_by_spc' spc=spc.species_code year=year%}" class="btn btn-default" role="button" > {{ spc.common_name }}</a>
+      <a href="{% url 'species_annual_events' spc=spc.species_code year=year%}" class="btn btn-default" role="button" > {{ spc.common_name }}</a>
       {% endifequal %}
       {% endfor %}
     </div>
@@ -54,7 +54,7 @@
               {% if strain %}
               <td><a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain_code year=yr %}" class="btn btn-default btn-xs" role="button"> {{ yr }} </a></td>
               {% else %}
-              <td><a href="{%url 'annual_stocking_events_by_spc' spc=species.species_code year=yr %}" class="btn btn-default btn-xs" role="button">  {{ yr }} </a></td>
+              <td><a href="{%url 'species_annual_events' spc=species.species_code year=yr %}" class="btn btn-default btn-xs" role="button">  {{ yr }} </a></td>
               {% endif %}
               {% cycle '' '' '</tr>' %}
             {% endfor %}

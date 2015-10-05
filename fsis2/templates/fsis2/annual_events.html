@@ -29,7 +29,7 @@
      {% if proponent %}
     <h3>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year }}:</h3>
     {% else %}
-    <h3>Stocking events for {{ year }}:</h3>
+    <h3> {{ species.common_name }} Stocking events for {{ year }}:</h3>
     {% endif %}
     <br />
 
@@ -53,6 +53,9 @@
                 {% else %}
                   {% if proponent %}
                     <a class="btn btn-default" href="{% url 'hatchery_annual_events' proponent.abbrev yr %}">{{ yr }}</a>
+
+                  {% elif species %}
+                    <a class="btn btn-default" href="{% url 'species_annual_events' species.species_code yr %}">{{ yr }}</a>
                   {% else %}
                     <a class="btn btn-default" href="{% url 'annual_events' yr %}">{{ yr }}</a>
                   {% endif %}
@@ -69,6 +72,8 @@
             {% for yr in other_years|slice:"15:" %}
                   {% if proponent %}
                     <li><a href="{% url 'hatchery_annual_events' proponent.abbrev yr %}">{{ yr }}</a></li>
+             {% elif species %}
+                    <li><a href="{% url 'species_annual_events' species.species_code yr %}">{{ yr }}</a></li>
                   {% else %}
                     <li><a href="{% url 'annual_events' yr %}">{{ yr }}</a></li>
                   {% endif %}
@@ -149,6 +154,8 @@
 
     {% if proponent %}
     <h4> {{ proponent.proponent_name}} ({{ proponent.abbrev}}) did not stock any fish in {{ year}}.</h4>
+    {% elif species %}
+    <h4> {{ species.common_name }} were not stocked in {{ year }}.</h4>
     {% else %}
     <h4> There do not appear to have been any fish stocked in {{ year}}.</h4>
     {% endif %}
