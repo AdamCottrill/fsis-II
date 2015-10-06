@@ -49,7 +49,9 @@ def db_setup():
     stocking_date = datetime(2010,10,15)
     #we need an event for hatchery2 - it shouldn't appear in our tests
     event1 = EventFactory(site=site1, lot=rainbow_lot,
-                          event_date=stocking_date)
+                          event_date=stocking_date,
+                          stkcnt = 10000,
+                        )
 
 @pytest.mark.django_db
 def test_spc_code_proptery(db_setup):
@@ -79,3 +81,26 @@ def test_strain_property(db_setup):
     """
     event = Event.objects.all()[0]
     assert event.strain_code == 'WRT'
+
+
+@pytest.mark.django_db
+def test_get_popup_text(db_setup):
+    """the get_popup_text() method of the stocking event is not intended
+    to be called directly, but should contain all of the basic
+    information about the stocking event in a html table.
+
+    """
+    event = Event.objects.all()[0]
+    popup_text = event.get_popup_text()
+
+    #html table tags:
+    assert '<table>' in popup_text
+    assert '</table>' in popup_text
+
+    assert 'Rainbow Trout' in popup_text
+    assert 'ABC Fishin Club'
+
+    assert 'Site1' in popup_text
+    assert 'October 15 2010' in popup_text
+
+    assert '10,000' in popup_text
