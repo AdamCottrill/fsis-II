@@ -21,69 +21,20 @@ from django.views.generic import CreateView, UpdateView
 from olwidget.widgets import InfoMap, InfoLayer, Map
 
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
-                     Proponent, Species, Strain, BuildDate, Readme,
+                     Proponent, Species, Strain,
                      ManagementUnit, Lake)
 
 from cwts.models import CWT, USgrid, CWT_recovery
 
 from .forms import GeoForm
 
-def timesince(dt, default="just now"):
-    """
-    Returns string representing "time since" e.g.
-    3 days ago, 5 hours ago etc.
-    from:http://flask.pocoo.org/snippets/33/
-    """
-
-    now = datetime.utcnow()
-    diff = now - dt
-
-    periods = (
-        (diff.days / 365, "year", "years"),
-        (diff.days / 30, "month", "months"),
-        (diff.days / 7, "week", "weeks"),
-        (diff.days, "day", "days"),
-        (diff.seconds / 3600, "hour", "hours"),
-        (diff.seconds / 60, "minute", "minutes"),
-        (diff.seconds, "second", "seconds"),
-    )
-
-    for period, singular, plural in periods:
-
-        if period:
-            return "%d %s ago" % (period, singular if period == 1 else plural)
-
-    return default
+from fsis2.utils import (timesince, footer_string, prj_cd_Year,
+                         get_basin_totals, calc_aac, get_totals)
 
 
-def footer_string():
-    '''Build the footer string that indicates when the website
-    database as last build and when the data was last downloaded from
-    fsis.  This string will appear at the bottom of a number of
-    standard views
-    '''
-
-    build_date = BuildDate.objects.latest('build_date').build_date
-    build_date = build_date.strftime("%b-%d-%Y")
-
-    download_date = Readme.objects.latest('date')
-    download_date = download_date.get_download_date()
-    delta = timesince(download_date) #lapse time
-    download_date = download_date.strftime("%b-%d-%Y") #time as a string
-
-    ftr_str="FSIS-II built on {0} using data downloaded from FSIS on {1} ({2})"
-    ftr_str = ftr_str.format(build_date, download_date, delta)
-    return ftr_str
-
-
-def prj_cd_Year(x):
-    '''format LHA_IA12_000 as 2012'''
-    if int(x[6:8]) > 60:
-        yr = "".join(["19", x[6:8]])
-    else:
-        yr = "".join(["20", x[6:8]])
-    return yr
-
+#==============================================================
+#these are olwidget views that will eventually be replaced with
+#leaflet equivalents
 
 def get_map(event_points):
     """a helper function that will return an info map object containing
@@ -242,65 +193,10 @@ def get_recovery_map(stocking_points, recovery_points, roi=None):
     return mymap
 
 
-
-
-def get_basin_totals(year, spc, strain=None):
-    '''A helper function to retrieve the number of fish stocked by
-    basin given a species and year.
-
-    This function uses raw sql - the django orm still doesn't seem to
-    to aggregation well.'
-
-    Returns a dictionary that includes keys for 'North Channel',
-    'Georgian Bay', 'Main Basin' and 'total''
-
-    '''
-    from django.db import connection
-
-    #spc ignoring strain
-    sql = '''select basin, sum(stkcnt) from fsis2_event
-         join fsis2_lot on fsis2_lot.id=fsis2_event.lot_id
-         join fsis2_species on fsis2_species.id = fsis2_lot.species_id
-         join fsis2_stockingsite on fsis2_stockingsite.id = fsis2_event.site_id
-         group by basin, year, species_code having
-         fsis2_event.year=%(year)s and
-         fsis2_species.species_code=%(spc)s;
-         '''
-
-    cursor = connection.cursor()
-    cursor.execute(sql, {'year':year, 'spc':spc})
-    rs = cursor.fetchall()
-
-    basin_dict = dict()
-    for basin in rs:
-        #remove any spaces and turn them into lowercase
-        basin_name = basin[0].lower().replace(" ","")
-        basin_dict[basin_name] = int(basin[1])
-    basin_dict['total']=sum(basin_dict.values())
-
-    return basin_dict
+#==============================================================
 
 
 
-def calc_aac(yc):
-    """given a year class that a cwt was associated with calculate
-    age-at-capture for every year between age 0 and today
-
-    returns a list of two element tuples.  each tuple contains the
-    year and the age the fish would have been if it had been captured
-    in that year.  If yc is greater than the current year it returns None.
-
-    """
-
-    from datetime import datetime
-    this_year = datetime.now().year
-    if this_year < yc:
-        return None
-    else:
-        yrs = range(yc, this_year + 1)
-        aac = list(enumerate(yrs, start=0))
-        aac.sort(reverse=True, key=lambda x: x[1])
-        return aac
 
 
 class EventDetailView(DetailView):
@@ -721,66 +617,66 @@ class AnnualStockingBySpcStrainView(ListView):
 
 
 
-class AnnualStockingByHatcherySpcView(ListView):
-    '''render a view that plots the stocking events associated with a
-    species in a particular year from a particular proponent on a map
-    and summarizes those events in a table:
-
-    NOTE: AnnualStockingBySpcStrainView should be re-written to be a
-    special case of AnnualStockingBySpcView.  the are essentailly the
-    same, except that strain view has a little more informarion and
-    the queryset is a subset of the other. - for now it works.
-
-    '''
-
-    template_name = "fsis2/annual_stocking_events.html"
-
-    def get_queryset(self):
-        self.spc = self.kwargs.get('spc', None)
-        self.hatchery = self.kwargs.get('hatchery', None)
-        #self.strain = self.kwargs.get('strain', None)
-        self.yr = self.kwargs.get('year', None)
-        project = 'LHA_FS%s_001' % self.yr[2:]
-
-        queryset = Event.objects.filter(lot__species__species_code=self.spc,
-                                        prj_cd=project,
-                                        lot__proponent__abbrev=self.hatchery)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super(AnnualStockingByHatcherySpcView,
-                         self).get_context_data(**kwargs)
-
-        events = kwargs.get('object_list')
-        event_points = [[x.fs_event, x.geom] for x in events]
-        mymap = get_map(event_points)
-        context['map'] = mymap
-        context['footer'] = footer_string()
-
-        spc = self.kwargs.get('spc', None)
-        yr = self.kwargs.get('year', None)
-        hatchery = self.kwargs.get('hatchery', None)
-
-        context['year'] = yr
-        context['species'] = get_object_or_404(Species, species_code=spc)
-        context['hatchery'] = get_object_or_404(Proponent, abbrev=hatchery)
-
-        #get the lists required for this view:
-        context['species_list'] = Species.objects.all()
-        context['strain_list'] = Strain.objects.filter(
-            species__species_code=81).values(
-                'strain_name','strain_code').distinct()
-
-        project_list = Event.objects.filter(lot__species__species_code=spc,
-                    ).values('prj_cd').distinct()
-        year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
-        #get unique values and return it to  list
-        year_list = list(set(year_list))
-        year_list.sort(reverse=True)
-        context['year_list'] = year_list
-
-        return context
-
+#class AnnualStockingByHatcherySpcView(ListView):
+#    '''render a view that plots the stocking events associated with a
+#    species in a particular year from a particular proponent on a map
+#    and summarizes those events in a table:
+#
+#    NOTE: AnnualStockingBySpcStrainView should be re-written to be a
+#    special case of AnnualStockingBySpcView.  the are essentailly the
+#    same, except that strain view has a little more informarion and
+#    the queryset is a subset of the other. - for now it works.
+#
+#    '''
+#
+#    template_name = "fsis2/annual_stocking_events.html"
+#
+#    def get_queryset(self):
+#        self.spc = self.kwargs.get('spc', None)
+#        self.hatchery = self.kwargs.get('hatchery', None)
+#        #self.strain = self.kwargs.get('strain', None)
+#        self.yr = self.kwargs.get('year', None)
+#        project = 'LHA_FS%s_001' % self.yr[2:]
+#
+#        queryset = Event.objects.filter(lot__species__species_code=self.spc,
+#                                        prj_cd=project,
+#                                        lot__proponent__abbrev=self.hatchery)
+#        return queryset
+#
+#    def get_context_data(self, **kwargs):
+#        context = super(AnnualStockingByHatcherySpcView,
+#                         self).get_context_data(**kwargs)
+#
+#        events = kwargs.get('object_list')
+#        event_points = [[x.fs_event, x.geom] for x in events]
+#        mymap = get_map(event_points)
+#        context['map'] = mymap
+#        context['footer'] = footer_string()
+#
+#        spc = self.kwargs.get('spc', None)
+#        yr = self.kwargs.get('year', None)
+#        hatchery = self.kwargs.get('hatchery', None)
+#
+#        context['year'] = yr
+#        context['species'] = get_object_or_404(Species, species_code=spc)
+#        context['hatchery'] = get_object_or_404(Proponent, abbrev=hatchery)
+#
+#        #get the lists required for this view:
+#        context['species_list'] = Species.objects.all()
+#        context['strain_list'] = Strain.objects.filter(
+#            species__species_code=81).values(
+#                'strain_name','strain_code').distinct()
+#
+#        project_list = Event.objects.filter(lot__species__species_code=spc,
+#                    ).values('prj_cd').distinct()
+#        year_list = [prj_cd_Year(x['prj_cd']) for x in project_list]
+#        #get unique values and return it to  list
+#        year_list = list(set(year_list))
+#        year_list.sort(reverse=True)
+#        context['year_list'] = year_list
+#
+#        return context
+#
 
 
 class ProponentListView(ListView):
@@ -845,10 +741,14 @@ def annual_events(request, year):
     events = Event.objects.filter(year=year).\
              select_related('lot__proponent__abbrev',
                             'lot__species__common_name',
+                            'lot__species__species_code',
                             'lot__strain__strain_name',
                             'site__site_name',
+                            'site__id',
                             ).\
              order_by('lot__species__common_name').all()
+
+    totals = get_totals(events)
 
     tmp = Event.objects.all().\
           order_by('-year').values('year').distinct('year')
@@ -858,6 +758,8 @@ def annual_events(request, year):
     return render_to_response('fsis2/annual_events.html',
                               {   'object_list':events,
                                   'year':year,
+                                  'totals':totals,
+                                  'footer':footer_string(),
                                   'other_years':other_years},
                               context_instance=RequestContext(request))
 
@@ -885,10 +787,14 @@ def proponent_annual_events(request, hatchery, year):
     events = Event.objects.filter(lot__proponent=proponent, year=year).\
              select_related('lot__proponent__abbrev',
                             'lot__species__common_name',
+                            'lot__species__species_code',
                             'lot__strain__strain_name',
                             'site__site_name',
+                            'site__id',
                             ).\
              order_by('lot__species__common_name').all()
+
+    totals = get_totals(events)
 
     tmp = Event.objects.filter(lot__proponent=proponent).\
               order_by('-year').values('year').distinct('year')
@@ -900,6 +806,8 @@ def proponent_annual_events(request, hatchery, year):
                               {   'object_list':events,
                                   'proponent':proponent,
                                   'year':year,
+                                  'totals':totals,
+                                  'footer':footer_string(),
                                   'other_years':other_years},
                               context_instance=RequestContext(request))
 
@@ -939,12 +847,15 @@ def species_annual_events(request, spc, year):
 
     events = Event.objects.filter(lot__species=species, year=year).\
                       select_related('lot__proponent__abbrev',
-                               'lot__species__common_name',
-                               'lot__strain__strain_name',
-                               'site__site_name',
-                               'site__basin',
+                                     'lot__species__common_name',
+                                     'lot__species__species_code',
+                                     'lot__strain__strain_name',
+                                     'site__site_name',
+                                     'site__id',
                                ).\
                                order_by('lot__species__common_name').all()
+
+    totals = get_totals(events)
 
     tmp = Event.objects.filter(lot__species=species).\
               order_by('-year').values('year').distinct('year')
@@ -954,7 +865,9 @@ def species_annual_events(request, spc, year):
     return render_to_response('fsis2/annual_events.html',
                               {   'object_list':events,
                                   'species':species,
+                                  'totals':totals,
                                   'year':year,
+                                  'footer':footer_string(),
                                   'other_years':other_years},
                               context_instance=RequestContext(request))
 
