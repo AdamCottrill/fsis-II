@@ -25,7 +25,7 @@ urlpatterns = patterns('',
 
         #lot detail
         url(
-            regex=r'^lot/detail/(?P<pk>\d+)$',
+            regex=r'lot/detail/(?P<pk>\d+)$',
             view=LotDetailView.as_view(),
             name='lot_detail'
             ),
@@ -36,25 +36,26 @@ urlpatterns = patterns('',
         #    name="lot_year_list"),
 
 
-        #lot list
-        url(
-            regex=r'^lots/$',
-            view=LotListView.as_view(),
-            name='lot_list'
-            ),
-
         #create lot
         url(
-            regex=r'^lot/add$',
+            regex=r'lot/add$',
             view=LotCreateView.as_view(),
             name='lot_create'
             ),
 
         #update lot
         url(
-            regex=r'^lot/update/(?P<pk>\d+)$',
+            regex=r'lot/update/(?P<pk>\d+)$',
             view=LotUpdateView.as_view(),
             name='lot_update'
             ),
+
+        #lot list
+        url(
+            regex=r'lot_list/$',
+            view=LotListView.as_view(),
+            name='lot_list'
+            ),
+
 
 )
