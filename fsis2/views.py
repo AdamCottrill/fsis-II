@@ -764,6 +764,18 @@ def annual_events(request, year):
                               context_instance=RequestContext(request))
 
 
+def most_recent_events(request):
+    """Get the most recent year of stockin and
+    pass the information onto our annual_events view.
+    """
+
+    latest = Event.objects.all().aggregate(Max('year'))
+    year = latest.get('year__max')
+
+    return annual_events(request, year)
+
+
+
 def proponent_annual_events(request, hatchery, year):
     """Render a view with all of the stocking events associated with a
     particular proponent in a particular year.  This view will
