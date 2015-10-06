@@ -1,7 +1,13 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
-{{ map.media }}
+
+{% load geojson_tags %}
+{% load leaflet_tags %}
+
+{% leaflet_js %}
+{% leaflet_css %}
+
 
 {% endblock %}
 
@@ -9,6 +15,7 @@
 
 {% block content %}
 {% load humanize %}
+
 
 <div class="container">
 
@@ -49,7 +56,7 @@
 
     </div>
     <div class="col-md-8">
-      {{ map }}
+          <div id="main_map" style="width: 800px; height: 700px;"></div>
     </div>
   </div>
 
@@ -105,5 +112,8 @@
   }
   });
 </script>
+
+
+{% include 'fsis2/_doc_ready_simple_map.html' %}
 
 {% endblock %}
