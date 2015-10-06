@@ -15,14 +15,15 @@ A. Cottrill
 from django.conf.urls import patterns, url
 
 from fsis2.views import (EventDetailView,
-                    EventListView,
-                    EventUpdateView,
-                    EventCreateView,
-                    AnnualStockingBySpcStrainView,
-                    annual_events,
-                    proponent_annual_events,
-                    proponent_most_recent_events,
-                    species_annual_events)
+                         EventListView,
+                         EventUpdateView,
+                         EventCreateView,
+                         AnnualStockingBySpcStrainView,
+                         annual_events,
+                         most_recent_events,
+                         proponent_annual_events,
+                         proponent_most_recent_events,
+                         species_annual_events)
 
 
 urlpatterns = patterns('',
@@ -65,6 +66,14 @@ urlpatterns = patterns('',
         url(r'(?P<year>\d{4})/$',
             view=annual_events,
             name="annual_events"),
+
+
+        url(
+            regex=r'most_recent/$',
+            view = most_recent_events,
+            name='most_recent_events'
+            ),
+
 
         #events associated with cwt
         #url(r'^events/(?P<cwt>\d{6})/$',
