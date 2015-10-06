@@ -226,7 +226,7 @@ class Event(models.Model):
     #a field to hold the text that will be displayed when we click on
     #a stocking event - saving it as a field reduces the number of
     #database queries when the pages are rendered.
-    popup_text = models.CharField(max_length=100)
+    popup_text = models.CharField(max_length=1500)
 
     DEVELOPMENT_STAGE_CHOICES = (
         (99, 'Unknown'),
@@ -307,8 +307,78 @@ class Event(models.Model):
 
     def get_popup_text(self):
         '''The popup text will be displayed when the user clicks on a stocking
-        event on a map.  For now, just return the fs_event number.'''
-        return self.fs_event
+        event on a map.  The popup text contains an html table witl
+        all of the relabant information associated with a stocking
+        event.  For perfomance reasons, get_popup_text() is not
+        intended to be called directly, but is used to populate the
+        popup_text field each time the stocking event is saved.
+        '''
+
+        popup_base = '''
+        <table>
+            <tr>
+                <td>FSIS ID:</td>
+                <td><a href="/fsis2/event/detail/{id}">{fsis_id}</a></td>
+            </tr>
+
+            <tr>
+                <td>Species:</td>
+                <td>{common_name} ({scientific_name})</td>
+            </tr>
+
+            <tr>
+                <td>Strain:</td>
+                <td>{strain_name}</td>
+            </tr>
+
+            <tr>
+                <td>No. Stocked:</td>
+                <td>{stkcnt:,}</td>
+            </tr>
+
+            <tr>
+                <td>Lifestage:</td>
+                <td>{lifestage}</td>
+            </tr>
+
+            <tr>
+                <td>Event Date:</td>
+                <td>{event_date}</td>
+            </tr>
+
+            <tr>
+                <td>Location:</td>
+                <td>{site_name}</td>
+            </tr>
+
+            <tr>
+                <td>proponent:</td>
+                <td>{proponent_name}</td>
+            </tr>
+
+        </table>
+        '''
+
+
+        if self.event_date:
+            event_date = self.event_date.strftime('%B %d %Y')
+        else:
+            event_date = "Some time in {}".format(self.year)
+
+        value_dict = {
+                'id': self.id,
+                'fsis_id': self.fs_event,
+                'proponent_name': self.lot.proponent.proponent_name,
+                'site_name': self.site.site_name,
+                'event_date': event_date,
+                'stkcnt': self.stkcnt,
+                'lifestage':self.get_development_stage_display(),
+                'strain_name':self.lot.strain.strain_name,
+                'common_name':self.lot.species.common_name,
+                'scientific_name':self.lot.species.scientific_name,
+                }
+
+        return popup_base.format(**value_dict)
 
     @property
     def spc_code(self):
@@ -332,7 +402,7 @@ class Event(models.Model):
     def save(self, *args, **kwargs):
         if not self.geom:
             self.geom = Point(float(self.dd_lon), float(self.dd_lat))
-            self.popup_text = self.get_popup_text()
+        self.popup_text = self.get_popup_text()
         super(Event, self).save( *args, **kwargs)
 
 

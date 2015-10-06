@@ -27,14 +27,14 @@
 
 <div class="container">
      {% if proponent %}
-    <h3>Stocking events associated with {{ proponent.proponent_name}} ({{ proponent.abbrev}}) in {{ year }}:</h3>
+    <h3>Stocking events associated with {{ proponent.proponent_name }} ({{ proponent.abbrev}}) in {{ year }}:</h3>
     {% else %}
     <h3> {{ species.common_name }} Stocking events for {{ year }}:</h3>
     {% endif %}
     <br />
 
     <div id="maprow" class="row" >
-        <div class="col-md-11" >
+        <div class="col-md-10" >
             <div id="main_map" style="width: 900px; height: 700px;"></div>
             <div class="btn-group" role="group" aria-label="plotby">
                 <button type="button" id="byspecies" class="btn btn-primary">By Species</button>
@@ -44,7 +44,7 @@
 
         </div>
 
-        <div class="col-md-1" >
+        <div class="col-md-2" >
             <div class="btn-group-vertical" role="group" aria-label="plotby">
 
             {% for yr in other_years|slice:":15" %}
@@ -79,12 +79,27 @@
                   {% endif %}
             {% endfor %}
                   </ul>
-      </div>
-
-
             </div>
+            </div> <!-- btn-group-vertical -->
 
-        </div>
+            <br />
+            <br />
+
+            <table >
+            {% for key, val in totals.basins.items %}
+                <tr>
+                <td>{{ key }}</td>
+                <td>{{ val|intcomma }}</td>
+                </tr>
+            {% endfor %}
+                <hr />
+                <tr>
+                    <td> <em>Total </em></td>
+                    <td><em>{{ totals.total|intcomma }}</em></td>
+                </tr>
+            </table>
+
+        </div> <!-- col-md-2 -->
     </div>
 
     <br />
@@ -126,11 +141,12 @@
                         {% for event in species.list %}
                         <tr class="{% cycle row1,row2 %}">
                             <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
-                            <td> {{ event.lot.species.common_name | title }} </td>
+                            <td> <a href="{% url 'species_annual_events' event.lot.species.species_code year %}">{{ event.lot.species.common_name | title }} </a>
+</td>
                             <td> {{ event.lot.strain.strain_name | title }} </td>
                             <td> {{ event.stkcnt|intcomma }} </td>
                             <td> {{ event.event_date|date }} </td>
-                            <td> {{ event.site.site_name }} </td>
+                            <td> <a href="{% url 'site_detail' event.site.id %}">{{ event.site.site_name }} </a></td>
                             <td> {{ event.clipa }} </td>
                             {% if not proponent %}
                                <td>
@@ -170,6 +186,8 @@
 
 <!-- tablesorter widget file - loaded after the plugin -->
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
+
+
 
 
 {% include "fsis2/_doc_ready.html" %}

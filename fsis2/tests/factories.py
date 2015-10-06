@@ -28,6 +28,11 @@ class UserFactory(factory.DjangoModelFactory):
         return user
 
 
+class BuildDateFactory(factory.DjangoModelFactory):
+    FACTORY_FOR = BuildDate
+    build_date = datetime.now()
+
+
 class ReadmeFactory(factory.DjangoModelFactory):
     FACTORY_FOR = Readme
     date = datetime.now()
