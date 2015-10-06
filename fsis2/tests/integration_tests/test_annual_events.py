@@ -38,10 +38,11 @@ def db_setup():
     BuildDateFactory.create()
     ReadmeFactory.create()
 
-    laketrout = SpeciesFactory.create()
-    chinook = SpeciesFactory.create(common_name='Chinook Salmon')
-    rainbow = SpeciesFactory.create(common_name='Rainbow Trout')
-
+    laketrout = SpeciesFactory.create(species_code=81)
+    chinook = SpeciesFactory.create(common_name='Chinook Salmon',
+                                    species_code=75)
+    rainbow = SpeciesFactory.create(common_name='Rainbow Trout',
+                                    species_code=76)
 
     hatchery1 = ProponentFactory(abbrev='ABC',
                                  proponent_name='ABC Fishin Club')
@@ -82,6 +83,28 @@ def db_setup():
                           event_date=stocking_date)
     event7 = EventFactory(site=site5, lot=chinook_lot,
                           event_date=stocking_date)
+
+
+@pytest.mark.django_db
+def test_status_and_template(client, db_setup):
+    """Verify that the url returns an appropriate status code and that the
+    template is the one we think it is.
+
+    Arguments:
+    - `db_setup`:
+
+    """
+
+    yr = 2010
+
+    url = reverse('annual_events', kwargs={'year':yr})
+    response = client.get(url)
+    content = str(response.content)
+
+    assert response.status_code == 200
+    templates = [x.name for x in response.templates]
+    assert 'fsis2/annual_events.html' in templates
+
 
 
 @pytest.mark.django_db
@@ -235,3 +258,36 @@ def test_annual_events_contains_hatchery_acronym(client, db_setup):
     assert "ABC" in content
     #the old fishin' geezers only stocked in 2010
     assert "OFG" not in content
+
+
+
+@pytest.mark.django_db
+def test_most_recent_events_contains_last_year_only(client, db_setup):
+    """The view for most recent event should only contain only those
+    events conducted in the most recent year.
+
+    Arguments:
+    - `db_setup`:
+
+    """
+
+    url = reverse('most_recent_events')
+    response = client.get(url)
+
+    content = str(response.content)
+
+    assert "Site4" in content
+    assert "Site5" in content
+    assert "ABC" in content
+    assert "ABC Fishin Club" in content
+    assert "Chinook Salmon" in content
+
+    #these should not be in the response
+    sites =  ["Site1", "Site2", "Site3"]
+    for site in sites:
+        assert site not in content
+    assert 'Rainbow Trout' not in content
+    assert 'Lake Trout' not in content
+
+    assert 'OFG' not in content
+    assert 'Old Fishin Geezers' not in content

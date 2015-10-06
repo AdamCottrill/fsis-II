@@ -5,18 +5,18 @@ from django.views.generic import RedirectView
 from django.contrib import admin
 admin.autodiscover()
 
-from fsis2.views import LotListView
+from fsis2.views import most_recent_events
 
 urlpatterns = patterns('',
                        url(r'^fsis2/', include('fsis2.urls')),
 
-                       url(r'^$', LotListView.as_view(), name='home'),
-                       url(r'^$', LotListView.as_view(), name='index'),
-                                              
+                       url(r'^$', most_recent_events, name='home'),
+                       url(r'^$', most_recent_events, name='index'),
+
                        url(r'^accounts/', include('simple_auth.urls')),
                        url(r'^password_reset/',
                            include('password_reset.urls')),
-                       
+
                        # Uncomment the next line to enable the admin:
                        url(r'^coregonusclupeaformis/admin/', include(admin.site.urls)),
 
