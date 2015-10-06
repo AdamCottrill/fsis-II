@@ -6,16 +6,14 @@ Created: 24 Sep 2015 10:28:44
 DESCRIPTION:
 
 This script contains tests that verify that the view to render annual
-stocking events by hatchery contains the expected data.
+stocking events by species contains the expected data.
 
-Specifically, the view should contain the speciess name and
-accronym, the year, a leaflet map a table for each species that should
-contain details about each event, as well as the number of events for
-that species.
+Specifically, the view should contain the species names, the year, a
+leaflet map and a table for each species that should contain details
+about each event, as well as the number of events for that species.
 
 The view should not contain information about stocking events in
-different years or by different speciess.
-
+different years or for different species.
 
 A. Cottrill
 =============================================================
@@ -35,6 +33,9 @@ def db_setup():
     two different hatcheries, and several events.
 
     """
+
+    BuildDateFactory.create()
+    ReadmeFactory.create()
 
     laketrout = SpeciesFactory.create()
 

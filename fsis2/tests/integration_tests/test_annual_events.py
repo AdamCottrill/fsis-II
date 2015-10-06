@@ -35,6 +35,9 @@ def db_setup():
 
     """
 
+    BuildDateFactory.create()
+    ReadmeFactory.create()
+
     laketrout = SpeciesFactory.create()
     chinook = SpeciesFactory.create(common_name='Chinook Salmon')
     rainbow = SpeciesFactory.create(common_name='Rainbow Trout')
