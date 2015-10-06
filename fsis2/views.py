@@ -322,14 +322,14 @@ class LotListView(ListView):
 
 
 class LotDetailView(DetailView):
+    '''A simple view to show the details associated with a lot of fish.
+    The rendered template will contain a map of stocking locations and a
+    summary table of associated events.
+    '''
     model = Lot
 
     def get_context_data(self, **kwargs):
         context = super(LotDetailView, self).get_context_data(**kwargs)
-        lot = kwargs.get('object')
-        event_points = lot.get_event_points()
-        mymap = get_map(event_points)
-        context['map'] = mymap
         context['footer'] = footer_string()
         return context
 
