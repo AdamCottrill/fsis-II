@@ -56,7 +56,7 @@
         <td> {{ object.spawn_year }}  </td>
         <td> {{ object.species.common_name }} </td>
         <td> {{ object.strain.strain_name }} </td>
-        <td> {{ object.proponent.proponent_name|title }}  </td>
+        <td> {{ object.proponent.proponent_name|title }} ({{ object.proponent.abbrev }}) </td>
       </tr>
       {% endfor %}
     </tbody>

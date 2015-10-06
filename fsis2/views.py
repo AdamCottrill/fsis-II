@@ -309,7 +309,7 @@ class LotListView(ListView):
         lot_id = self.request.GET.get("lot")
         if lot_id:
             # Return a filtered queryset
-            queryset = Lot.objects.filter(fs_lot=lot_id)
+            queryset = Lot.objects.filter(fs_lot__contains=lot_id)
         else:
             queryset = Lot.objects.filter(
                         event__pk__isnull=False).distinct()
