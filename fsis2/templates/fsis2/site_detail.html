@@ -85,7 +85,7 @@
   <hr />
 
   <div id="event_list" class="row">
-    <h3>Stocking Events: </h3>
+    <h3>Stocking Events (N={{ events|length }}): </h3>
     {% if events %}
       <table id="myTable" class="table tablesorter table-striped">
       <thead>
@@ -97,6 +97,7 @@
               <td>Strain</td>
               <td>Clip Applied</td>
               <td>Development Stage</td>
+              <td>Proponent</td>
           </tr>
       </thead>
       <tbody>
@@ -113,6 +114,7 @@
           <td> {{ event.lot.strain.strain_name }} </td>
           <td> {{ event.clipa }} </td>
           <td> {{ event.get_development_stage_display }} </td>
+          <td> {{ event.lot.proponent.proponent_name }}({{ event.lot.proponent.abbrev }}) </td>
         </tr>
         {% endfor %}
       </tbody>
