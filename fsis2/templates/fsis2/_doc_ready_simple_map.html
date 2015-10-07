@@ -7,7 +7,11 @@
      // we will initialize the map over lake huron - this could be customized at some point in the future.
      var  my_map = new L.map('main_map').setView([45,-82], 7);
 
-     var events = {{ object.event_set.all|geojsonfeature:"popup_text"|safe }};
+     {% if events %}
+     var pts = {{ events|geojsonfeature:"popup_text"|safe }};
+     {% else %}
+     var pts = {{ object.event_set.all|geojsonfeature:"popup_text"|safe }};
+     {% endif %}
 
      function onEachFeature(feature, layer) {
          if (feature.properties && feature.properties.popup_text) {
@@ -24,7 +28,7 @@
      }).addTo(my_map);
 
 
-     var points = L.geoJson(events, {
+     var points = L.geoJson(pts, {
          style: {color: "#FF3399", fillColor:"#FF99CC"},
          pointToLayer: function(feature, latlng) {
              return new L.CircleMarker(latlng, {radius: 5, fillOpacity: 0.75});
