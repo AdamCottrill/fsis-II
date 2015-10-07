@@ -376,10 +376,8 @@ def test_event_detail_with_tags(client, db_setup):
     response = client.get(url)
     content = str(response.content)
 
-    tags = event.get_cwts()
-    print('tags={}'.format(tags))
-    #print(content)
-
+    #this fails because these tag number as in CWTS applied, but not
+    #in the CWT application tables.
     tag_ids = ['63-12-34','63-55-55','63-99-99']
     for tag in tag_ids:
         assert tag in content

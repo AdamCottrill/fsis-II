@@ -403,21 +403,23 @@ class SiteDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
         site = kwargs.get('object')
-        site_point = [[site.fsis_site_id, site.geom]]
-        #some sites have events that have actual lat-long associated with them
-        sql = """select e.id, e.fs_event, e.geom from fsis2_event e join
-                 fsis2_stockingsite s on e.site_id=s.id
-                 where st_equals(e.geom, s.geom)=FALSE and s.site_name='{0}';"""
-        sql = sql.format(site.site_name)
-        stocking_pts = Event.objects.raw(sql)
 
-        stocking_pts = [[x.fs_event, x.geom] for x in stocking_pts]
-        #mymap = get_map(site_point)
-        mymap = get_recovery_map(site_point, stocking_pts)
+        context['sites'] = site
+        #site_point = [[site.fsis_site_id, site.geom]]
+        ##some sites have events that have actual lat-long associated with them
+        #sql = """select e.id, e.fs_event, e.geom from fsis2_event e join
+        #         fsis2_stockingsite s on e.site_id=s.id
+        #         where st_equals(e.geom, s.geom)=FALSE and s.site_name='{0}';"""
+        #sql = sql.format(site.site_name)
+        #stocking_pts = Event.objects.raw(sql)
+        #
+        #stocking_pts = [[x.fs_event, x.geom] for x in stocking_pts]
+        ##mymap = get_map(site_point)
+        #mymap = get_recovery_map(site_point, stocking_pts)
         events = (Event.objects.filter(site__site_name=site.site_name).order_by(
             '-event_date'))
         context['events'] = events
-        context['map'] = mymap
+        #context['map'] = mymap
         context['footer'] = footer_string()
         return context
 
