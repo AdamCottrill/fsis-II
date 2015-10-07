@@ -206,15 +206,14 @@ class EventDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(EventDetailView, self).get_context_data(**kwargs)
 
-        #import pdb; pdb.set_trace()
-        event = kwargs.get('object')
+        #this appends associated cwt objects from the cwt application
+        #rather than cwts associated with this stocking event in FSIS.
+        #Is this what we want to do?
 
+        event = kwargs.get('object')
         cwts = [x.cwt for x in event.get_cwts()]
         context['cwt_list'] = CWT.objects.filter(cwt__in=cwts)
 
-        event_point = [[ event.fs_event, event.geom]]
-        mymap = get_map(event_point)
-        context['map'] = mymap
         context['footer'] = footer_string()
         return context
 
@@ -263,7 +262,7 @@ class EventListView(ListView):
         event_id = self.request.GET.get("event")
         if event_id:
             # Return a filtered queryset
-            queryset = Event.objects.filter(fs_event=event_id)
+            queryset = Event.objects.filter(fs_event__contains=event_id)
         else:
             queryset = Event.objects.all().order_by('-year','event_date')
         return queryset

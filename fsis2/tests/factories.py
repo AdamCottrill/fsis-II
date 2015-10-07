@@ -135,7 +135,7 @@ class EventFactory(factory.DjangoModelFactory):
 class TaggingEventFactory(factory.DjangoModelFactory):
     FACTORY_FOR = TaggingEvent
 
-    stocking_event = factory.SubFactory(LotFactory)
+    stocking_event = factory.SubFactory(EventFactory)
     fs_tagging_event_id = 1
     retention_rate_pct = 90
     retention_rate_sample_size = 100
@@ -146,7 +146,7 @@ class TaggingEventFactory(factory.DjangoModelFactory):
 class CWTsAppliedFactory(factory.DjangoModelFactory):
     FACTORY_FOR = CWTs_Applied
 
-    tagging_event = factory.SubFactory(LotFactory)
+    tagging_event = factory.SubFactory(TaggingEventFactory)
     fs_tagging_event_id = 123
     cwt = factory.Sequence(lambda n: '63-01-{0:02d}'.format(n))
 
