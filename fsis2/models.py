@@ -9,8 +9,27 @@ from django.contrib.gis.geos import Point
 
 #from fsis2 import managers
 
-
 from datetime import datetime
+
+
+
+
+def dd2ddm(dd):
+    """given a coordinate in decimal degrees, return the degrees and
+    decimal minutes as a tow element tuple.  THis function is used by
+    get_popup_text() method of the StockingSite class.
+
+    Arguments:
+    - `dd`:
+
+    """
+
+    negative = -1 if dd < 0 else 1
+    degrees = int(abs(dd))
+    dminutes = (abs(dd) - degrees) * 60
+    degrees *= negative
+    return {'degrees':degrees, 'dminutes':dminutes}
+
 
 
 class BuildDate(models.Model):
@@ -120,8 +139,15 @@ class StockingSite(models.Model):
     deswby_lid  = models.CharField(max_length=30)
     deswby  = models.CharField(max_length=30)
 
+    #a field to hold the text that will be displayed when we click on
+    #a stocking site - saving it as a field reduces the number of
+    #database queries when the pages are rendered.
+    popup_text = models.CharField(max_length=1500)
+
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
+
+
 
 
     objects = models.GeoManager()
@@ -135,7 +161,93 @@ class StockingSite(models.Model):
     def save(self, *args, **kwargs):
         if not self.geom:
             self.geom = Point(float(self.dd_lon), float(self.dd_lat))
+        self.popup_text = self.get_popup_text()
         super(StockingSite, self).save( *args, **kwargs)
+
+
+    def get_popup_text(self):
+        '''The popup text will be displayed when the user clicks on a stocking
+        event on a map.  The popup text contains an html table witl
+        all of the relabant information associated with a stocking
+        event.  For perfomance reasons, get_popup_text() is not
+        intended to be called directly, but is used to populate the
+        popup_text field each time the stocking event is saved.
+        '''
+
+        popup_base = '''
+        <table>
+        <tr>
+          <td><b>FSIS Site Number:</b></td>
+          <td>{fsis_site_id}</td>
+        </tr>
+
+        <tr>
+          <td><b>Name Site:</b></td>
+          <td><a href="/fsis2/sites/detail/{id}">{site_name}</a></td>
+        </tr>
+
+        <tr>
+          <td><b>Destination Waterbody (LID):</b></td>
+          <td>{deswby} ({deswby_lid})</td>
+        </tr>
+
+        <tr>
+          <td><b>Basin:</b></td>
+          <td>{basin} </td>
+        </tr>
+
+        <tr>
+          <td><b>5-minute Grid:</b></td>
+          <td>{grid}</td>
+        </tr>
+
+
+        <tr>
+          <td><b>Stocked Waterbody (LID):</b> </td>
+          <td>{stkwby} ({stkwby_lid}) </td>
+        </tr>
+
+        <tr>
+          <td><b>Latitude:</b></td>
+          <td>{dd_lat}</td>
+        </tr>
+
+        <tr>
+          <td><b>Longitude:</b></td>
+          <td>{dd_lon}</td>
+        </tr>
+        <tr>
+          <td><b>UTM:</b></td>
+          <td>{utm}</td>
+        </tr>
+
+        </table>
+        '''
+
+        base = "{degrees}&#176;{dminutes:.3f}&#39; N"
+        dd_lat = base.format(**dd2ddm(self.dd_lat))
+
+        base = "{degrees}&#176;{dminutes:.3f}&#39; W"
+        dd_lon = base.format(**dd2ddm(self.dd_lon))
+
+
+        value_dict = {
+            'id':self.id,
+            'fsis_site_id':self.fsis_site_id,
+            'site_name':self.site_name,
+            'deswby_lid':self.deswby_lid,
+            'deswby':self.deswby,
+            'basin':self.basin,
+            'stkwby':self.stkwby,
+            'stkwby_lid':self.stkwby_lid,
+            'dd_lat':dd_lat,
+            'dd_lon':dd_lon,
+            'grid':self.grid,
+            'utm':self.utm,
+                }
+
+        return popup_base.format(**value_dict)
+
 
 
 
@@ -318,7 +430,7 @@ class Event(models.Model):
         <table>
             <tr>
                 <td>FSIS ID:</td>
-                <td><a href="/fsis2/event/detail/{id}">{fsis_id}</a></td>
+                <td><a href="/fsis2/events/detail/{id}">{fsis_id}</a></td>
             </tr>
 
             <tr>

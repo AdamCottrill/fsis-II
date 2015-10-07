@@ -7,6 +7,25 @@ from fsis2.models import *
 from fsis2.tests.factories import *
 
 
+
+class Testdd2ddm(TestCase):
+
+    def test_dd2ddm(self):
+        """dd2ddm is a little helper function used to split decimal degress
+        into degrees-decimal minutes.  The function returns a dictionary with
+        keys 'degrees' and 'dminutes'"""
+
+        self.assertEqual(dd2ddm(45),{'degrees':45,'dminutes':0.0})
+        self.assertEqual(dd2ddm(45.25),{'degrees':45,'dminutes':15.0})
+        self.assertEqual(dd2ddm(45.5),{'degrees':45,'dminutes':30.0})
+        self.assertEqual(dd2ddm(45.75),{'degrees':45,'dminutes':45.0})
+
+        self.assertEqual(dd2ddm(-81),{'degrees':-81,'dminutes':0.0})
+        self.assertEqual(dd2ddm(-81.25),{'degrees':-81,'dminutes':15.0})
+        self.assertEqual(dd2ddm(-81.5),{'degrees':-81,'dminutes':30.0})
+        self.assertEqual(dd2ddm(-81.75),{'degrees':-81,'dminutes':45.0})
+
+
 class TestLot(TestCase):
     '''verify that the unicode, get_url, and slug of Lot work as
        expected'''
@@ -18,6 +37,58 @@ class TestLot(TestCase):
 
     def tearDown(self):
         pass
+
+
+
+class TestStockingSite(TestCase):
+    '''verify that the unicode, get_url, and slug of StockingSite work as
+       expected'''
+    def setUp(self):
+        self.site = StockingSiteFactory.create(
+            fsis_site_id = 998877,
+            site_name = 'Honey Hole',
+            stkwby = 'Lake Huron',
+            stkwby_lid = 'what is this',
+            utm = '123456',
+            grid = '2456',
+            dd_lat = 45.25,
+            dd_lon = -81.50,
+            basin = 'Main Basin',
+            deswby_lid = '54321',
+            deswby = 'Lake Huron')
+
+    def test_language_unicode(self):
+        '''Verify that the string represention of a stocking site is its name
+        followed by it's FSIS id in parentheses.'''
+
+        should_be = 'Honey Hole (998877)'
+        self.assertEqual(should_be, str(self.site))
+
+    def test_get_popup_text(self):
+        """The popup text should contain all of the basic information about
+        the stocking site.
+
+        """
+        popup_text = self.site.get_popup_text()
+
+        self.assertIn(str(self.site.fsis_site_id), popup_text)
+        self.assertIn(self.site.site_name, popup_text)
+        self.assertIn(self.site.stkwby, popup_text)
+        self.assertIn(self.site.stkwby_lid, popup_text)
+        self.assertIn(self.site.utm, popup_text)
+        self.assertIn(self.site.grid, popup_text)
+        self.assertIn('45&#176;15.000&#39; N', popup_text)
+        self.assertIn('-81&#176;30.000&#39; W', popup_text)
+        self.assertIn(self.site.basin, popup_text)
+        self.assertIn(self.site.deswby_lid, popup_text)
+        self.assertIn(self.site.deswby, popup_text)
+
+
+    def tearDown(self):
+        """
+        """
+        self.site.delete()
+
 
 
 class TestReadme(TestCase):
@@ -147,21 +218,13 @@ class TestProponent(TestCase):
 
 
 
-class TestLot(TestCase):
-    '''verify that the unicode, get_url, and slug of Lot work as
-       expected'''
-    def setUp(self):
-        pass
-
-    def test_language_unicode(self):
-        pass
-
-    def tearDown(self):
-        pass
-
 
 class TestManagementUnit(TestCase):
-    """verify that the unicode, name, and get_slug methods of ManagementUnit returns a string of the correct format.  Additionally, verify that if a duplicate slug is created, an error is thown.
+    """verify that the unicode, name, and get_slug methods of
+    ManagementUnit returns a string of the correct format.
+    Additionally, verify that if a duplicate slug is created, an error
+    is thown.
+
     """
 
     def setUp(self):

@@ -39,8 +39,8 @@ def db_setup():
     ReadmeFactory.create()
 
     laketrout = SpeciesFactory.create(species_code=81)
-    chinook = SpeciesFactory.create(common_name='Chinook Salmon',
-                                    species_code=75)
+    chinook = SpeciesFactory.create(common_name='Brown Trout',
+                                    species_code=78)
     rainbow = SpeciesFactory.create(common_name='Rainbow Trout',
                                     species_code=76)
 
@@ -187,8 +187,8 @@ def test_annual_events_contains_spc_names(client, db_setup):
     response = client.get(url)
     content = str(response.content)
 
-    #only Chinook were stocked in 2011
-    assert "Chinook Salmon" in content
+    #only Brown were stocked in 2011
+    assert "Brown Trout" in content
 
     #lake trout and rainbow were stocked only in 2010
     assert "Lake Trout" not in content
@@ -280,7 +280,7 @@ def test_most_recent_events_contains_last_year_only(client, db_setup):
     assert "Site5" in content
     assert "ABC" in content
     assert "ABC Fishin Club" in content
-    assert "Chinook Salmon" in content
+    assert "Brown Trout" in content
 
     #these should not be in the response
     sites =  ["Site1", "Site2", "Site3"]

@@ -12,7 +12,6 @@ A. Cottrill
 =============================================================
 '''
 
-
 from fsis2.models import BuildDate, Readme
 from datetime import datetime
 
