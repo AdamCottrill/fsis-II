@@ -114,6 +114,10 @@ def db_setup():
     brown_strain = StrainFactory(strain_name=strain_nm, species=browns)
 
 
+    #this is a sequential tag that has never been stocked. Used to
+    #verify that Sequence range is included in response and that an
+    #warning message is rendered that no stocking events are available
+    #but should be.
     cwt0 = CWTFactory(cwt='123456',
                       spc=rainbows,
                       strain=strain_nm,
@@ -140,6 +144,7 @@ def db_setup():
 
     #stocking events associated with MNR tag not yet recovered
     rainbow_lot = LotFactory(species=rainbows)
+    brown_lot = LotFactory(species=browns)
     site1 = StockingSiteFactory(site_name='Site1')
 
     stocking_date = datetime(2010,10,15)
@@ -222,7 +227,6 @@ def omnr_tag_with_recoveries():
     strain_nm = 'Domestic'
 
 
-
     cwt11 = CWTFactory(cwt='112233',
                       spc=rainbows,
                       strain=strain_nm,
@@ -277,8 +281,139 @@ def omnr_tag_with_recoveries():
     )
 
 
+@pytest.fixture()
+def tag_in_two_species():
+    """To test the warning mechanisms, we need a tag that was applied to
+    two different species."""
+
+    cwt = '445566'
+
+    rainbows = Species.objects.get(common_name='Rainbow Trout')
+    browns = Species.objects.get(common_name='Brown Trout')
+
+    cwt1 = CWTFactory(cwt=cwt, spc=rainbows, )
+    cwt2 = CWTFactory(cwt=cwt, spc=browns, )
+
+    rainbow_lot = Lot.objects.get(species__common_name='Rainbow Trout')
+    brown_lot = Lot.objects.get(species__common_name='Brown Trout')
+
+    stocking_date = datetime(2010,10,15)
+    #we need an event for hatchery2 - it shouldn't appear in our tests
+    event1 = EventFactory(lot=rainbow_lot)
+    event2 = EventFactory(lot=brown_lot)
+
+    #now associated some tags with our stocking events
+    tagging_event = TaggingEventFactory.create(stocking_event=event1)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
+
+    tagging_event = TaggingEventFactory.create(stocking_event=event2)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
 
 
+
+
+@pytest.fixture()
+def tag_in_two_strains():
+    """To test the warning mechanisms, we need a tag that was applied to
+    two different strains."""
+
+    cwt = '445566'
+
+    #get existing strain and species
+    rainbows = Species.objects.get(common_name='Rainbow Trout')
+    strain1 = Strain.objects.get(species=rainbows, strain_name='Domestic')
+
+    #Make a new strain
+    strain2 = StrainFactory(strain_name='Strain2')
+
+    #get and existing lot of rainbow trout
+    lot1 = Lot.objects.filter(species=rainbows).all()[0]
+    #we need to create new for our second strain
+    lot2 = LotFactory(species=rainbows, strain=strain2)
+
+    cwt1 = CWTFactory(cwt=cwt, spc=rainbows, strain = strain1.strain_name)
+    cwt2 = CWTFactory(cwt=cwt, spc=rainbows, strain=strain2.strain_name)
+
+    #we need an event for hatchery2 - it shouldn't appear in our tests
+    event1 = EventFactory(lot=lot1)
+    event2 = EventFactory(lot=lot2)
+
+    #now associated some tags with our stocking events
+    tagging_event = TaggingEventFactory.create(stocking_event=event1)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
+
+    tagging_event = TaggingEventFactory.create(stocking_event=event2)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
+
+
+
+@pytest.fixture()
+def tag_in_two_yc():
+    """To test the warning mechanisms, we need a tag that was applied
+    in two different year classes"""
+
+    cwt = '191919'
+
+    #get existing strain and species
+    rainbows = Species.objects.get(common_name='Rainbow Trout')
+
+    #create two different lots of fish 10 years a part (same strain and species)
+    lot1 = LotFactory(species=rainbows, spawn_year=1991)
+    lot2 = LotFactory(species=rainbows, spawn_year=2001)
+
+    cwt1 = CWTFactory(cwt=cwt, spc=rainbows, year_class=1990)
+    cwt2 = CWTFactory(cwt=cwt, spc=rainbows, year_class=2000)
+
+    #we need an event for hatchery2 - it shouldn't appear in our tests
+    event1 = EventFactory(lot=lot1)
+    event2 = EventFactory(lot=lot2)
+
+    #now associated some tags with our stocking events
+    tagging_event = TaggingEventFactory.create(stocking_event=event1)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
+
+    tagging_event = TaggingEventFactory.create(stocking_event=event2)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
+
+
+
+
+
+@pytest.fixture()
+def tag_in_two_locations():
+    """To test the warning mechanisms, we need a tag that was applied to
+    two different species."""
+
+    cwt = '667788'
+
+    #get existing strain and species
+    rainbows = Species.objects.get(common_name='Rainbow Trout')
+    strain = Strain.objects.get(species=rainbows, strain_name='Domestic')
+
+    #get and existing lot of rainbow trout
+    lot1 = Lot.objects.filter(species=rainbows).all()[0]
+    #we need to create new for our second strain
+    lot2 = LotFactory(species=rainbows, strain=strain)
+
+
+    siteA = StockingSiteFactory(site_name='Right Here')
+    siteB = StockingSiteFactory(site_name='Over There')
+
+    cwt1 = CWTFactory(cwt=cwt, spc=rainbows, strain=strain.strain_name,
+                      plant_site=siteA.site_name)
+    cwt2 = CWTFactory(cwt=cwt, spc=rainbows, strain=strain.strain_name,
+                      plant_site=siteB.site_name)
+
+    #we need an event for hatchery2 - it shouldn't appear in our tests
+    event1 = EventFactory(lot=lot1, site=siteA)
+    event2 = EventFactory(lot=lot1, site=siteB)
+
+    #now associated some tags with our stocking events
+    tagging_event = TaggingEventFactory.create(stocking_event=event1)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
+
+    tagging_event = TaggingEventFactory.create(stocking_event=event2)
+    CWTsAppliedFactory.create(tagging_event=tagging_event, cwt=cwt)
 
 
 
@@ -494,90 +629,147 @@ def test_cwt_detail_age_at_capture(client, db_setup):
     matrix illustrating how old the fish should have been for each
     possible year of recapture.
 
+    The cwt 11-11-11 was associated with fish from the 1999 year
+    class.  That means the reponse should include an age at capture
+    table with the following elements:
+
+    2000 - 1
+    2001 - 2
+    2002 - 3
+    ...
+    2010 - 11
+
     """
 
-    url = reverse('cwt_detail', kwargs={'cwt_number':555555})
-    response = client.get(url)
+    ages = range(1,12)
+    yrs = range(2000,2011)
 
-    assert 0==1
+    base_string = '<td>{}</td><td>{}</td>'
+
+    url = reverse('cwt_detail', kwargs={'cwt_number':111111})
+    response = client.get(url)
+    content = str(response.content)
+
+    for y,a in zip(yrs, ages):
+        assert base_string.format(y,a) in content
+
 
 
 @pytest.mark.django_db
-def test_cwt_detail_age_at_capture(client, db_setup):
+def test_cwt_detail_no_age_at_capture(client, db_setup):
     """If an age at recapture cannot be calculated (more than one year
     class or no year class associated with cwt), a meaningful message
     should be presented.
     """
 
-    url = reverse('cwt_detail', kwargs={'cwt_number':555555})
-    response = client.get(url)
+    cwt1 = CWTFactory(cwt='987654',
+                      year_class = 2999,
+                      stock_year=3000)
 
-    assert 0==1
+    url = reverse('cwt_detail', kwargs={'cwt_number':cwt1.cwt})
+    response = client.get(url)
+    content = str(response.content)
+
+    print(content)
+
+    msg = 'Age at capture is not currently available for 98-76-54'
+    assert msg in content
 
 
 @pytest.mark.django_db
-def test_cwt_detail_warning_multiple_species(client, db_setup):
+def test_cwt_detail_warning_multiple_species(client, db_setup,
+                                             tag_in_two_species):
     """If the cwt number has been deployed in more than one species, a
     warning should be included in the response.
     """
 
-    url = reverse('cwt_detail', kwargs={'cwt_number':555555})
+    cwt = '445566'
+    url = reverse('cwt_detail', kwargs={'cwt_number':cwt})
     response = client.get(url)
+
+    templates = [x.name for x in response.templates]
+    assert 'fsis2/multiple_cwt_detail.html' in templates
+
     content = str(response.content)
 
     alert = '<div class="alert alert-danger">'
     assert alert in content
 
-    assert 0==1
+    msg = ('WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN ' +
+           ' ONCE.  INTERPRET WITH CAUTION.')
+    assert msg in content
 
 
 @pytest.mark.django_db
-def test_cwt_detail_warning_multiple_strains(client, db_setup):
+def test_cwt_detail_warning_multiple_strains(client, db_setup,
+                                             tag_in_two_strains):
     """If the cwt number has been deployed in more than one strain, a
     warning should be included in the response.
     """
 
-    url = reverse('cwt_detail', kwargs={'cwt_number':555555})
+    cwt = '445566'
+    url = reverse('cwt_detail', kwargs={'cwt_number':cwt})
     response = client.get(url)
-    content = str(response.content)
 
+    templates = [x.name for x in response.templates]
+    assert 'fsis2/multiple_cwt_detail.html' in templates
+
+    content = str(response.content)
     alert = '<div class="alert alert-danger">'
     assert alert in content
 
-    assert 0==1
+    msg = ('WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN ' +
+           ' ONCE.  INTERPRET WITH CAUTION.')
+    assert msg in content
+
 
 
 @pytest.mark.django_db
-def test_cwt_detail_warning_multiple_yc(client, db_setup):
+def test_cwt_detail_warning_multiple_yc(client, db_setup,
+                                               tag_in_two_yc):
     """If the cwt number has been deployed in more than one year class, a
     warning should be included in the response.
     """
 
-    url = reverse('cwt_detail', kwargs={'cwt_number':555555})
+    cwt = 191919
+    url = reverse('cwt_detail', kwargs={'cwt_number':cwt})
     response = client.get(url)
-    content = str(response.content)
 
+    templates = [x.name for x in response.templates]
+    assert 'fsis2/multiple_cwt_detail.html' in templates
+
+    content = str(response.content)
     alert = '<div class="alert alert-danger">'
     assert alert in content
 
+    msg = ('WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN ' +
+           ' ONCE.  INTERPRET WITH CAUTION.')
+    assert msg in content
 
-    assert 0==1
+
 
 
 @pytest.mark.django_db
-def test_cwt_detail_warning_multiple_locations(client, db_setup):
+def test_cwt_detail_warning_multiple_locations(client, db_setup,
+                                               tag_in_two_locations):
     """If the cwt number has been deployed in more than one stocking location, a
     warning should be included in the response.
     """
 
-    url = reverse('cwt_detail', kwargs={'cwt_number':555555})
+    cwt = 667788
+    url = reverse('cwt_detail', kwargs={'cwt_number':cwt})
     response = client.get(url)
-    content = str(response.content)
 
+    templates = [x.name for x in response.templates]
+    assert 'fsis2/multiple_cwt_detail.html' in templates
+
+    content = str(response.content)
     alert = '<div class="alert alert-danger">'
     assert alert in content
 
-    assert 0==1
+    msg = ('WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN ' +
+           ' ONCE.  INTERPRET WITH CAUTION.')
+    assert msg in content
 
 
 
@@ -678,14 +870,16 @@ def test_cwt_detail_OMNR_tag_without_stocking_events(client, db_setup):
 
     '''
 
-    url = reverse('cwt_detail', kwargs={'cwt_number':555555})
+    url = reverse('cwt_detail', kwargs={'cwt_number':123456})
     response = client.get(url)
     content = str(response.content)
 
     alert = '<div class="alert alert-danger">'
     assert alert in content
 
-    assert 0==1
+    msg = ('There are no Ontario stocking events associated with cwt 12-34-56.'
+           + '   According to the Agency code there should be.')
+    assert msg in content
 
 
 
