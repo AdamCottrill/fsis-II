@@ -1,7 +1,14 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
-{{ map.media }}
+
+{% load geojson_tags %}
+{% load leaflet_tags %}
+
+{% leaflet_js %}
+{% leaflet_css %}
+
+
 {% endblock %}
 
 {% block title %} {{ object.title  }}  {% endblock %}
@@ -95,13 +102,13 @@
             </table>
           </div>
           <div class="tab-pane" id="ageatcapture">
-            {% if aac %}
+            {% if cwt.age_at_capture %}
             <table class="table">
               <tr>
                 <td>  <b>Year of Capture</b></td>
                 <td> <b>Age</b></td>
               </tr>
-              {% for yr in aac %}
+              {% for yr in cwt.age_at_capture %}
               <tr>
                 <td>{{ yr.1 }}</td><td>{{ yr.0}}</td>
               </tr>
@@ -114,20 +121,20 @@
         </div>
     </div>
     <div class="col-md-7">
-      {{ map }}
+          <div id="main_map" style="width: 800px; height: 700px;"></div>
     </div>
   </div>
 
-  <div id="event_list" class="row">
+  <div id="events" class="row">
     <hr />
     <h3>Stocking Events: </h3>
-    {% if event_list %}
+    {% if events %}
     <table id="myTable" class="table tablesorter">
       <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
           <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
       </thead>
       <tbody>
-        {% for event in event_list %}
+        {% for event in events %}
         <tr class="{% cycle row1,row2 %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
           <td> {{ event.stkcnt|intcomma }} </td>
@@ -150,17 +157,17 @@
     {% endif %}
   </div>
 
-  <div id="recovery_list" class="row">
+  <div id="recoveries" class="row">
     <hr />
-    <h3>Recoveries: {% if recovery_list %} (n = {{ recovery_list.count }}) {% endif %}</h3>
-    {% if recovery_list %}
+    <h3>Recoveries: {% if recoveries %} (n = {{ recoveries.count }}) {% endif %}</h3>
+    {% if recoveries %}
     <table id="myTable" class="table tablesorter">
       <thead><tr><td>Year</td><td>Source</td>
           <td>Recovery Date</td><td>5-Minute Grid</td>
           <td>Project Key</td><td>Fork Length(mm)</td> <td>Age</td></tr>
       </thead>
       <tbody>
-        {% for recovery in recovery_list %}
+        {% for recovery in recoveries %}
         <tr class="{% cycle row1,row2 %}">
           <td> {{ recovery.recovery_year }} </td>
           <td> {{ recovery.get_recovery_source_display }} </td>
@@ -183,6 +190,7 @@
 
 </div>
 
+{% include 'fsis2/_doc_ready_simple_map.html '%}
 {% include 'fsis2/_table_sorter.html '%}
 
 <script type="text/javascript">

@@ -670,8 +670,6 @@ def test_cwt_detail_no_age_at_capture(client, db_setup):
     response = client.get(url)
     content = str(response.content)
 
-    print(content)
-
     msg = 'Age at capture is not currently available for 98-76-54'
     assert msg in content
 

@@ -10,6 +10,10 @@
      //stocking sites
      var sites = {{ sites|geojsonfeature:"popup_text"|safe }};
 
+     //cwt recoveries
+     var recoveries = {{ recoveries|geojsonfeature:"popup_text"|safe }};
+
+     // stocking events
      {% if events %}
        var pts = {{ events|geojsonfeature:"popup_text"|safe }};
      {% elif object.event_set.all %}
@@ -17,6 +21,12 @@
      {% else %}
        var pts = {{ object|geojsonfeature:"popup_text"|safe }};
      {% endif %}
+
+     //us stocking events
+     {% if us_events %}
+       var us_pts = {{ us_events|geojsonfeature:"popup_text"|safe }};
+     {% endif %}
+
 
      function onEachFeature(feature, layer) {
          if (feature.properties && feature.properties.popup_text) {
@@ -33,14 +43,24 @@
      }).addTo(my_map);
 
 
-    var points = L.geoJson(pts, {
+    var event_points = L.geoJson(pts, {
          style: {color: "#FF3399", fillColor:"#FF99CC"},
          pointToLayer: function(feature, latlng) {
              return new L.CircleMarker(latlng, {radius: 5, fillOpacity: 0.75});
          },
          onEachFeature: onEachFeature})
 
-         points.addTo(my_map);
+         event_points.addTo(my_map);
+
+
+     var recovery_pts = L.geoJson(recoveries, {
+         style: {color: "#00FF00", fillColor:"#00FF00"},
+         pointToLayer: function(feature, latlng) {
+             return new L.CircleMarker(latlng, {radius: 5, fillOpacity: 0.50});
+         },
+         onEachFeature: onEachFeature})
+
+         recovery_pts.addTo(my_map);
 
 
      var sites = L.geoJson(sites, {
@@ -51,6 +71,25 @@
          onEachFeature: onEachFeature})
 
          sites.addTo(my_map);
+
+
+     // us stocking events
+     {% if us_events %}
+       var us_event_pts = L.geoJson(us_pts, {
+         style: {color: "#FF3399", fillColor:"#FF99CC"},
+         pointToLayer: function(feature, latlng) {
+             return new L.CircleMarker(latlng, {radius: 5, fillOpacity: 0.75});
+         },
+         onEachFeature: onEachFeature})
+
+         console.log(us_event_pts)
+
+         us_event_pts.addTo(my_map);
+     {% endif %}
+
+
+
+
 
 
  });
