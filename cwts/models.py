@@ -73,12 +73,35 @@ class CWT_recovery(models.Model):
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
 
+    #a field to hold the text that will be displayed when we click on
+    #a stocking site - saving it as a field reduces the number of
+    #database queries when the pages are rendered.
+    popup_text = models.CharField(max_length=2500)
+
+
     objects = models.GeoManager()
 
 
+    def save(self, *args, **kwargs):
+        '''When we save each cwt, populate the popup_text field.'''
+        self.popup_text = self.get_popup_text()
+        super(CWT_recovery, self).save( *args, **kwargs)
+
+
+    def __unicode__(self):
+        '''the string method of the cwt_recovery will be the composite key -
+        it should be unique and refer to an individual row in one of our
+        databases.'''
+
+        return self.composite_key
+
 
     def get_popup_text(self):
-        """
+        """The popup text method for a cwt recovery should include basic
+        information about that recovery including the recovery source,
+        recovery date/year, the cwt, the age and size of the fish and
+        the composite key corresponding to the record one of our
+        master databases.
         """
 
         base_string = """
@@ -111,7 +134,7 @@ class CWT_recovery(models.Model):
 
 
         if self.recovery_date:
-            recovery_date = recovery_date.strftime('%b. %d, %Y')
+            recovery_date = self.recovery_date.strftime('%b. %d, %Y')
         else:
             recovery_date = self.recovery_year
 
@@ -259,6 +282,17 @@ class CWT(models.Model):
     clipa = models.IntegerField(choices=CLIP_CHOICES,
                                       default=5, null=True, blank=True)
 
+    #a field to hold the text that will be displayed when we click on
+    #a stocking site - saving it as a field reduces the number of
+    #database queries when the pages are rendered.
+    popup_text = models.CharField(max_length=5000)
+
+
+    def save(self, *args, **kwargs):
+        '''When we save each cwt, populate the popup_text field.'''
+        self.popup_text = self.get_popup_text()
+        super(CWT, self).save( *args, **kwargs)
+
 
     def __unicode__(self):
         '''the string method of the cwt objects returns as
@@ -271,7 +305,9 @@ class CWT(models.Model):
 
 
     def get_popup_text(self):
-        """
+        """The popup text for a cwt recovery should include all of the basic
+        information about a cwt stocked by an agency - species,
+        strain, agency, year class, stocking location, tag count.
         """
 
         base_string = """
@@ -348,6 +384,9 @@ class CWT(models.Model):
         else:
             sequential_string = ""
 
+
+        tag_cnt = self.tag_cnt if self.tag_cnt else 0
+
         value_dict = {'cwt':self.cwt,
                       'sequential_string':sequential_string,
                       'common_name':self.spc.common_name,
@@ -359,7 +398,7 @@ class CWT(models.Model):
                       'development_stage':self.get_development_stage_display(),
                       'clipa':self.clipa,
                       'plant_site':self.plant_site,
-                      'tag_cnt':self.tag_cnt,
+                      'tag_cnt':tag_cnt,
                       'agency':self.agency,
                       'hatchery':self.hatchery,
                       'manufacturer':self.get_cwt_mfr_display(),
