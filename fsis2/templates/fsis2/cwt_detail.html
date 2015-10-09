@@ -103,12 +103,12 @@
               </tr>
               {% for yr in aac %}
               <tr>
-                <td>{{ yr.1 }} </td><td> {{ yr.0}} </td>
+                <td>{{ yr.1 }}</td><td>{{ yr.0}}</td>
               </tr>
               {% endfor %}
             </table>
             {% else %}
-            <p>Age at capture is not currently available for cwt.cwt.</p>
+            <p>Age at capture is not currently available for {{ cwt }}.</p>
             {% endif %}
           </div>
         </div>
