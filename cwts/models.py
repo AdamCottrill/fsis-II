@@ -288,6 +288,12 @@ class CWT(models.Model):
     popup_text = models.CharField(max_length=5000)
 
 
+    @property
+    def geom(self):
+        """
+        """
+        return self.us_grid_no.geom
+
     def save(self, *args, **kwargs):
         '''When we save each cwt, populate the popup_text field.'''
         self.popup_text = self.get_popup_text()
