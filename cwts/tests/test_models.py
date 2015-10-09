@@ -12,6 +12,7 @@ A. Cottrill
 =============================================================
 '''
 
+from django.contrib.gis.geos import Point
 
 from cwts.models import CWT
 
@@ -170,7 +171,7 @@ def test_cwtrecovery_get_popup_text():
     popup_text = cwt.get_popup_text()
 
     assert str(cwt_number) in popup_text
-    assert cwt.get_source_display() in popup_text
+    assert cwt.get_recovery_source_display() in popup_text
     assert cwt.recovery_date.strftime('%b. %d, %Y') in popup_text
     assert cwt.composite_key in popup_text
     assert str(cwt.flen) in popup_text
@@ -179,7 +180,7 @@ def test_cwtrecovery_get_popup_text():
 
 
 @pytest.mark.django_db
-def test_cwtrecovery_get_popup_text():
+def test_cwtrecovery_get_popup_text_no_date():
     '''If a recovery date is not available, use the recovery year in
     get_popup_text() instead.
 
@@ -192,3 +193,69 @@ def test_cwtrecovery_get_popup_text():
 
     popup_text = cwt.get_popup_text()
     assert "2006" in popup_text
+
+
+@pytest.mark.django_db
+def test_cwtrecovery_unicode():
+    '''the string representation of a cwt recovery should be it's composite key.
+    '''
+    key = "LHA_CF12_001-1000-01-081-00-1"
+    cwt = CWT_RecoveryFactory(
+        composite_key = key,
+    )
+
+    assert str(cwt) in key
+
+
+
+@pytest.mark.django_db
+def test_cwtrecovery_save():
+    '''The popup_text field will be empty for a new cwt_recovery.  It is
+    only created after the recovery object is saved.
+
+    '''
+
+    recovery = CWT_recovery(
+        cwt = '631111',
+        recovery_source = "CF",
+        recovery_year = 2006,
+        recovery_date = date(2012, 11, 15),
+        recovery_grid = "1234",
+        composite_key = "LHA_CF12_001-1000-01-081-00-1",
+        flen = 500,
+        age = 6,
+        geom = Point(-82.00, 45.00)
+    )
+
+    assert str(recovery.popup_text) is ''
+    recovery.save()
+    assert str(recovery.popup_text) is not ''
+
+
+
+@pytest.mark.django_db
+def test_cwt_save():
+    '''The popup_text field will be empty for a new cwt.  It is
+    only created after the cwt object is saved.
+    '''
+
+    species = SpeciesFactory()
+    cwt = CWT(
+        cwt = 654321,
+        tag_cnt = 10000,
+        tag_type = 6,
+        cwt_mfr = 'NMT',
+        spc = species,
+        strain = "BS",
+        development_stage = "51",
+        year_class = 2005,
+        stock_year = 2006,
+        plant_site = "Thunder Beach",
+        ltrz = 8,
+        hatchery = "CWC",
+        agency = "OMNR",
+        clipa = 5,)
+
+    assert str(cwt.popup_text) is ''
+    cwt.save()
+    assert str(cwt.popup_text) is not ''
