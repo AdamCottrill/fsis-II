@@ -25,6 +25,8 @@ from django.core.urlresolvers import reverse
 
 from django.contrib.gis.db import models
 
+from datetime import datetime
+
 from fsis2.models import (StockingSite, Proponent, Species, Strain)
 
 
@@ -72,6 +74,59 @@ class CWT_recovery(models.Model):
                              help_text='Represented as (longitude, latitude)')
 
     objects = models.GeoManager()
+
+
+
+    def get_popup_text(self):
+        """
+        """
+
+        base_string = """
+                <table class="table">
+                      <tr>
+                        <td><b>CWT:</b></td>
+                        <td>{cwt}</td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Source:</b></td>
+                        <td> {source} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Recovery Date:</b></td>
+                        <td> {recovery_date}</td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Key:</b></td>
+                        <td> {key} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Fork Length:</b></td>
+                        <td> {flen} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Age:</b></td>
+                        <td> {age} </td>
+                      </tr>
+                    </table>"""
+
+
+        if self.recovery_date:
+            recovery_date = recovery_date.strftime('%b. %d, %Y')
+        else:
+            recovery_date = self.recovery_year
+
+        value_dict = {
+            'cwt':self.cwt,
+            'source':self.get_recovery_source_display(),
+            'recovery_date': recovery_date,
+            'key':self.composite_key,
+            'flen':self.flen,
+            'age':self.age
+        }
+
+        return base_string.format(**value_dict)
+
+
 
 
 class CWT(models.Model):
@@ -206,6 +261,131 @@ class CWT(models.Model):
 
 
     def __unicode__(self):
+        '''the string method of the cwt objects returns as
+        expected - dashes bentween the second and third and fourth and fifth
+        digits.'''
+
         cwt = str(self.cwt)
         string = '-'.join((cwt[:2], cwt[2:4], cwt[4:]))
         return string
+
+
+    def get_popup_text(self):
+        """
+        """
+
+        base_string = """
+                <table class="table">
+                      <tr>
+                        <td><b>CWT:</b></td>
+                        <td>{cwt}</td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Species:</b></td>
+                        <td> {common_name}
+                          (<em>{scientific_name}</em>) </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Strain:</b></td>
+                        <td> {strain_display} ({strain})</td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Year Class:</b></td>
+                        <td> {year_class} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Stocking Year:</b></td>
+                        <td> {stock_year} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Life Stage:</b></td>
+                        <td> {development_stage} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Clip Applied:</b></td>
+                        <td> {clipa} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Stocking Location:</b></td>
+                        <td> {plant_site} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Tag Count:</b></td>
+                        <td> {tag_cnt:,} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Agency:</b></td>
+                        <td> {agency} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Hatchery:</b></td>
+                        <td> {hatchery} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Tag Manufacturer:</b></td>
+                        <td> {manufacturer} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Tag Type:</b></td>
+                        <td> {tag_type} </td>
+                      </tr>
+                      {sequential_string}
+                      <tr>
+                        <td>  <b>CWT Reused:</b></td>
+                        <td> {cwt_reused} </td>
+                      </tr>
+                      <tr>
+                        <td>  <b>Comments:</b></td>
+                        <td> {comments} </td>
+                      </tr>
+                    </table>"""
+
+        if self.tag_type == 17:
+            sequential_string = """ <tr>
+                       <td>  <b>Sequence Range:</b></td>
+                        <td> {} - {} </td>
+                      </tr>""".format(self.seq_start, self.seq_end)
+        else:
+            sequential_string = ""
+
+        value_dict = {'cwt':self.cwt,
+                      'sequential_string':sequential_string,
+                      'common_name':self.spc.common_name,
+                      'scientific_name':self.spc.scientific_name,
+                      'strain_display':self.get_strain_display(),
+                      'strain': self.strain,
+                      'year_class':self.year_class,
+                      'stock_year':self.stock_year,
+                      'development_stage':self.get_development_stage_display(),
+                      'clipa':self.clipa,
+                      'plant_site':self.plant_site,
+                      'tag_cnt':self.tag_cnt,
+                      'agency':self.agency,
+                      'hatchery':self.hatchery,
+                      'manufacturer':self.get_cwt_mfr_display(),
+                      'tag_type':self.get_tag_type_display(),
+                      'cwt_reused':self.cwt_reused,
+                      'comments':self.comments,
+
+        }
+
+        return base_string.format(**value_dict)
+
+
+    def age_at_capture(self):
+        """return a tuple of two element tuples - respresenting the age of
+        fish with this cwt would have been between stocking year and now"""
+
+        yc = self.year_class
+        if yc is None:
+            return None
+
+        this_year = datetime.now().year
+
+        if this_year < yc:
+            return None
+        else:
+            yrs = range(yc, this_year + 1)
+            aac = list(enumerate(yrs, start=0))
+            aac.sort(reverse=True, key=lambda x: x[1])
+            return aac
