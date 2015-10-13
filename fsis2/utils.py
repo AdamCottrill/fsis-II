@@ -57,26 +57,26 @@ def get_totals(events):
 
 
 
-def calc_aac(yc):
-    """given a year class that a cwt was associated with calculate
-    age-at-capture for every year between age 0 and today
-
-    returns a list of two element tuples.  each tuple contains the
-    year and the age the fish would have been if it had been captured
-    in that year.  If yc is greater than the current year it returns None.
-
-    """
-
-    from datetime import datetime
-    this_year = datetime.now().year
-    if this_year < yc:
-        return None
-    else:
-        yrs = range(yc, this_year + 1)
-        aac = list(enumerate(yrs, start=0))
-        aac.sort(reverse=True, key=lambda x: x[1])
-        return aac
-
+#def calc_aac(yc):
+#    """given a year class that a cwt was associated with calculate
+#    age-at-capture for every year between age 0 and today
+#
+#    returns a list of two element tuples.  each tuple contains the
+#    year and the age the fish would have been if it had been captured
+#    in that year.  If yc is greater than the current year it returns None.
+#
+#    """
+#
+#    from datetime import datetime
+#    this_year = datetime.now().year
+#    if this_year < yc:
+#        return None
+#    else:
+#        yrs = range(yc, this_year + 1)
+#        aac = list(enumerate(yrs, start=0))
+#        aac.sort(reverse=True, key=lambda x: x[1])
+#        return aac
+#
 
 
 def timesince(dt, default="just now"):

@@ -292,7 +292,10 @@ class CWT(models.Model):
     def geom(self):
         """
         """
-        return self.us_grid_no.geom
+        if self.us_grid_no:
+            return self.us_grid_no.geom
+        else:
+            return None
 
     def save(self, *args, **kwargs):
         '''When we save each cwt, populate the popup_text field.'''
@@ -416,10 +419,13 @@ class CWT(models.Model):
 
         return base_string.format(**value_dict)
 
-
     def age_at_capture(self):
         """return a tuple of two element tuples - respresenting the age of
-        fish with this cwt would have been between stocking year and now"""
+        fish with this cwt would have been between stocking year and
+        now If yc is greater than the current year or is none, the
+        method returns None.
+
+        """
 
         yc = self.year_class
         if yc is None:

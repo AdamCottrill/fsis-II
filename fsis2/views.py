@@ -56,7 +56,7 @@ from cwts.models import CWT, USgrid, CWT_recovery
 from .forms import GeoForm
 
 from fsis2.utils import (timesince, footer_string, prj_cd_Year,
-                         get_basin_totals, calc_aac, get_totals,
+                         get_basin_totals, get_totals,
                          get_management_unit_dict,
                          get_recovery_points,
                          get_stocking_points,
@@ -684,9 +684,14 @@ def cwt_detail_view(request, cwt_number):
     try:
         #cwt = CWT.objects.get(cwt=cwt_number)
         cwt = get_object_or_404(CWT, cwt=cwt_number)
+        multiple = False
     except MultipleObjectsReturned:
         cwt = CWT.objects.filter(cwt=cwt_number).order_by(
             'seq_start', '-stock_year')
+        if cwt:
+            multiple = True
+        else:
+            multiple = None
 
     recoveries = CWT_recovery.objects.filter(cwt=cwt_number).order_by(
         '-recovery_year', '-recovery_date')
@@ -702,95 +707,9 @@ def cwt_detail_view(request, cwt_number):
                                'events': events,
                                'us_events':us_events,
                                'recoveries': recoveries,
+                               'multiple':multiple,
                            },
                               context_instance=RequestContext(request))
-
-    #OK - this works now for a single cwt.  Need to figure how to
-    #handle multiple cwts returned by cwt query.
-
-
-
-##
-##
-##
-##
-##
-##
-##
-##
-##    cwt = None
-##    cwt_qs = None
-##
-##    us_events = None
-##
-##    try:
-##        #cwt = CWT.objects.get(cwt=cwt_number)
-##        cwt = get_object_or_404(CWT, cwt=cwt_number)
-##    except MultipleObjectsReturned:
-##        cwt_qs = CWT.objects.filter(cwt=cwt_number).order_by(
-##            'seq_start', '-stock_year')
-##
-##    recoveries = CWT_recovery.objects.filter(cwt=cwt_number).order_by(
-##        '-recovery_year', '-recovery_date')
-##    #recovery_pts = get_recovery_points(recoveries)
-##    #these are being phased out - here to get tests to pass in meantime
-##    recovery_pts = []
-##    mymap = []
-##
-##    events = Event.objects.filter(taggingevent__cwts_applied__cwt=cwt_number).\
-##             select_related('site__site_name')
-##
-##    #make the map
-###    if events:
-###        #event_points = [[x.fs_event, x.geom] for x in events]
-###        #mymap = get_recovery_map(event_points, recovery_pts)
-###        pass
-###
-###    else:
-##
-##    #import pdb;pdb.set_trace()
-##
-##    if not events:
-##        #see if there are US sites associated with this tag
-##        if cwt:
-##            if cwt.us_grid_no is None:
-##                #if not, just pass in an empty list
-##                #us_events = []
-##                us_events = {}
-##            else:
-##                us_events = cwt
-##                #us_events = [[cwt.agency, cwt.us_grid_no.geom]]
-##                #us_events = {'geom':cwt.us_grid_no.geom,
-##                #              'popup_text':cwt.agency}
-##            #mymap = get_recovery_map(us_events, recovery_pts)
-##        else:
-##            event_points = [[x.fs_event, x.geom] for x in cwt_qs]
-##            mymap = get_recovery_map(event_points, recovery_pts)
-##
-##    if cwt:
-##    #get age at capture dictionary
-##        #aac = calc_aac(cwt.year_class)
-##        return render_to_response('fsis2/cwt_detail.html',
-##                                  {'cwt': cwt,
-##                                   #'aac': aac,
-##                                   'events': events,
-##                                   'us_events':us_events,
-##                                   'recoveries': recoveries,
-##                               #    'map': mymap
-##                               },
-##                                  context_instance=RequestContext(request))
-##    else:
-##        cwt_list = []
-##        for cwt in cwt_qs:
-##            aac = calc_aac(cwt.year_class)
-##            cwt_list.append({'cwt': cwt, 'aac': aac})
-##        return render_to_response('fsis2/multiple_cwt_detail.html',
-##                                  {'cwt_number': cwt_number,
-##                                   'cwt_list': cwt_list,
-##                                   'event_list': events,
-##                                   'recovery_list': recoveries,
-##                                   'map': mymap},
-##                                  context_instance=RequestContext(request))
 
 
 def cwt_recovered_mu(request, slug):

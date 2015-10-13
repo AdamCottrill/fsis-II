@@ -686,7 +686,8 @@ def test_cwt_detail_warning_multiple_species(client, db_setup,
     response = client.get(url)
 
     templates = [x.name for x in response.templates]
-    assert 'fsis2/multiple_cwt_detail.html' in templates
+    #assert 'fsis2/multiple_cwt_detail.html' in templates
+    assert 'fsis2/cwt_detail.html' in templates
 
     content = str(response.content)
 
@@ -710,7 +711,8 @@ def test_cwt_detail_warning_multiple_strains(client, db_setup,
     response = client.get(url)
 
     templates = [x.name for x in response.templates]
-    assert 'fsis2/multiple_cwt_detail.html' in templates
+    #assert 'fsis2/multiple_cwt_detail.html' in templates
+    assert 'fsis2/cwt_detail.html' in templates
 
     content = str(response.content)
     alert = '<div class="alert alert-danger">'
@@ -734,7 +736,8 @@ def test_cwt_detail_warning_multiple_yc(client, db_setup,
     response = client.get(url)
 
     templates = [x.name for x in response.templates]
-    assert 'fsis2/multiple_cwt_detail.html' in templates
+    #assert 'fsis2/multiple_cwt_detail.html' in templates
+    assert 'fsis2/cwt_detail.html' in templates
 
     content = str(response.content)
     alert = '<div class="alert alert-danger">'
@@ -759,7 +762,8 @@ def test_cwt_detail_warning_multiple_locations(client, db_setup,
     response = client.get(url)
 
     templates = [x.name for x in response.templates]
-    assert 'fsis2/multiple_cwt_detail.html' in templates
+    #assert 'fsis2/multiple_cwt_detail.html' in templates
+    assert 'fsis2/cwt_detail.html' in templates
 
     content = str(response.content)
     alert = '<div class="alert alert-danger">'
