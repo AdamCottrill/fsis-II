@@ -62,7 +62,7 @@
 
   <div id="event_list" class="row">
     <hr />
-    <h3>Stocking Events: (N={{ events|length }})</h3>
+    <h3>Stocking Events: (N={{ object.event_set.all|length }})</h3>
     {% if object.event_set.all %}
     <table id="myTable" class="table tablesorter">
       <thead>
