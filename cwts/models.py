@@ -30,19 +30,19 @@ from datetime import datetime
 from fsis2.models import (StockingSite, Proponent, Species, Strain)
 
 
-class USgrid(models.Model):
-    '''Centroids of us 10-minute grids - thee are used as APPROXIMATE
-    stocking locations for US cwts.
-    '''
-
-    us_grid_no = models.CharField(max_length=4)
-    geom = models.PointField(srid=4326,
-                             help_text='Represented as (longitude, latitude)')
-
-    objects = models.GeoManager()
-
-    def __unicode__(self):
-        return self.us_grid_no
+#class USgrid(models.Model):
+#    '''Centroids of us 10-minute grids - thee are used as APPROXIMATE
+#    stocking locations for US cwts.
+#    '''
+#
+#    us_grid_no = models.CharField(max_length=4)
+#    geom = models.PointField(srid=4326,
+#                             help_text='Represented as (longitude, latitude)')
+#
+#    objects = models.GeoManager()
+#
+#    def __unicode__(self):
+#        return self.us_grid_no
 
 
 class CWT_recovery(models.Model):
@@ -165,7 +165,7 @@ class CWT(models.Model):
 
     TAG_TYPE_CHOICES = (
         (6,'Coded Wire'),
-        (17,'Sequential Coded Wire'),
+        (17,'Sequential CWT'),
     )
 
     tag_type = models.IntegerField(choices=TAG_TYPE_CHOICES,
@@ -232,6 +232,25 @@ class CWT(models.Model):
     #stocking_site = models.ForeignKey(StockingSite)
     plant_site = models.CharField(max_length=80, null=True, blank=True)
 
+
+    RELEASE_BASIN_CHOICES = (
+        ('HU', 'Lake Huron'),
+        ('MI', 'Lake Michigan'),
+        ('SU', 'Lake Superior'),
+        ('ER', 'Lake Superior'),
+        #these two should be unnessary:
+        ('MIHU', 'Lakes Huron and Michigan'),
+        ('MIHUSU', 'Lakes Huron, Michigan and Superior'),
+        ('UNKN', 'Unknown'),
+    )
+
+    release_basin = models.CharField(max_length=6,
+                              choices=RELEASE_BASIN_CHOICES,
+                              null=True, blank=True)
+    us_grid_no = models.CharField(max_length=4, null=True, blank=True)
+    geom = models.PointField(srid=4326,null=True, blank=True,
+                             help_text='Represented as (longitude, latitude)')
+
     LTRZ_CHOICES = (
         (1, 'Western North Channel'),
         (2, 'Darch Islands'),
@@ -255,7 +274,7 @@ class CWT(models.Model):
     ltrz =  models.IntegerField(choices=LTRZ_CHOICES, null=True, blank=True)
     #other = models.CharField(max_length=100, null=True, blank=True)
     #study_number = models.CharField(max_length=15, null=True, blank=True)
-    us_grid_no = models.ForeignKey(USgrid, null=True, blank=True)
+    #us_grid_no = models.ForeignKey(USgrid, null=True, blank=True)
 
     #hatchery = models.ForeignKey(Proponent)
     hatchery = models.CharField(max_length=80, null=True, blank=True)
@@ -288,14 +307,14 @@ class CWT(models.Model):
     popup_text = models.CharField(max_length=5000)
 
 
-    @property
-    def geom(self):
-        """
-        """
-        if self.us_grid_no:
-            return self.us_grid_no.geom
-        else:
-            return None
+#    @property
+#    def geom(self):
+#        """
+#        """
+#        if self.us_grid_no:
+#            return self.us_grid_no.geom
+#        else:
+#            return None
 
     def save(self, *args, **kwargs):
         '''When we save each cwt, populate the popup_text field.'''
@@ -351,6 +370,10 @@ class CWT(models.Model):
                         <td> {clipa} </td>
                       </tr>
                       <tr>
+                        <td>  <b>Release Basin:</b></td>
+                        <td> {release_basin} </td>
+                      </tr>
+                      <tr>
                         <td>  <b>Stocking Location:</b></td>
                         <td> {plant_site} </td>
                       </tr>
@@ -396,7 +419,7 @@ class CWT(models.Model):
 
         tag_cnt = self.tag_cnt if self.tag_cnt else 0
 
-        value_dict = {'cwt':self.cwt,
+        value_dict = {'cwt':str(self),
                       'sequential_string':sequential_string,
                       'common_name':self.spc.common_name,
                       'scientific_name':self.spc.scientific_name,
@@ -406,6 +429,7 @@ class CWT(models.Model):
                       'stock_year':self.stock_year,
                       'development_stage':self.get_development_stage_display(),
                       'clipa':self.clipa,
+                      'release_basin':self.get_release_basin_display(),
                       'plant_site':self.plant_site,
                       'tag_cnt':tag_cnt,
                       'agency':self.agency,
