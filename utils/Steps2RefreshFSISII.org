@@ -1,7 +1,22 @@
 * Fish Stocking Data
 1. Download FSIS and Rebuild FS_Master
-2. Clone FS_Master
-3. Migrate sqlite clone to postgres
+2. Clone FS_Master (clone_fs_master.py)
+3. Migrate sqlite clone to postgres by running migrate_data.py
+
 * CWT Recoveries
+
+see: [[c:/1work/Python/djcode/fsis2/cwts/utils/README.org]]
+
+* Popups
+
+The stocking events, cwts recoveries and stocking sites have popop
+text associated with them.  For performance reasons, the popup text is
+saved in a database field that is populated when each of the objects
+are saved using the ORM.  The popup text will not be populated when
+fsis2 database is recreated from fs_master.  To populate the popup
+text, open a django shell query all events, sites and cwt recoveries.
+Loop over each object and call its save method.  The popup text fields
+should then be populated and available on the application maps.
+
 
 * Spatial Data and Shapefiles

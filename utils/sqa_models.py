@@ -122,6 +122,7 @@ class StockingSite(Base):
     deswby  = Column(String(10))
     #geom = GeometryColumn(Point(2))
     geom = Column(Geometry('POINT'))
+    popup_text  = Column(String(2000))
 
     def __repr__(self):
         return "<%s (%s)>" % (self.site_name, self.site_id)
@@ -181,6 +182,8 @@ class Event(Base):
     transit = Column(String(20))
     stocking_method = Column(String(20))
     stocking_purpose = Column(String(20))
+    popup_text  = Column(String(2000))
+
 
     site_id = Column(Integer, ForeignKey('fsis2_stockingsite.id'))
     lot_id = Column(Integer, ForeignKey('fsis2_lot.id'))
