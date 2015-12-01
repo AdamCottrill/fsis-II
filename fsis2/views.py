@@ -31,7 +31,7 @@ from datetime import datetime
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
 from django.db.models import Sum
-from django.db.models.aggregates import Max
+from django.db.models.aggregates import Max, Min
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -73,7 +73,7 @@ from fsis2.utils import (timesince, footer_string, prj_cd_Year,
 
 
 #==============================================================
-#                  SPECIES SITES
+#                  SPECIES stocked
 
 
 class SpeciesListView(ListView):
@@ -82,7 +82,9 @@ class SpeciesListView(ListView):
     '''
     #queryset = Species.objects.all()
     #add on the most recent stocking year for each species:
-    queryset = Species.objects.annotate(latest=Max('lot__event__year'))
+    queryset = Species.objects.annotate(latest=Max('lot__event__year')).\
+               annotate(earliest=Min('lot__event__year')).\
+               filter(latest__isnull=False)
     template_name = "fsis2/SpeciesList.html"
 
     def get_context_data(self, **kwargs):
@@ -90,8 +92,6 @@ class SpeciesListView(ListView):
         context = super(SpeciesListView, self).get_context_data(**kwargs)
         context['footer'] = footer_string()
         return context
-
-
 
 
 #==============================================================
