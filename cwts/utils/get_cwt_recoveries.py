@@ -15,9 +15,13 @@ A. Cottrill
 
 '''
 
-#import adodbapi
+
 import pyodbc
 import psycopg2
+
+DBASE = 'fsis2'
+PG_USER = 'cottrillad'
+PG_PW = 'django'
 
 DEPLOY = False
 REMOTE_IP = '142.143.160.56'
@@ -72,19 +76,23 @@ conn.close()
 #============================================
 print("Inserting recoveries into cwt_recoveries")
 
+
+#build the appropriate connection string depending on which PG
+#instance we want to connect to.
 if DEPLOY:
-    #remote
-    pgconstr = "host={0} dbname={1} user={2}".format(REMOTE_IP, 'fsis2',
-                                                     'adam')
+    PG_HOST = REMOTE_IP
 else:
-    #local
-    pgconstr = "dbname={0} user={1}".format('fsis2', 'adam')
+    PG_HOST = 'localhost'
+
+pgconstr = "host={0} dbname={1} user={2} password = {3}".format(
+        PG_HOST, DBASE, PG_USER, PG_PW)
 
 
 pgconn = psycopg2.connect(pgconstr)
 pgcur = pgconn.cursor()
 
-#pgcur.execute("DROP TABLE IF EXISTS cwts_cwt_recover")
+pgcur.execute("TRUNCATE TABLE cwts_cwt_recovery")
+
 
 sql = '''insert into cwts_cwt_recovery (
              cwt, recovery_year, recovery_date, recovery_grid, recovery_source,

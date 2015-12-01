@@ -19,7 +19,7 @@ from fsis2.models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain,
                           ManagementUnit, Lake, BuildDate, Readme)
 
-from cwts.models import CWT, USgrid, CWT_recovery
+from cwts.models import CWT, CWT_recovery #, USgrid
 
 
 from datetime import datetime
