@@ -29,7 +29,7 @@ import shutil
 import sqlite3
 
 
-DEPLOY = FALSE
+DEPLOY = False
 
 #here is where we will place the clone after we make it:
 deploy_dir = r'X:/djcode/fsis2/utils/data'
@@ -49,6 +49,7 @@ trg_cur = trg_conn.cursor()
 
 #open a connection to the source database and create a cursor
 src = r'C:/1work/data_warehouse/fs_master.mdb'
+
 #src = r"C:/1work/Python/djcode/fsis2/utils/FS_Master_copy.mdb"
 #src = r"Y:/Information Resources/Dataset_Utilities/FS_Maker/FS_Master.mdb"
 src_conn = pyodbc.connect(r"DRIVER={Microsoft Access Driver (*.mdb)};" \
@@ -61,20 +62,19 @@ tables = src_cur.tables()
 tables = [row[2] for row in tables if row[3] == 'TABLE']
 
 for table in tables:
-    if not table in ("TL_StockingSites", "TL_ActualStockingSites"):
-        sql = '''select * from {0}'''.format(table)
+    sql = '''select * from {0}'''.format(table)
 
-        rs = src_cur.execute(sql)
-        jj = rs.fetchall()
+    rs = src_cur.execute(sql)
+    jj = rs.fetchall()
 
-        fldcnt = len(jj[0])
-        sql2 = '''insert into {0} values({1}?)'''.format(
-            table, "?," * (fldcnt-1))
+    fldcnt = len(jj[0])
+    sql2 = '''insert into {0} values({1}?)'''.format(
+        table, "?," * (fldcnt-1))
 
-        trg_cur.executemany(sql2, jj)
-        trg_conn.commit()
+    trg_cur.executemany(sql2, jj)
+    trg_conn.commit()
 
-        print("Successfully ported {0}".format(table))
+    print("Successfully ported {0}".format(table))
 
 src_cur.close()
 src_conn.close()

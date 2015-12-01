@@ -44,7 +44,6 @@ from sqlalchemy.orm import sessionmaker
 #from geoalchemy.base import WKTSpatialElement
 from geoalchemy2.elements import WKTElement
 
-
 from sqa_models import *
 from helper_fcts import *
 
@@ -120,12 +119,16 @@ session = Session()
 # make sure that any old data in the target database is removed before
 # we append in new data.
 
-# rather than using sqlalchemy orm layer to delete tables and models
-# to rebuild them, we will use django's management commands to ensure
-# that models.py remains definative:
-
-# .\venv\scripts\activate
-# reset_db.bat
+session.query(CWTs_Applied).delete()
+session.query(TaggingEvent).delete()
+session.query(Event).delete()
+session.query(Lot).delete()
+session.query(Strain).delete()
+session.query(Species).delete()
+session.query(Proponent).delete()
+session.query(StockingSite).delete()
+session.query(Readme).delete()
+session.commit()
 
 #========================================
 #           README TABLE
@@ -160,18 +163,30 @@ print("'%s' Transaction Complete (%s)"  % \
 table = "species"
 print("Uploading '%s'..."  % table)
 
-sql = '''SELECT SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC
-         FROM FS_Events INNER JOIN SPC ON FS_Events.SPC = SPC.SPC
-         GROUP BY SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC;'''
+sql = """
+SELECT SPC.SPC, StrConv(IIf(IsNull([sPC].[SPC_NMCO]),
+[SPC].[SPC_NMSC],[SPC].[SPC_NMCO]),3) AS SPC_NMCO, SPC.SPC_NMSC
+FROM SPC
+WHERE (((SPC.SPC) Not In ('000','032', 998','999')))
+ORDER BY SPC.SPC;
+"""
+
+#only species stocked by OMNR:
+#sql = '''SELECT SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC
+#         FROM FS_Events INNER JOIN SPC ON FS_Events.SPC = SPC.SPC
+#         GROUP BY SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC;'''
 
 src_cur.execute(sql)
 data = src_cur.fetchall()
 
-for row in data:
+8for row in data:
     item = Species(species_code = row['SPC'],
             common_name = row['SPC_NM'],
             scientific_name = row['SPC_NMSC'])
     session.add(item)
+
+
+
 
 session.commit()
 
@@ -269,6 +284,7 @@ for row in data:
         deswby  = row['DESWBY'],
         #geom = WKTSpatialElement(pt),
         geom = WKTElement(pt, srid=4326),
+        popup_text = row['SITE_NAME'],
         )
     session.add(item)
 
@@ -392,6 +408,7 @@ for row in data:
         stocking_purpose = upper_or_none(row['stkpur']),
         dd_lat = row['dd_lat'],
         dd_lon = row['dd_lon'],
+        popup_text = row['fs_event'],
         #geom = WKTSpatialElement(pt),
         geom = WKTElement(pt, srid=4326),
     )
@@ -482,6 +499,32 @@ print("'%s' Transaction Complete (%s)"  % \
 build_date = BuildDate(build_date = datetime.datetime.utcnow())
 session.add(build_date)
 session.commit()
+
+
+
+#========================================
+#        UPDATE STOCKING LOCATIONS
+
+#finally, update the spatial date for each event with the actual
+#lat-lon where the event occured.
+print('Updating spatial info...')
+
+sql = ''' SELECT * from TL_ActualStockingSites;'''
+
+src_cur.execute(sql)
+data = src_cur.fetchall()
+
+for row in data:
+    event = session.query(Event).filter_by(fs_event=row['event']).one()
+    event.dd_lat = row['dd_lat']
+    event.dd_lon = row['dd_lon']
+    pt = "POINT(%s %s)" % (row['DD_LON'], row['DD_LAT'])
+    event.geom =  WKTElement(pt, srid=4326)
+    session.add(event)
+session.commit()
+print('Spatial up to date.')
+
+
 
 print("All Migrations Complete ({0})".format(build_date))
 

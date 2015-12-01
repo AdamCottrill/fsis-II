@@ -73,6 +73,11 @@
                                       <td> {{ tag.clipa }} </td>
                                   </tr>
                                   <tr>
+                                      <td>  <b>Release Basin:</b></td>
+                                      <td> {{ tag.get_release_basin_display }} </td>
+                                  </tr>
+
+                                  <tr>
                                       <td>  <b>Stocking Location:</b></td>
                                       <td> {{ tag.plant_site|title }} </td>
                                   </tr>
@@ -186,6 +191,12 @@
                 <td>  <b>Clip Applied:</b></td>
                 <td> {{ cwt.clipa }} </td>
               </tr>
+
+              <tr>
+                  <td>  <b>Release Basin:</b></td>
+                  <td>{{ cwt.get_release_basin_display }} </td>
+              </tr>
+
               <tr>
                 <td>  <b>Stocking Location:</b></td>
                 <td> {{ cwt.plant_site|title }} </td>

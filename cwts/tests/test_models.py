@@ -98,7 +98,7 @@ def test_cwt_get_popup_text():
     assert species.common_name in popup_text
     assert species.scientific_name in popup_text
 
-    assert str(cwt_number) in popup_text
+    assert '65-43-21' in popup_text
     assert '{:,}'.format(cwt.tag_cnt) in popup_text
     assert cwt.get_tag_type_display() in popup_text
     assert cwt.get_cwt_mfr_display() in popup_text
