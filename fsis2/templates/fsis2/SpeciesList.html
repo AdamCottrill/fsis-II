@@ -24,7 +24,13 @@
         {% for object in object_list %}
         <tr><td> <a href="{% url 'species_annual_events' spc=object.species_code year=object.latest %}">
               {{ object.species_code }} -  {{ object.common_name }}
-              ({{ object.scientific_name }})</a></td></tr>
+              ({{ object.scientific_name }})</a>
+            {% ifequal object.earliest object.latest %}
+              [{{object.latest}}]
+            {%else %}
+              [{{object.earliest}}-{{object.latest}}]
+            {% endifequal %}
+</td></tr>
         {% endfor%}
       </table>
       {% else %}
@@ -32,7 +38,6 @@
       {% endif %}
     </div>
   </div>
-
 
 </div>
 
