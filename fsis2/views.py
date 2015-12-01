@@ -51,7 +51,7 @@ from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain,
                      ManagementUnit, Lake)
 
-from cwts.models import CWT, USgrid, CWT_recovery
+from cwts.models import CWT, CWT_recovery #, USgrid
 
 from .forms import GeoForm
 

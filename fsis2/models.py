@@ -82,7 +82,6 @@ class Species(models.Model):
     common_name = models.CharField(max_length=30)
     scientific_name = models.CharField(max_length=50, null=True, blank=True)
 
-
     class Meta:
         ordering = ['species_code']
 
