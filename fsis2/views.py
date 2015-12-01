@@ -30,7 +30,7 @@ A. Cottrill
 from datetime import datetime
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.aggregates import Max, Min
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
@@ -130,7 +130,6 @@ class SiteListView(ListView):
         # Get the q GET parameter
         q = self.request.GET.get("q")
         if q:
-            # Return a filtered queryset
             return queryset.filter(site_name__icontains=q)
         return queryset
 
@@ -224,8 +223,21 @@ def find_sites(request):
 
 class ProponentListView(ListView):
     '''Render a list of proponents who have stocked fish'''
-    queryset = Proponent.objects.all()
     template_name = "fsis2/ProponentList.html"
+
+
+    def get_queryset(self):
+        # Get the q GET parameter
+        q = self.request.GET.get("q")
+        queryset = Proponent.objects.all().\
+                   annotate(latest=Max('lot__event__year')).\
+                   annotate(earliest=Min('lot__event__year')).\
+                   filter(latest__isnull=False)
+        if q:
+            return queryset.filter(Q(abbrev__icontains=q) |
+                                      Q(proponent_name__icontains=q))
+        return queryset
+
 
     def get_context_data(self, **kwargs):
         context = super(ProponentListView, self).get_context_data(**kwargs)
