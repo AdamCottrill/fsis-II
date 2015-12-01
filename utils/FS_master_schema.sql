@@ -56,6 +56,7 @@ CREATE TABLE [FS_Events] (
 CREATE INDEX [FS_EventsEVENT] ON [FS_Events] (Event ASC);
 CREATE INDEX [FS_EventsPRJ_CD] ON [FS_Events] (PRJ_CD ASC);
 
+
 DROP TABLE [FS_Lots] /**WEAK**/;
 CREATE TABLE [FS_Lots] (
 [YEAR] TEXT(255),
@@ -136,3 +137,10 @@ CREATE TABLE [SPC] (
 [COMMENT] TEXT,
 [Quota_Flag] INTEGER
 );
+
+
+DROP TABLE [TL_ActualStockingSites] /**WEAK**/;
+CREATE TABLE [TL_ActualStockingSites] (
+[Event] INTEGER,
+[DD_LAT] REAL,
+[DD_LON] REAL);
