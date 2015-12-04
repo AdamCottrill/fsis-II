@@ -83,7 +83,7 @@ class StockingSiteFactory(factory.DjangoModelFactory):
     basin = 'Main Basin'
     deswby_lid = '12345'
     deswby = 'Lake Huron'
-    #geom = GEOSGeometry('POINT(-81.50 45.25)')
+    geom = GEOSGeometry('POINT(-81.50 45.25)')
 
 
 class LotFactory(factory.DjangoModelFactory):

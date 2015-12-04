@@ -189,27 +189,30 @@ def find_sites(request):
     if request.method == 'POST':
         form = GeoForm(request.POST)
         if form.is_valid():
-            roi = form.cleaned_data['selection'][0]
+            roi = form.cleaned_data.get('selection')[0]
             species = form.cleaned_data.get('species')
+            first_year = form.cleaned_data.get('earliest')
+            last_year = form.cleaned_data.get('latest')
 
             if roi.geom_type=='LinearRing':
                 roi = Polygon(roi)
-            if roi.geom_type=='Polygon':
-                if species:
-                    sites = StockingSite.objects.filter(
-                        event__lot__species__in=species).filter(
-                            geom__within=roi).annotate(event_count=Count('event'))
-                else:
-                    sites = StockingSite.objects.filter(
+
+            if species:
+                sites = StockingSite.objects.filter(
+                    event__lot__species__in=species).filter(
                         geom__within=roi).annotate(event_count=Count('event'))
+            else:
+                sites = StockingSite.objects.filter(
+                    geom__within=roi).annotate(event_count=Count('event'))
 
             return render_to_response('fsis2/show_sites_gis.html',
-                              {#'map':mymap,
-                               #'object_list':sites,
-                               'roi':roi,
-                               'sites':sites},
-                            context_instance = RequestContext(request))
-
+                                      {'roi':roi,
+                                       'sites':sites},
+                                  context_instance = RequestContext(request))
+        else:
+            return render_to_response('fsis2/find_events_gis.html',
+                                      {'form':form, 'what':'sites'},
+                                      context_instance = RequestContext(request))
 
     else:
         form = GeoForm() # An unbound form
