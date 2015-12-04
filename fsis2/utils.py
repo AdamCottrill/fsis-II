@@ -13,13 +13,11 @@ A. Cottrill
 '''
 
 
-from olwidget.widgets import InfoMap, InfoLayer, Map
-
 from fsis2.models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain,
                           ManagementUnit, Lake, BuildDate, Readme)
 
-from cwts.models import CWT, CWT_recovery #, USgrid
+from cwts.models import CWT, CWT_recovery
 
 
 from datetime import datetime
@@ -410,54 +408,54 @@ def empty_map():
 
 
 
-def get_map2(event_points, roi=None):
-    """This map function taks a list of points and a region of
-    interest and returns a map that is zoomed to spatial extent of the
-    roi.  The roi and all of the points it contains are rendered.
-
-    used by views find_events
-
-    Arguments: -
-    `event_points`: a list of points objects and their event numbers
-    'roi': region of interest used to select event points
-
-    """
-    layers = []
-    zoom_to_extent = False
-    if len(event_points)>0:
-        if roi:
-            style = {'overlay_style': {'fill_color': '#0000FF',
-                               'fill_opacity': 0,
-                               'stroke_color':'#0000FF'},
-                     'name':'Region of Interest'}
-            #polygon = InfoLayer([roi,style])
-            polygon =  InfoLayer([[roi.wkt, "Region Of Interest"]] ,style)
-            try:
-                layers.extend(polygon)
-            except TypeError:
-                layers.append(polygon)
-            zoom_to_extent = True
-
-        for pt in event_points:
-            pt_layer = InfoLayer([[pt[1].wkt, str(pt[0])]],{'name':str(pt[0])})
-            try:
-                layers.extend(pt_layer)
-            except TypeError:
-                layers.append(pt_layer)
-
-        mymap = Map(
-            layers,
-            {'default_lat': 45,
-            'default_lon': -82.0,
-            'default_zoom':7,
-            'zoom_to_data_extent': zoom_to_extent,
-            'map_div_style': {'width': '700px', 'height': '600px'},
-
-            }
-            )
-    else:
-        mymap = empty_map()
-    return mymap
+#def get_map2(event_points, roi=None):
+#    """This map function taks a list of points and a region of
+#    interest and returns a map that is zoomed to spatial extent of the
+#    roi.  The roi and all of the points it contains are rendered.
+#
+#    used by views find_events
+#
+#    Arguments: -
+#    `event_points`: a list of points objects and their event numbers
+#    'roi': region of interest used to select event points
+#
+#    """
+#    layers = []
+#    zoom_to_extent = False
+#    if len(event_points)>0:
+#        if roi:
+#            style = {'overlay_style': {'fill_color': '#0000FF',
+#                               'fill_opacity': 0,
+#                               'stroke_color':'#0000FF'},
+#                     'name':'Region of Interest'}
+#            #polygon = InfoLayer([roi,style])
+#            polygon =  InfoLayer([[roi.wkt, "Region Of Interest"]] ,style)
+#            try:
+#                layers.extend(polygon)
+#            except TypeError:
+#                layers.append(polygon)
+#            zoom_to_extent = True
+#
+#        for pt in event_points:
+#            pt_layer = InfoLayer([[pt[1].wkt, str(pt[0])]],{'name':str(pt[0])})
+#            try:
+#                layers.extend(pt_layer)
+#            except TypeError:
+#                layers.append(pt_layer)
+#
+#        mymap = Map(
+#            layers,
+#            {'default_lat': 45,
+#            'default_lon': -82.0,
+#            'default_zoom':7,
+#            'zoom_to_data_extent': zoom_to_extent,
+#            'map_div_style': {'width': '700px', 'height': '600px'},
+#
+#            }
+#            )
+#    else:
+#        mymap = empty_map()
+#    return mymap
 
 
 def get_recovery_map(stocking_points, recovery_points, roi=None):

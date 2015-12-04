@@ -31,12 +31,13 @@ from datetime import datetime
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
 from django.db.models import Sum, Q
-from django.db.models.aggregates import Max, Min
+from django.db.models.aggregates import Max, Min, Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 
 from django.contrib import messages
+from django.contrib.gis.geos import Polygon
 from django.http import Http404
 
 from django.views.generic import TemplateView
@@ -63,7 +64,7 @@ from fsis2.utils import (timesince, footer_string, prj_cd_Year,
                          get_recovered_cwts,
                          get_cwts_stocked_mu,
                          get_map,
-                         get_map2,
+                         #get_map2,
                          empty_map,
                          get_recovery_map)
 
@@ -190,22 +191,23 @@ def find_sites(request):
         if form.is_valid():
             roi = form.cleaned_data['selection'][0]
             species = form.cleaned_data.get('species')
-            #import pdb; pdb.set_trace()
+
+            if roi.geom_type=='LinearRing':
+                roi = Polygon(roi)
             if roi.geom_type=='Polygon':
                 if species:
                     sites = StockingSite.objects.filter(
                         event__lot__species__in=species).filter(
-                            geom__within=roi).distinct()
+                            geom__within=roi).annotate(event_count=Count('event'))
                 else:
                     sites = StockingSite.objects.filter(
-                            geom__within=roi)
-
-                site_points = [[x.site_name, x.geom] for x in sites]
-                mymap = get_map2(event_points=site_points, roi=roi)
+                        geom__within=roi).annotate(event_count=Count('event'))
 
             return render_to_response('fsis2/show_sites_gis.html',
-                              {'map':mymap,
-                               'object_list':sites,},
+                              {#'map':mymap,
+                               #'object_list':sites,
+                               'roi':roi,
+                               'sites':sites},
                             context_instance = RequestContext(request))
 
 
@@ -419,7 +421,10 @@ def find_events(request):
         if form.is_valid():
             roi = form.cleaned_data['selection'][0]
             species = form.cleaned_data.get('species')
-            #import pdb; pdb.set_trace()
+
+            if roi.geom_type=='LinearRing':
+                roi = Polygon(roi)
+
             if roi.geom_type=='Polygon':
                 if species:
                     events = Event.objects.filter(
@@ -429,12 +434,10 @@ def find_events(request):
                     events = Event.objects.filter(
                             geom__within=roi).order_by('-year')
 
-                event_points = [[x.fs_event, x.geom] for x in events]
-                mymap = get_map2(event_points=event_points, roi=roi)
-
             return render_to_response('fsis2/show_events_gis.html',
-                              {'map':mymap,
-                               'object_list':events,},
+                              {#'map':mymap,
+                               #'object_list':events,
+                                'roi': roi, 'events': events},
                             context_instance = RequestContext(request))
 
 
@@ -673,9 +676,6 @@ def cwt_detail_view(request, cwt_number):
         a list of :model:`fsis2.Event` objects associated with this
         cwt.
 
-    ``map``
-        a olwidget map contain stocking points associated with this cwt.
-
     **Templates:**
 
     :template:`fsis2/cwt_detail.html`
@@ -683,9 +683,6 @@ def cwt_detail_view(request, cwt_number):
 
     '''
 
-
-    ## this view needs to be re-written and cleanded up to remove code
-    ## that used to be associated with olwidget maps
 
     #the cwt detail page required:
     # cwt(s) - from cwts_cwt that match cwt_number

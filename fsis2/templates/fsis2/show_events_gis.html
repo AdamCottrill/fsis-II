@@ -8,26 +8,29 @@
 
 {% block extrahead %}
 
-{{ map.media }}
+{% load geojson_tags %}
+{% load leaflet_tags %}
+
+{% leaflet_js %}
+{% leaflet_css %}
 
 {% endblock %}
-
 
 {% block content %}
 {% load humanize %}
 {% load fsis2_filters %}
 
-
 <div class="row">
-  <div class="col-md-10 col-md-offset-1">
-    {{ map }}
-  </div>
+    <div class="col-md-10 col-md-offset-1">
+        <div id="main_map" style="width: 800px; height: 700px;"></div>
+    </div>
 </div>
 
- {% if object_list %}
+
+ {% if events %}
 
 <br />
-<h4>{{ object_list|length }} events found.</h4>
+<h4>{{ events|length }} events found.</h4>
 <br />
 
   <table id="myTable" class="table tablesorter">
@@ -42,7 +45,7 @@
         <td>Development Stage</td></tr>
     </thead>
     <tbody>
-      {% for event in object_list %}
+      {% for event in events %}
       <tr class="{% cycle row1,row2 %}">
         <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
         <td> {{ event.lot.species.common_name | title }} </td>
@@ -86,6 +89,6 @@
 
 </script>
 
-
+{% include 'fsis2/_doc_ready_simple_map.html' %}
 
 {% endblock %}
