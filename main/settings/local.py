@@ -15,7 +15,8 @@ INTERNAL_IPS = ('127.0.0.1', )
 #    'INTERCEPT_REDIRECTS': False,
 #}
 
-MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+#MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 
-INSTALLED_APPS += ('debug_toolbar',
+INSTALLED_APPS += (
+    #'debug_toolbar',
                    'django_extensions',)
