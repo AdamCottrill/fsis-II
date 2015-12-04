@@ -1,8 +1,13 @@
 {% extends "fsis2/fsis2_base.html" %}
 
+{% load leaflet_tags %}
+
 {% block extrahead %}
 
-{{ form.media }}
+
+{% leaflet_js plugins="forms" %}
+{% leaflet_css plugins="forms" %}
+
 
 {% endblock %}
 
@@ -10,6 +15,15 @@
 {% load humanize %}
 {% load fsis2_filters %}
 
+
+<style>
+
+    .leaflet-container {  /* all maps */
+        width:  600px;
+        height: 600px;
+    }
+
+</style>
 
   <div class="row well">
     <form method="post" id="" action="">{% csrf_token %}

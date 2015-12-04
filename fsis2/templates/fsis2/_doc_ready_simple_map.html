@@ -5,10 +5,17 @@
  $(document).ready(function(){
 
      // we will initialize the map over lake huron - this could be customized at some point in the future.
-     var  my_map = new L.map('main_map').setView([45,-82], 7);
+     var lat = 45
+     var lon = -82
+     var zoom = 7
+
+     var  my_map = new L.map('main_map').setView([lat,lon], zoom);
 
      //stocking sites
      var sites = {{ sites|geojsonfeature:"popup_text"|safe }};
+
+     // region of interest - could be an arbirary section or pre-defined polygon
+     var roi = {{ roi|geojsonfeature|safe }}
 
      //cwt recoveries
      var recoveries = {{ recoveries|geojsonfeature:"popup_text"|safe }};
@@ -41,6 +48,12 @@
                       'Imagery  <a href="http://mapbox.com">Mapbox</a>',
          id: 'mapbox.streets'
      }).addTo(my_map);
+
+     if (roi){
+         var roi_layer = L.geoJson(roi);
+         roi_layer.addTo(my_map);
+         my_map.fitBounds(roi_layer.getBounds());
+         }
 
 
     var event_points = L.geoJson(pts, {

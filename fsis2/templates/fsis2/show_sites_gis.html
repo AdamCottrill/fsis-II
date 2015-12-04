@@ -1,7 +1,14 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
-  {{ map.media }}
+
+{% load geojson_tags %}
+{% load leaflet_tags %}
+
+{% leaflet_js %}
+{% leaflet_css %}
+
+
 {% endblock %}
 
 {% block content %}
@@ -9,15 +16,16 @@
 {% load fsis2_filters %}
 
 <div class="row">
-  <div class="col-md-10 col-md-offset-1">
-    {{ map }}
-  </div>
+    <div class="col-md-10 col-md-offset-1">
+        <div id="main_map" style="width: 800px; height: 700px;"></div>
+    </div>
 </div>
 
- {% if object_list %}
+
+ {% if sites %}
 
 <br />
-<h4>{{ object_list|length }} sites found.</h4>
+<h4>{{ sites|length }} sites found.</h4>
 <br />
 
   <table id="myTable" class="table tablesorter">
@@ -28,9 +36,11 @@
         <td>Grid</td>
         <td>Latitude</td>
         <td>Longitude</td>
+        <td>N</td>
+
     </thead>
     <tbody>
-      {% for site in object_list %}
+      {% for site in sites %}
       <tr class="{% cycle row1,row2 %}">
         <td> <a href="{% url 'site_detail'  site.id  %}">{{ site.fsis_site_id }}</a> </td>
         <td> {{ site.site_name }} </td>
@@ -40,6 +50,7 @@
         <td> {{ site.dd_lat|format_ddlat }} </td>
         <td> {{ site.dd_lon|format_ddlon }} </td>
         {% endautoescape %}
+        <td>{{ site.event_count }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -73,6 +84,8 @@
 
 </script>
 
+
+{% include 'fsis2/_doc_ready_simple_map.html' %}
 
 
 {% endblock %}

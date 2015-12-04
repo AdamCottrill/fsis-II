@@ -154,7 +154,7 @@ class CWT_recovery(models.Model):
 
 class CWT(models.Model):
 
-    stocked = models.BooleanField()
+    stocked = models.BooleanField(default=True)
     cwt = models.CharField(max_length=6)
     seq_start = models.IntegerField(default=0)
     seq_end = models.IntegerField(default=1)
@@ -177,7 +177,7 @@ class CWT(models.Model):
 
     cwt_mfr = models.CharField(max_length=10, choices=MANUFACTURER_CHOICES)
     #cwt_length = models.IntegerField()
-    cwt_reused = models.BooleanField()
+    cwt_reused = models.BooleanField(default=False)
     #distributed = models.BooleanField()
     #distributed_date = models.DateField(null=True, blank=True)
 
