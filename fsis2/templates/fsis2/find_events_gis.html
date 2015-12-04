@@ -25,11 +25,38 @@
 
 </style>
 
+{% if what == "sites" %}
+<h3>Find Stocking Sites:</h3>
+{% endif %}
+
+
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    Please fix the errors in the form below.
+    {% for error in form.non_field_errors %}
+    <p class="error">{{ error }}</p>
+    {% endfor %}
+
+    {% if form.selection.errors %}
+    {% for error in form.selection.errors %}
+    <div class="has-error help-block text-danger">{{ error }}</div>
+    {% endfor %}
+    {% endif %}
+
+</div>
+{% endif %}
+
+
+
+
   <div class="row well">
     <form method="post" id="" action="">{% csrf_token %}
       <div class="row">
         <div class="col-md-7">
-          {{ form.selection }}
+
+            {{ form.selection }}
+
         </div>
         <div class="col-md-5">
           <div class="panel panel-default">
@@ -39,6 +66,30 @@
           {{ form.species }}
             </div>
           </div>
+
+          <div class="panel panel-default">
+              <div class="panel-body">
+                  <div class="form-group {% if form.earliest.errors %}has-error{% endif %}">
+                      {{ form.earliest.label_tag }}
+                      {{ form.earliest }}
+                      {% if form.earliest.errors %}
+                      {% for error in form.earliest.errors %}
+                      <div class="has-error help-block text-danger">{{ error }}</div>
+                      {% endfor %}
+                      {% endif %}
+                  </div>
+                  <div class="form-group {% if form.latest.errors %}has-error{% endif %}">
+                      {{ form.latest.label_tag }}
+                      {{ form.latest }}
+                      {% if form.latest.errors %}
+                      {% for error in form.latest.errors %}
+                      <div class="has-error help-block text-danger">{{ error }}</div>
+                      {% endfor %}
+                      {% endif %}
+                  </div>
+              </div>
+          </div>
+
           {% if what == "sites" %}
           <a href="{% url 'find_sites' %}" class="btn btn-default">Reset</a>
           {% else %}
