@@ -66,7 +66,7 @@ from django.contrib.gis.geos import GEOSGeometry, LinearRing, Point, Polygon
 from django.core.urlresolvers import reverse
 
 from fsis2.tests.factories import *
-
+from fsis2.models import Species
 
 
 @pytest.fixture(scope='class')
@@ -97,15 +97,38 @@ def db_setup():
     coho = SpeciesFactory(common_name='Coho Salmon',
                                 scientific_name='Oncorhynchus kisutch')
 
-    laker_lot = LotFactory(species=lake_trout)
-    brown_lot = LotFactory(species=brown_trout)
-    coho_lot = LotFactory(species=coho)
-    rainbow_lot = LotFactory(species=rainbow_trout)
+    lt_strain = StrainFactory(species=lake_trout)
+    rt_strain = StrainFactory(species=rainbow_trout,
+                              sto_code = "Wild",
+                              strain_code = "WILD",
+                              strain_name = "Wild")
+    bt_strain = StrainFactory(species=brown_trout,
+                              sto_code = "Wild",
+                              strain_code = "WILD",
+                              strain_name = "Wild")
+    coho_strain = StrainFactory(species=coho,
+                              sto_code = "Wild",
+                              strain_code = "WILD",
+                              strain_name = "Wild")
+
+    laker_lot = LotFactory(species=lake_trout, strain=lt_strain)
+    brown_lot = LotFactory(species=brown_trout, strain=bt_strain)
+    coho_lot = LotFactory(species=coho, strain=coho_strain)
+    rainbow_lot = LotFactory(species=rainbow_trout, strain=rt_strain)
 
     outside = StockingSiteFactory(site_name='Outside Site',
                                   geom=GEOSGeometry('POINT(-81.0 44.9)'))
-    inside = StockingSiteFactory(site_name='Inside Site',
-                                  geom=GEOSGeometry('POINT(-81.8 45.1)'))
+
+    inside_pt = GEOSGeometry('POINT(-81.8 45.1)')
+    insideA = StockingSiteFactory(site_name='Inside SiteA',
+                                  geom=inside_pt)
+    insideB = StockingSiteFactory(site_name='Inside SiteB',
+                                  geom=inside_pt)
+    insideC = StockingSiteFactory(site_name='Inside SiteC',
+                                  geom=inside_pt)
+    insideD = StockingSiteFactory(site_name='Inside SiteD',
+                                  geom=inside_pt)
+
 
     date_2000 = datetime(2000,10,15)
     date_2005 = datetime(2005,10,15)
@@ -115,11 +138,11 @@ def db_setup():
     event2 = EventFactory(lot=laker_lot, site=outside, event_date=date_2005)
     event3 = EventFactory(lot=laker_lot, site=outside, event_date=date_2010)
 
-    event4 = EventFactory(lot=rainbow_lot, site=outside, event_date=date_2005)
+    event4 = EventFactory(lot=rainbow_lot, site=insideA, event_date=date_2005)
 
-    event5 = EventFactory(lot=brown_lot, site=inside, event_date=date_2000)
-    event6 = EventFactory(lot=brown_lot, site=inside, event_date=date_2005)
-    event7 = EventFactory(lot=brown_lot, site=inside, event_date=date_2010)
+    event5 = EventFactory(lot=brown_lot, site=insideB, event_date=date_2000)
+    event6 = EventFactory(lot=brown_lot, site=insideC, event_date=date_2005)
+    event7 = EventFactory(lot=brown_lot, site=insideD, event_date=date_2010)
 
 
 @pytest.fixture(scope='class')
@@ -234,10 +257,8 @@ def test_find_post_first_year_after_last_year(client, db_setup, roi):
     response = client.post(url, data)
     content = str(response.content)
 
-    print('content={}'.format(content))
     err_msg =  "&#39;Earliest Year&#39; occurs after &#39;Last Year&#39;."
     assert err_msg in content
-
 
 
 @pytest.mark.django_db
@@ -342,8 +363,11 @@ def test_find_post_valid_data(client, db_setup, roi):
 
     content = str(response.content)
 
-    assert "1 site found."
-    assert 'Inside Site' in content
+    assert "4 sites found." in content
+    assert 'Inside SiteA' in content
+    assert 'Inside SiteB' in content
+    assert 'Inside SiteC' in content
+    assert 'Inside SiteD' in content
 
     assert 'Outside Site' not in content
 
@@ -355,3 +379,125 @@ def test_find_post_valid_data(client, db_setup, roi):
     assert '<td>Latitude</td>' in content
     assert '<td>Longitude</td>' in content
     assert '<td>N</td>' in content
+
+
+
+@pytest.mark.django_db
+def test_find_post_valid_species(client, db_setup, roi):
+    """If we submit a post request with a valid roi and species selected
+    as brown trout, we should get only three stocking locations.
+    Inside SiteA should not appear in the results. nor should any of
+    the outsite sites - they were all stocked outside of the region of
+    interest.
+
+    """
+
+    spc = Species.objects.get(common_name='Brown Trout')
+    data = {'selection':roi, 'species': (spc.id,)}
+
+    url = reverse('find_sites')
+    response = client.post(url, data)
+    content = str(response.content)
+
+    assert "3 sites found." in content
+    assert 'Inside SiteB' in content
+    assert 'Inside SiteC' in content
+    assert 'Inside SiteD' in content
+
+    assert 'Outside Site' not in content
+    assert 'Inside SiteA' not in content #rainbow stocking
+
+
+
+@pytest.mark.django_db
+def test_find_post_valid_earliest_year(client, db_setup, roi):
+    """If we submit a post request with a valid roi and speciy an earliest
+    year (2004) we should get only three stocking locations.  Inside
+    SiteB (stocked in 2001) should not appear in the results.
+
+    """
+
+    data = {'selection':roi, 'earliest':'2004'}
+
+    url = reverse('find_sites')
+    response = client.post(url, data)
+    content = str(response.content)
+
+    assert "3 sites found." in content
+    assert 'Inside SiteA' in content
+    assert 'Inside SiteC' in content
+    assert 'Inside SiteD' in content
+
+    assert 'Outside Site' not in content
+    assert 'Inside SiteB' not in content #brown trout stocking in 2000
+
+
+@pytest.mark.django_db
+def test_find_post_valid_latest_year(client, db_setup, roi):
+    """If we submit a post request with a valid roi and speciy an latest
+    year (2006) we should get only three stocking locations.  Inside
+    SiteD (stocked in 2010) should not appear in the results.
+
+    """
+    data = {'selection':roi, 'latest':'2006'}
+
+    url = reverse('find_sites')
+    response = client.post(url, data)
+    content = str(response.content)
+
+    assert "3 sites found." in content
+    assert 'Inside SiteA' in content
+    assert 'Inside SiteB' in content
+    assert 'Inside SiteC' in content
+
+    assert 'Outside Site' not in content
+    assert 'Inside SiteD' not in content   #brown trout stocking in 2010
+
+
+
+@pytest.mark.django_db
+def test_find_post_valid_between_years(client, db_setup, roi):
+    """If we submit a post request with a valid roi and speciy both and
+    early (2004) and a late year (2006) we should get only two
+    stocking locations.  Inside SiteA and Inside SiteD (stocked in
+    2001 and 2010) should not appear in the results.
+
+    """
+
+    data = {'selection':roi, 'earliest': '2004', 'latest':'2006'}
+
+    url = reverse('find_sites')
+    response = client.post(url, data)
+    content = str(response.content)
+
+    assert "2 sites found." in content
+    assert 'Inside SiteA' in content
+    assert 'Inside SiteC' in content
+
+    assert 'Outside Site' not in content
+    assert 'Inside SiteB' not in content   #brown trout stocking in 2000
+    assert 'Inside SiteD' not in content   #brown trout stocking in 2010
+
+
+@pytest.mark.django_db
+def test_find_post_valid_earliest_latest_same(client, db_setup, roi):
+    """If we submit a post request with a valid roi and speciy both and
+    early (2005) and a late year (2005) we should get only two
+    stocking locations.  Inside SiteA and Inside SiteD (stocked in
+    2001 and 2010) should not appear in the results.
+
+    """
+
+    data = {'selection':roi, 'earliest': '2004', 'latest':'2006'}
+
+    url = reverse('find_sites')
+    response = client.post(url, data)
+    content = str(response.content)
+
+    assert "2 sites found." in content
+    assert 'Inside SiteA' in content
+    assert 'Inside SiteC' in content
+
+    assert 'Outside Site' not in content
+    assert 'Inside SiteB' not in content   #brown trout stocking in 2000
+    assert 'Inside SiteD' not in content   #brown trout stocking in 2010

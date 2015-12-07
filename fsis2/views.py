@@ -197,13 +197,18 @@ def find_sites(request):
             if roi.geom_type=='LinearRing':
                 roi = Polygon(roi)
 
+            sites = StockingSite.objects.filter(
+                    geom__within=roi)
+
+            #now filter for our optional fields:
             if species:
-                sites = StockingSite.objects.filter(
-                    event__lot__species__in=species).filter(
-                        geom__within=roi).annotate(event_count=Count('event'))
-            else:
-                sites = StockingSite.objects.filter(
-                    geom__within=roi).annotate(event_count=Count('event'))
+                sites = sites.filter(event__lot__species__in=species)
+            if first_year:
+                sites = sites.filter(event__year__gte=first_year)
+            if last_year:
+                sites = sites.filter(event__year__lte=last_year)
+
+            sites = sites.annotate(event_count=Count('event'))
 
             return render_to_response('fsis2/show_sites_gis.html',
                                       {'roi':roi,
