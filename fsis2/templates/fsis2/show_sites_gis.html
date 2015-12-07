@@ -21,12 +21,10 @@
     </div>
 </div>
 
-{{ roi }}
-
  {% if sites %}
 
 <br />
-<h4>{{ sites|length }} sites found.</h4>
+<h4>{{ sites|length }} site{{ sites|pluralize }} found.</h4>
 <br />
 
   <table id="myTable" class="table tablesorter">
