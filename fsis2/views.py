@@ -429,25 +429,31 @@ def find_events(request):
         if form.is_valid():
             roi = form.cleaned_data['selection'][0]
             species = form.cleaned_data.get('species')
+            first_year = form.cleaned_data.get('earliest')
+            last_year = form.cleaned_data.get('latest')
 
             if roi.geom_type=='LinearRing':
                 roi = Polygon(roi)
 
-            if roi.geom_type=='Polygon':
-                if species:
-                    events = Event.objects.filter(
-                        lot__species__in=species).filter(
-                            geom__within=roi).order_by('-year')
-                else:
-                    events = Event.objects.filter(
-                            geom__within=roi).order_by('-year')
+            events = Event.objects.filter(geom__within=roi).order_by('-year')
+
+            if species:
+                events = events.filter(lot__species__in=species)
+            if first_year:
+                events = events.filter(year__gte=first_year)
+            if last_year:
+                events = events.filter(year__lte=last_year)
 
             return render_to_response('fsis2/show_events_gis.html',
-                              {#'map':mymap,
-                               #'object_list':events,
-                                'roi': roi, 'events': events},
+                              {'roi': roi, 'events': events},
                             context_instance = RequestContext(request))
 
+        else:
+
+            return render_to_response('fsis2/find_events_gis.html',
+                                      {'form':form, 'what':'events'},
+                                      context_instance = RequestContext(request)
+            )
 
     else:
         form = GeoForm() # An unbound form

@@ -1,9 +1,10 @@
 from django.contrib.gis import forms
 from django.contrib.gis.forms.fields import PolygonField
+from django.db.models.aggregates import Max, Min, Count
 
 from leaflet.forms.widgets import LeafletWidget
 
-from fsis2.models import Species
+from fsis2.models import Species, Event
 
 
 class GeoForm(forms.Form):
@@ -14,13 +15,26 @@ class GeoForm(forms.Form):
 
     earliest = forms.CharField(label='Earliest Year', max_length=4,
                                required=False)
+
     latest = forms.CharField(label='Latest Year', max_length=4,
                              required=False)
+
 
     species = forms.ModelMultipleChoiceField(
         Species.objects.all(), required=False,
         widget=forms.CheckboxSelectMultiple(), label='Species')
 
+
+    def __init__(self, *args, **kwargs):
+        '''Pre-populate the earliest and latest years with actual values in
+        the database.'''
+        super(GeoForm, self).__init__(*args, **kwargs)
+
+        qs = Event.objects.values('year').aggregate(latest=Max('year'),
+                                                    earliest=Min('year'))
+
+        self.fields['earliest'].widget.attrs['placeholder'] = qs['earliest']
+        self.fields['latest'].widget.attrs['placeholder'] = qs['latest']
 
     def clean_earliest(self):
         '''If we can't convert the earliest year value to an integer,
