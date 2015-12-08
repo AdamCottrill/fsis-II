@@ -673,10 +673,6 @@ def cwt_detail_view(request, cwt_number):
     ``cwt``
         a :model:`cwts.CWT` object if only one cwt is found in cwt
 
-    ``aac``
-        a dictionary contain year of catpture and age pairs calculated
-        for this cwt based on its year class.  Dynamically calculated
-        when view is called.
 
     ``cwt_number``
         only returned if multiple cwt records are found. Used to label
@@ -752,32 +748,74 @@ def cwt_recovered_mu(request, slug):
     """
 
     mu_poly = ManagementUnit.objects.get(slug=slug)
+    recoveries = CWT_recovery.objects.filter(geom__within=mu_poly.geom)
 
-    recovered_cwts = get_recovered_cwts(mu_poly)
+    #filter the recoveries based on first year, last year and species
+    fyear = 1950
+    lyear = 2019
+    #species = ""
+    if fyear:
+        recoveries = recoveries.filter(recovery_year__gte=fyear)
+    if lyear:
+        recoveries = recoveries.filter(recovery_year__lte=lyear)
 
-    #pull out the elements we need to make our map
-    recovery_pts = get_recovery_points(recovered_cwts['recoveries'])
 
-    event_pts = get_stocking_points(recovered_cwts['events'])
+    #Look into creating a specialized view in POST gres that is
+    #declared in Django as an unmanaged table.  The view would join
+    #our recoveries to cwts using both cwt number and species.
 
-    US_events = recovered_cwts['US_events']
-    #if there are US events, add them to the list of points to be plotted:
-    if US_events:
-        for event in US_events:
-            if event.us_grid_no:
-                event_pts.append([event.plant_site, event.us_grid_no.geom])
-    #make the map
-    mymap = get_recovery_map(event_pts, recovery_pts,
-                             roi=mu_poly.geom)
+    #get the list of distinct cwts in our recoveries
+    cwt_nums = recoveries.values_list('cwt').distinct()
 
-    #add the map and management unit name to the context dictionary
-    recovered_cwts['map'] = mymap
-    recovered_cwts['mu'] = mu_poly
+    cwts = CWT.objects.filter(cwt__in=cwt_nums)
+
+    #add on the number of recaptures of each tag:
+    tmp = recoveries.values('cwt').annotate(N=Count('cwt'))
+    recovery_count = {x['cwt']: x['N'] for x in tmp}
+
+    for x in cwts:
+        x.recovery_count = recovery_count.get(x.cwt, 0)
+
+
+    #now get the stocking events associated with these cwts:
+    #this does not account for sequential CWTS!!!
+    events = Event.objects.filter(taggingevent__cwts_applied__cwt__in=cwt_nums)
+
+    us_events = CWT.objects.filter(cwt__in=cwt_nums).exclude(agency='OMNR').\
+                order_by('seq_start', '-stock_year')
+
+
+    #recovered_cwts = get_recovered_cwts(mu_poly)
+    #
+    ##pull out the elements we need to make our map
+    #recovery_pts = get_recovery_points(recovered_cwts['recoveries'])
+    #
+    #event_pts = get_stocking_points(recovered_cwts['events'])
+    #
+    #US_events = recovered_cwts['US_events']
+    ##if there are US events, add them to the list of points to be plotted:
+    #if US_events:
+    #    for event in US_events:
+    #        if event.us_grid_no:
+    #            event_pts.append([event.plant_site, event.us_grid_no.geom])
+    ##make the map
+    #mymap = get_recovery_map(event_pts, recovery_pts,
+    #                         roi=mu_poly.geom)
+    #
+    ##add the map and management unit name to the context dictionary
+    #recovered_cwts['map'] = mymap
+    #recovered_cwts['mu'] = mu_poly
 
     return render_to_response('fsis2/cwt_recovered_mu.html',
-                              recovered_cwts,
-
-                   context_instance=RequestContext(request))
+                              {'mu':mu_poly.label,
+                               'roi':mu_poly,
+                               'what':'recovery',
+                               'cwts':cwts,
+                               'recoveries':recoveries,
+                               'events':events,
+                               'us_events':us_events
+},
+                              context_instance=RequestContext(request))
 
 
 def cwt_stocked_mu(request, slug):
@@ -797,23 +835,65 @@ def cwt_stocked_mu(request, slug):
     """
     mu_poly = ManagementUnit.objects.get(slug=slug)
 
-    stocked_cwts = get_cwts_stocked_mu(mu_poly)
+    #events with cwts in the region of interest:
+    events = Event.objects.filter(geom__within=mu_poly.geom).\
+             filter(taggingevent__cwts_applied__cwt__isnull=False)
 
-    #pull out the elements we need to make our map
-    recovery_pts = get_recovery_points(stocked_cwts['recoveries'])
-    event_pts = get_stocking_points(stocked_cwts['events'])
+    fyear = 1950
+    lyear = 2019
+    #species = ""
+    if fyear:
+        events = events.filter(year__gte=fyear)
+    if lyear:
+        events = events.filter(year__lte=lyear)
 
-    mymap = get_recovery_map(event_pts, recovery_pts,
-                             roi=mu_poly.geom)
 
-    #add the name of the management unit and the map we just created
-    #to the stocked_cwt dictionary.
-    stocked_cwts['mu'] = mu_poly
-    stocked_cwts['map'] = mymap
+    #get the distinct list of cwt numbers that have been stocked in those events
+    cwt_nums = events.values_list('taggingevent__cwts_applied__cwt').distinct()
+    #get those cwt numbers to filter the cwt objects
+    tmp = [x[0] for x in cwt_nums]
+    cwts = CWT.objects.filter(cwt__in=tmp)
+    recoveries = CWT_recovery.objects.filter(cwt__in=tmp)
+
+    #add on the number of recaptures of each tag:
+    tmp = recoveries.values('cwt').annotate(N=Count('cwt'))
+    recovery_count = {x['cwt']: x['N'] for x in tmp}
+
+    for x in cwts:
+        x.recovery_count = recovery_count.get(x.cwt, 0)
+
 
     return render_to_response('fsis2/cwt_stocked_mu.html',
-                              stocked_cwts,
+                              {'mu':mu_poly.label,
+                               'roi':mu_poly,
+                               'what':'stocked',
+                               'cwts':cwts,
+                               'recoveries':recoveries,
+                               #'us_events':us_events,
+                               'events':events,},
                               context_instance=RequestContext(request))
+
+
+
+
+
+    #stocked_cwts = get_cwts_stocked_mu(mu_poly)
+    #
+    ##pull out the elements we need to make our map
+    #recovery_pts = get_recovery_points(stocked_cwts['recoveries'])
+    #event_pts = get_stocking_points(stocked_cwts['events'])
+    #
+    #mymap = get_recovery_map(event_pts, recovery_pts,
+    #                         roi=mu_poly.geom)
+    #
+    ##add the name of the management unit and the map we just created
+    ##to the stocked_cwt dictionary.
+    #stocked_cwts['mu'] = mu_poly
+    #stocked_cwts['map'] = mymap
+    #
+    #return render_to_response('fsis2/cwt_stocked_mu.html',
+    #                          stocked_cwts,
+    #                          context_instance=RequestContext(request))
 
 
 
