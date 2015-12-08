@@ -106,13 +106,14 @@ TODO: modify *copy* of content/text rather than actual...
 
     def _test_admin(self, MODELS):
         """
-Shortcut for detecting broken admin change lists/forms.
-Beware query expense involved...
-"""
+        Shortcut for detecting broken admin change lists/forms.
+        Beware query expense involved...
+        """
+
         for model in MODELS:
             changelist_url = reverse(
                 'admin:%s_%s_changelist' % (
-                    model._meta.app_label, model._meta.module_name
+                    model._meta.app_label, model._meta.model_name
                 )
             )
             response = self.client.get(changelist_url)
@@ -121,7 +122,7 @@ Beware query expense involved...
             add_url = reverse(
                 'admin:%s_%s_add' % (
                     model._meta.app_label,
-                    model._meta.module_name
+                    model._meta.model_name
                 )
             )
             response = self.client.get(add_url)
