@@ -22,7 +22,7 @@
   <div class="row">
 
       {% if multiple %}
-      <h2> CWT Number: {{ cwt.cwt|first }} </h2>
+      <h2> CWT Number: {{ cwt|first }} </h2>
       <div class="alert alert-danger">
           WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN  ONCE.  INTERPRET WITH CAUTION.</p>
       </div>
@@ -294,10 +294,10 @@
     {% else %}
       {% ifequal cwt.agency "OMNR" %}
     <div class="alert alert-danger">
-      <p>There are no Ontario stocking events associated with cwt {{ cwt }}.   According to the Agency code there should be. </p>
+      <p>There are no Ontario stocking events associated with cwt {% if multiple %}{{ cwt|first }}{% else %}{{ cwt }}{% endif %}.   According to the Agency code there should be.</p>
     </div>
       {% else %}
-      <p>There are no Ontario stocking events associated with cwt {{ cwt }}. </p>
+      <p>There are no Ontario stocking events associated with cwt {% if multiple %}{{ cwt|first }}{% else %}{{ cwt }}{% endif %}.</p>
       {% endifequal %}
     {% endif %}
   </div>
