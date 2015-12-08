@@ -4,7 +4,10 @@ doc/*
 *defunct*
 *.pyc
 db/*
+.coverage
+.cache/*
 coverage/*
+htmlcov/*
 simple_auth/*
 static/*
 staticfiles/*

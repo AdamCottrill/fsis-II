@@ -38,14 +38,14 @@ urlpatterns = patterns('',
 
         #recoveries in management unit
         url(
-            regex=r'stocked_managment_unit/(?P<slug>[-_A-Za-z0-9]+)$',
+            regex=r'stocked_management_unit/(?P<slug>[-_A-Za-z0-9]+)$',
             view=cwt_stocked_mu,
             name='cwt_stocked_mu'
             ),
 
         #recoveries of cwt stocked in cwt
         url(
-            regex=r'recovered_managment_unit/(?P<slug>[-_A-Za-z0-9]+)$',
+            regex=r'recovered_management_unit/(?P<slug>[-_A-Za-z0-9]+)$',
             view=cwt_recovered_mu,
             name='cwt_recovered_mu'
             ),
