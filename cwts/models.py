@@ -52,6 +52,8 @@ class CWT_recovery(models.Model):
     '''
 
     cwt = models.CharField(max_length=6)
+    sequence_number = models.IntegerField(default=0)
+
     RECOVERY_SOURCE_CHOICES = (
         ("AOFRC", "AOFRC"),
         ("CF", "Catch Sampling"),
@@ -68,6 +70,7 @@ class CWT_recovery(models.Model):
     recovery_date = models.DateField(null=True, blank=True)
     recovery_grid= models.CharField(max_length=4)
     composite_key = models.CharField(max_length=50)
+    spc = models.ForeignKey(Species)
     flen = models.IntegerField(null=True, blank=True)
     age = models.IntegerField(null=True, blank=True)
     geom = models.PointField(srid=4326,
@@ -111,6 +114,10 @@ class CWT_recovery(models.Model):
                         <td>{cwt}</td>
                       </tr>
                       <tr>
+                        <td>  <b>Species:</b></td>
+                        <td> {common} (<em>{scientific}</em>) </td>
+                      </tr>
+                      <tr>
                         <td>  <b>Source:</b></td>
                         <td> {source} </td>
                       </tr>
@@ -138,13 +145,16 @@ class CWT_recovery(models.Model):
         else:
             recovery_date = self.recovery_year
 
+
         value_dict = {
-            'cwt':self.cwt,
-            'source':self.get_recovery_source_display(),
+            'cwt': self.cwt,
+            'common': self.spc.common_name,
+            'scientific': self.spc.scientific_name,
+            'source': self.get_recovery_source_display(),
             'recovery_date': recovery_date,
-            'key':self.composite_key,
-            'flen':self.flen,
-            'age':self.age
+            'key': self.composite_key,
+            'flen': self.flen,
+            'age': self.age
         }
 
         return base_string.format(**value_dict)
