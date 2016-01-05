@@ -82,9 +82,16 @@
       <h3>Recoveries: (n= {{ recoveries.count }})</h3>
       {% if recoveries %}
       <table id="myTable" class="table tablesorter">
-        <thead><tr><td>CWT</td><td>Year</td><td>Source</td>
-            <td>Recovery Date</td><td>5-Minute Grid</td>
-            <td>Project Key</td><td>Fork Length(mm)</td> <td>Age</td></tr>
+        <thead><tr>
+            <td>CWT</td>
+            <td>Year</td>
+            <td>Source</td>
+            <td>Recovery Date</td>
+            <td>5-Minute Grid</td>
+            <td>Project Key</td>
+            <td>Species</td>
+            <td>Fork Length(mm)</td>
+            <td>Age</td></tr>
         </thead>
         <tbody>
           {% for recovery in recoveries %}
@@ -95,6 +102,7 @@
             <td> {{ recovery.recovery_date|date }} </td>
             <td> {{ recovery.recovery_grid }} </td>
             <td> {{ recovery.composite_key }} </td>
+            <td> {{ recovery.spc.common_name }} </td>
             <td> {{ recovery.flen }} </td>
             <td> {{ recovery.age }} </td>
           </tr>

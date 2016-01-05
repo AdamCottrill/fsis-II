@@ -8,7 +8,8 @@ from fsis2.models import *
 
 
 class UserFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = User
+    class Meta:
+        model = User
     first_name = 'John'
     last_name = 'Doe'
     username = 'johndoe'
@@ -29,24 +30,28 @@ class UserFactory(factory.DjangoModelFactory):
 
 
 class BuildDateFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = BuildDate
+    class Meta:
+        model = BuildDate
     build_date = datetime.now()
 
 
 class ReadmeFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Readme
+    class Meta:
+        model = Readme
     date = datetime.now()
     initials = "hs" #Homer Simpson
     comment = "Database compiled with FSIS data downloaded on 08/20/2013."
 
 
 class LakeFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Lake
+    class Meta:
+        model = Lake
     lake = "Lake Huron"
 
 
 class SpeciesFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Species
+    class Meta:
+        model = Species
     #species_code = '81'
     species_code = factory.Sequence(lambda n: n)
     common_name = 'Lake Trout'
@@ -54,7 +59,8 @@ class SpeciesFactory(factory.DjangoModelFactory):
 
 
 class StrainFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Strain
+    class Meta:
+        model = Strain
 
     species = factory.SubFactory(SpeciesFactory)
     sto_code = "SNCW"
@@ -63,14 +69,16 @@ class StrainFactory(factory.DjangoModelFactory):
 
 
 class ProponentFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Proponent
+    class Meta:
+        model = Proponent
 
     abbrev = factory.Sequence(lambda n: "MH-{0:02d}".format(n))
     proponent_name = 'My Hatchery'
 
 
 class StockingSiteFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = StockingSite
+    class Meta:
+        model = StockingSite
 
     fsis_site_id = factory.Sequence(lambda n: "12{0:02d}".format(n))
     site_name = 'Honey Hole'
@@ -87,7 +95,8 @@ class StockingSiteFactory(factory.DjangoModelFactory):
 
 
 class LotFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Lot
+    class Meta:
+        model = Lot
     pass
 
     fs_lot = factory.Sequence(lambda n: "1{0:03d}".format(n))
@@ -101,7 +110,8 @@ class LotFactory(factory.DjangoModelFactory):
 
 
 class EventFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = Event
+    class Meta:
+        model = Event
 
     lot = factory.SubFactory(LotFactory)
     prj_cd = 'LHA_FS11_111'
@@ -133,7 +143,8 @@ class EventFactory(factory.DjangoModelFactory):
 
 
 class TaggingEventFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = TaggingEvent
+    class Meta:
+        model = TaggingEvent
 
     stocking_event = factory.SubFactory(EventFactory)
     fs_tagging_event_id = factory.Sequence(lambda n: "1{0:02d}".format(n))
@@ -144,7 +155,8 @@ class TaggingEventFactory(factory.DjangoModelFactory):
 
 
 class CWTsAppliedFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = CWTs_Applied
+    class Meta:
+        model = CWTs_Applied
 
     tagging_event = factory.SubFactory(TaggingEventFactory)
     fs_tagging_event_id =  factory.Sequence(lambda n: "1{0:02d}".format(n))
@@ -152,7 +164,8 @@ class CWTsAppliedFactory(factory.DjangoModelFactory):
 
 
 class ManagementUnitFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = ManagementUnit
+    class Meta:
+        model = ManagementUnit
 
 
     label = '10'
