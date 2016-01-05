@@ -17,6 +17,7 @@ from django.contrib.gis.geos import Point
 from cwts.models import CWT
 
 from cwts.tests.factories import *
+from fsis2.tests.factories import SpeciesFactory
 
 import pytest
 
@@ -215,8 +216,11 @@ def test_cwtrecovery_save():
 
     '''
 
+    species = SpeciesFactory()
+
     recovery = CWT_recovery(
         cwt = '631111',
+        spc = species,
         recovery_source = "CF",
         recovery_year = 2006,
         recovery_date = date(2012, 11, 15),
