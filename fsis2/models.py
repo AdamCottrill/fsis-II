@@ -314,7 +314,7 @@ class Event(models.Model):
 
     lot = models.ForeignKey(Lot)
     prj_cd =  models.CharField(max_length=13)
-    year = models.IntegerField()
+    year = models.IntegerField(db_index=True)
     fs_event = models.IntegerField(unique=True)
     lotsam = models.CharField(max_length=8, null=True, blank=True)
     event_date = models.DateTimeField(editable=True, null=True, blank=True)
@@ -552,7 +552,7 @@ class TaggingEvent(models.Model):
         (17, 'Sequential_CWT')
         )
 
-    tag_type =  models.IntegerField(choices=TAG_TYPE_CHOICES,
+    tag_type =  models.IntegerField(choices=TAG_TYPE_CHOICES, db_index=True,
                                      default=6)
 
     TAG_POSITION_CHOICES = (
@@ -600,7 +600,7 @@ class CWTs_Applied(models.Model):
     #tagging = models.ManyToMany(TaggingEvent)
     tagging_event = models.ForeignKey(TaggingEvent)
     fs_tagging_event_id = models.IntegerField()
-    cwt = models.CharField(max_length=6)
+    cwt = models.CharField(max_length=6, db_index=True)
 
     def __unicode__(self):
         cwt = str(self.cwt)
