@@ -48,12 +48,14 @@ CREATE TABLE [FS_Events] (
 [RECORD_BIOMASS_CALC] TEXT(255),
 [REARTEM] TEXT(2),
 [SITEM] TEXT(2),
+[LOAD_CNT] TEXT(255),
 [TRANSIT_MORTALITY_COUNT] TEXT(255),
 [STKPUR] TEXT(2),
 [STK_PUR_DESC] TEXT(255)
 );
 CREATE INDEX [FS_EventsEVENT] ON [FS_Events] (Event ASC);
 CREATE INDEX [FS_EventsPRJ_CD] ON [FS_Events] (PRJ_CD ASC);
+
 
 DROP TABLE [FS_Lots] /**WEAK**/;
 CREATE TABLE [FS_Lots] (
@@ -112,7 +114,7 @@ CREATE TABLE [TL_Strains] (
 [SPC] TEXT(3),
 [STO] TEXT(5),
 [StrainCode] TEXT(255),
-[StrainName] TEXT(255)
+[StrainName] TEXT(255) --, [COMMENT] TEXT(255)
 );
 
 DROP TABLE [YearlingEquivalents] /**WEAK**/;
@@ -136,3 +138,9 @@ CREATE TABLE [SPC] (
 [Quota_Flag] INTEGER
 );
 
+
+DROP TABLE [TL_ActualStockingSites] /**WEAK**/;
+CREATE TABLE [TL_ActualStockingSites] (
+[Event] INTEGER,
+[DD_LAT] REAL,
+[DD_LON] REAL);

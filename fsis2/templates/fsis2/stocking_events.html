@@ -5,12 +5,8 @@
 {% endblock %}
 -->
 
-{% block extrahead %} 
+{% block extrahead %}
 {{ map.media }}
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script> 
 {% endblock %}
 
 {% block content %}
@@ -29,14 +25,14 @@
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
-          <li><a href="{% url 'annual_stocking_events_by_spc' spc=81 year=year %}">All Lake Trout</a></li>
+          <li><a href="{% url 'species_annual_events' spc=81 year=year %}">All Lake Trout</a></li>
             {% for strain in strain_list %}
             <li> <a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain.strain_code year=year %}"> {{ strain.strain_name }}</a> </li>
             {% endfor %}
         </ul>
       </div>
       {% else %}
-      <a href="{% url 'annual_stocking_events_by_spc' spc=spc.species_code year=year%}" class="btn btn-default" role="button" > {{ spc.common_name }}</a>
+      <a href="{% url 'species_annual_events' spc=spc.species_code year=year%}" class="btn btn-default" role="button" > {{ spc.common_name }}</a>
       {% endifequal %}
       {% endfor %}
     </div>
@@ -44,11 +40,11 @@
 
   <br />
   <div class="row">
-    <div class="col-md-3">    
+    <div class="col-md-3">
 
       <heading>
         <h4> {{ year }} - {{ strain }} {{species}}</h4>
-        <heading>      
+        <heading>
           <br />
 
           <table class="table table-striped">
@@ -58,7 +54,7 @@
               {% if strain %}
               <td><a href="{%url 'annual_stocking_events_by_strain' spc=81 strain=strain_code year=yr %}" class="btn btn-default btn-xs" role="button"> {{ yr }} </a></td>
               {% else %}
-              <td><a href="{%url 'annual_stocking_events_by_spc' spc=species.species_code year=yr %}" class="btn btn-default btn-xs" role="button">  {{ yr }} </a></td>
+              <td><a href="{%url 'species_annual_events' spc=species.species_code year=yr %}" class="btn btn-default btn-xs" role="button">  {{ yr }} </a></td>
               {% endif %}
               {% cycle '' '' '</tr>' %}
             {% endfor %}
@@ -87,7 +83,7 @@
             </tr>
 
 
-          </table>          
+          </table>
 
 
     </div>
@@ -98,7 +94,7 @@
       {% else %}
       <h3>Sorry no events match that criteria.</h3>
       {% endif %}
-    </div> 
+    </div>
   </div>
 
 <br />
@@ -114,23 +110,33 @@
           {% for event in object_list %}
           <tr class="{% cycle row1,row2 %}">
             <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
-            <td> {{ event.stkcnt|intcomma }} </td> 
-            <td> {{ event.event_date|date }} </td>
-            <td> {{ event.site.site_name }} </td> 
-            <td> {{ event.clipa }} </td> 
+            <td> {{ event.stkcnt|intcomma }} </td>
+            {% if event.event_date %}
+              <td> {{ event.event_date|date }} </td>
+            {% else %}
+              <td> {{ event.year }} </td>
+            {% endif %}
+            <td> {{ event.site.site_name }} </td>
+            <td> {{ event.clipa }} </td>
             <td> {{ event.get_development_stage_display }} </td>
             <td> {{ event.lot.proponent.proponent_name|title }} </td>
           </tr>
           {% endfor %}
         </tbody>
-      </table>    
-      {% endif %}    
-    </div>  
+      </table>
+      {% endif %}
+    </div>
 
 </center>
 
 </div>   <!-- container -->
 
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 <script type="text/javascript">
   $(".tablesorter").tablesorter({
@@ -150,5 +156,3 @@
 
 
 {% endblock %}
-
-

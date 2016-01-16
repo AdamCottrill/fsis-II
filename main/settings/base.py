@@ -132,7 +132,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 TEMPLATE_DIRS = (
     root('templates'),
     root('fsis/templates'),
-    root('simple_auth/templates'),    
+    root('simple_auth/templates'),
 )
 
 LOGIN_REDIRECT_URL = "/"
@@ -151,16 +151,16 @@ DJANGO_APPS = (
 
 THIRDPARTY_APPS = (
     'crispy_forms',
-#    'taggit',
-#    'haystack',
     'passwords',
-    'olwidget',        
+    'djgeojson',
+    'leaflet',
+
     )
 
 CRISPY_FAIL_SILENTLY = not DEBUG
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
-MY_APPS =(    
+MY_APPS =(
     'simple_auth',
     'fsis2',
     'cwts',
@@ -198,6 +198,8 @@ LOGGING = {
     }
 }
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 ##HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 ##HAYSTACK_CONNECTIONS = {
 ##    'default': {
@@ -209,3 +211,16 @@ LOGGING = {
 #password criteria
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_COMPLEXITY = { "UPPER":  1, "LOWER":  1, "DIGITS": 1 }
+
+POSTGIS_VERSION = (2, 1, 8)
+
+LEAFLET_CONFIG = {
+    #minx, miny, maxx,maxy
+    #'SPATIAL_EXTENT': (-84.0, 43.0,-80.0, 47.0),
+    'DEFAULT_CENTER': (45.0,-82.0),
+    'DEFAULT_ZOOM': 7,
+    #'MIN_ZOOM': 3,
+    #'MAX_ZOOM': 18,
+    'RESET_VIEW': True,
+
+}

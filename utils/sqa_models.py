@@ -19,12 +19,15 @@
 
 
 #import sqlalchemy
-from geoalchemy import *
+#from geoalchemy import *
+from geoalchemy2 import Geometry
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Column, Integer, String, Date, DateTime, ForeignKey,
                         Float)
 from sqlalchemy.orm import relationship, backref
+
+
 
 import datetime
 
@@ -117,7 +120,9 @@ class StockingSite(Base):
     basin = Column(String(15))
     deswby_lid  = Column(String(15))
     deswby  = Column(String(10))
-    geom = GeometryColumn(Point(2))
+    #geom = GeometryColumn(Point(2))
+    geom = Column(Geometry('POINT'))
+    popup_text  = Column(String(2000))
 
     def __repr__(self):
         return "<%s (%s)>" % (self.site_name, self.site_id)
@@ -171,11 +176,14 @@ class Event(Base):
     transit_mortality_count = Column(Integer)
     dd_lat = Column(Float)
     dd_lon = Column(Float)
-    geom = GeometryColumn(Point(2))
+    #geom = GeometryColumn(Point(2))
+    geom = Column(Geometry('POINT'))
     development_stage = Column(Integer)
     transit = Column(String(20))
     stocking_method = Column(String(20))
     stocking_purpose = Column(String(20))
+    popup_text  = Column(String(2000))
+
 
     site_id = Column(Integer, ForeignKey('fsis2_stockingsite.id'))
     lot_id = Column(Integer, ForeignKey('fsis2_lot.id'))
@@ -214,7 +222,7 @@ class TaggingEvent(Base):
     def __repr__(self):
         return '<fs tagging event :%s>' % self.fs_tagging_event_id
 
-    
+
 class CWTs_Applied(Base):
 
     __tablename__='fsis2_cwts_applied'

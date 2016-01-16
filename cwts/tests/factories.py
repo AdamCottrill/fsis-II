@@ -8,7 +8,9 @@ from cwts.models import *
 
 
 class CWTFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = CWT
+
+    class Meta:
+        model = CWT
 
     stocked = True
     cwt = factory.Sequence(lambda n: '6311{0:02d}'.format(n))
@@ -28,9 +30,13 @@ class CWTFactory(factory.DjangoModelFactory):
 
 
 class CWT_RecoveryFactory(factory.DjangoModelFactory):
-    FACTORY_FOR = CWT_recovery
+
+    class Meta:
+        model = CWT_recovery
 
     cwt = '631111'
+    spc = factory.SubFactory(SpeciesFactory)
+    sequence_number = 0
     recovery_source = "CF"
     recovery_year = 2006
     recovery_date = date(2012, 11, 15)

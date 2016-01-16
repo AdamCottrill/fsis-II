@@ -1,6 +1,6 @@
 from main.settings.base import *
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 #these need to be reset to work with heroku:

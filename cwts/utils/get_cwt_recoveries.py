@@ -15,27 +15,40 @@ A. Cottrill
 
 '''
 
-import adodbapi
+
+import pyodbc
 import psycopg2
 
+DBASE = 'fsis2'
+PG_USER = 'cottrillad'
+PG_PW = 'django'
 
-print "Retrieving  recoveries ..."
+DEPLOY = False
+REMOTE_IP = '142.143.160.56'
+
+print("Retrieving  recoveries ...")
 
 dbase = ("C:/1work/LakeTrout/Stocking/CWTs/CWT_Recovery.mdb")
-constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source={0}'.format(dbase)
+#constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source={0}'.format(dbase)
+
+constr =r'DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={};'
+constr = constr.format(dbase)
+
+
 #============================================
 # get the database locations
 
 # connect to the database
-conn = adodbapi.connect(constr)
+conn = pyodbc.connect(constr)
 # create a cursor
 #try the lookup tables first - keep things simple
 cur = conn.cursor()
 
-#cur.callproc('get_cwt_recoveries')
+#cur.execute('exec get_cwt_recoveries')
 
 sql = '''SELECT All_Sam_Info.Source, All_BioData.Year AS recovery_year,
-      EFFDT1 AS recovery_date, [All_BioData].GRID, [All_BioData].[PRJ_CD] 
+      SPC, XCWTseq as sequence_number,
+      EFFDT1 AS recovery_date, [All_BioData].GRID, [All_BioData].[PRJ_CD]
       & '-' & [All_BioData].[SAM] & '-' & [EFF] & '-' & [SPC] & '-' &
       [GRP] & '-' & [FISH] AS composite, DD_LAT as ddlat, DD_LON as ddlon,
       FLEN, AGE, Mid([TAGID],4,2) & Left([TAGID],2) & Right([TAGID],2) AS cwt
@@ -47,33 +60,70 @@ sql = '''SELECT All_Sam_Info.Source, All_BioData.Year AS recovery_year,
 
 cur.execute(sql)
 
-result = cur.fetchall()
+col_names = [x[0].lower() for x in cur.description]
 
-print '{0} records found'.format(len(result))
+result = cur.fetchall()
+#convert the results into a dictionary so we can use named arguments
+#to update the database.
+result_dict = []
+for rec in result:
+    result_dict.append(dict(zip(col_names, rec)))
+
+print('{0} records found'.format(len(result)))
 
 cur.close()
 conn.close()
 
-print "Inserting recoveries into cwt_recoveries"
-constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-pgconn = psycopg2.connect(constr)
+#============================================
+print("Inserting recoveries into cwt_recoveries")
+
+
+#build the appropriate connection string depending on which PG
+#instance we want to connect to.
+if DEPLOY:
+    PG_HOST = REMOTE_IP
+else:
+    PG_HOST = 'localhost'
+
+pgconstr = "host={0} dbname={1} user={2} password = {3}".format(
+        PG_HOST, DBASE, PG_USER, PG_PW)
+
+
+pgconn = psycopg2.connect(pgconstr)
 pgcur = pgconn.cursor()
 
-#pgcur.execute("DROP TABLE IF EXISTS cwts_cwt_recover")
+#we need to get the current ID number for each species in the target database:
+pgcur.execute("select species_code, id from fsis2_species;")
+rs = pgcur.fetchall()
+#create a lookup table with left padded values:
+spc_id_dict = {format(k,'03'):v for k,v in rs}
+
+#now loop over our cwt recoveries and add in a key for species ID for
+#each record:
+for rec in result_dict:
+    rec['spc_id'] = spc_id_dict[rec['spc']]
+    rec['sequence_number'] = (0 if rec['sequence_number'] is None else
+                              rec['sequence_number'])
+
+
+
+
+pgcur.execute("TRUNCATE TABLE cwts_cwt_recovery")
+
 
 sql = '''insert into cwts_cwt_recovery (
-             cwt, recovery_year, recovery_date, recovery_grid, recovery_source,
-             composite_key, flen, age, geom)
-             values (
-             %(cwt)s, %(recovery_year)s, %(recovery_date)s, %(grid)s, 
-             %(source)s, %(composite)s, %(FLEN)s, %(AGE)s,
+             cwt, sequence_number, recovery_year, recovery_date, recovery_grid,
+             recovery_source, composite_key, spc_id, flen, age, popup_text,
+             geom) values (
+             %(cwt)s, %(sequence_number)s, %(recovery_year)s,
+             %(recovery_date)s, %(grid)s, %(source)s, %(composite)s, %(spc_id)s,
+             %(flen)s, %(age)s, %(composite)s,
              ST_SetSRID(ST_MakePoint(%(ddlon)s, %(ddlat)s), 4326))'''
-        
-pgcur.executemany(sql, result)
 
-print 'Done inserting recovered cwts.'
+pgcur.executemany(sql, result_dict)
+
+print('Done inserting recovered cwts.')
 pgconn.commit()
 pgcur.close()
 pgconn.close()
-print 'recoveries committed and connection closed.'
-
+print('recoveries committed and connection closed.')
