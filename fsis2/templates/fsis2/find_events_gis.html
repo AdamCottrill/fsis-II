@@ -29,6 +29,12 @@
 <h3>Find Stocking Sites:</h3>
 {% elif what == "events" %}
 <h3>Find Stocking Events:</h3>
+{% elif what == "cwt recoveries" %}
+<h3>Find CWT Revovered in Region of Interest:</h3>
+<p>{{ subcaption }}</p>
+{% elif what == "cwts stocked" %}
+<h3>Find CWTs Stocked in Region of Interest:</h3>
+<p>{{ subcaption }}</p>
 {% endif %}
 
 
@@ -102,8 +108,12 @@
 
           {% if what == "sites" %}
           <a href="{% url 'find_sites' %}" class="btn btn-default">Reset</a>
-          {% else %}
+          {% elif what == "events" %}
           <a href="{% url 'find_events' %}" class="btn btn-default">Reset</a>
+          {% elif what == 'cwts stocked' %}
+          <a href="{% url 'cwt_stocked_roi' %}" class="btn btn-default">Reset</a>
+          {% else %}
+          <a href="{% url 'cwt_recovered_roi' %}" class="btn btn-default">Reset</a>
           {% endif %}
           <button type="submit" class="btn  btn-success">Submit</button>
 

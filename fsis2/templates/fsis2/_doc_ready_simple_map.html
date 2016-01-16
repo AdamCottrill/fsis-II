@@ -18,10 +18,16 @@
      var roi = {{ roi|geojsonfeature|safe }}
 
      //cwt recoveries
-     var recoveries = {{ recoveries|geojsonfeature:"popup_text"|safe }};
+     {% if recovery_pts %}
+       var recoveries = {{ recovery_pts|geojsonfeature:"popup_text"|safe }};
+     {% elif recoveries %}
+       var recoveries = {{ recoveries|geojsonfeature:"popup_text"|safe }};
+     {% endif %}
 
      // stocking events
-     {% if events %}
+     {% if event_pts %}
+       var pts = {{ event_pts|geojsonfeature:"popup_text"|safe }};
+     {% elif events %}
        var pts = {{ events|geojsonfeature:"popup_text"|safe }};
      {% elif object.event_set.all %}
        var pts = {{ object.event_set.all|geojsonfeature:"popup_text"|safe }};
