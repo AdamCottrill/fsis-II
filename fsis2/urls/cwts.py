@@ -14,10 +14,12 @@ A. Cottrill
 
 
 from fsis2.views import (CwtListView,
-                    cwt_detail_view,
-                    cwt_stocked_mu,
-                    cwt_recovered_mu,
-                    ManagementUnitListView,)
+                         cwt_detail_view,
+                         cwt_stocked_mu,
+                         cwt_stocked_roi,
+                         cwt_recovered_mu,
+                         cwt_recovered_roi,
+                         ManagementUnitListView,)
 
 
 from django.conf.urls import patterns, url
@@ -49,6 +51,22 @@ urlpatterns = patterns('',
             view=cwt_recovered_mu,
             name='cwt_recovered_mu'
             ),
+
+
+        #recoveries in a region of interest
+        url(
+            regex=r'recovered_roi/$',
+            view=cwt_recovered_roi,
+            name='cwt_recovered_roi'
+            ),
+
+        #cwts stocked in a region of interest
+        url(
+            regex=r'stocked_roi/$',
+            view=cwt_stocked_roi,
+            name='cwt_stocked_roi'
+            ),
+
 
         #================
         #Managment Unit list

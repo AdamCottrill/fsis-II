@@ -33,8 +33,11 @@ class GeoForm(forms.Form):
         qs = Event.objects.values('year').aggregate(latest=Max('year'),
                                                     earliest=Min('year'))
 
-        self.fields['earliest'].widget.attrs['placeholder'] = qs['earliest']
-        self.fields['latest'].widget.attrs['placeholder'] = qs['latest']
+        self.earliest = qs['earliest']
+        self.latest = qs['latest']
+
+        self.fields['earliest'].widget.attrs['placeholder'] = self.earliest
+        self.fields['latest'].widget.attrs['placeholder'] = self.latest
 
     def clean_earliest(self):
         '''If we can't convert the earliest year value to an integer,
@@ -48,7 +51,7 @@ class GeoForm(forms.Form):
                 raise forms.ValidationError(msg.format())
             return yr
         else:
-            return yr
+            return self.earliest
 
     def clean_latest(self):
         '''If we can't convert the latest year value to an integer,
@@ -62,7 +65,7 @@ class GeoForm(forms.Form):
                 raise forms.ValidationError(msg.format())
             return yr
         else:
-            return yr
+            return self.latest
 
     def clean(self):
         cleaned_data = super(GeoForm, self).clean()

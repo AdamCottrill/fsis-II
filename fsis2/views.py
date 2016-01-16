@@ -731,6 +731,232 @@ def cwt_detail_view(request, cwt_number):
                               context_instance=RequestContext(request))
 
 
+
+def cwt_recovered_roi(request):
+    '''render a map in a form and return a list of cwt recovered within in
+    the selected polygon.  The returned map includes the selected
+    region of interest, any filters or species selected, points for
+    each of the stocking and recovery points, and summary tables of
+    the cwt details, the cwt recovery events, and the associated
+    stocking events.
+
+    this view uses the stored procedure cwts_stocking_events_geom() to
+    get the stocking events for the cwts recovered in the region of
+    interest.
+
+    '''
+    what = "cwt recoveries"
+    subcaption = "Where did these fish come from?"
+
+    if request.method == 'POST':
+        form = GeoForm(request.POST)
+        if form.is_valid():
+            roi = form.cleaned_data.get('selection')[0]
+            species = form.cleaned_data.get('species')
+            first_year = form.cleaned_data.get('earliest')
+            last_year = form.cleaned_data.get('latest')
+
+            if roi.geom_type=='LinearRing':
+                roi = Polygon(roi)
+
+            #stocking events
+            if species:
+                #spc_ids = ','.join([str(x.id) for x in species])
+                spc_ids = [x.id for x in species]
+                sql = ('select * from cwts_stocking_events_geom(%s,' +
+                       ' %s, %s, %s);')
+                #import pdb;pdb.set_trace()
+                events = Event.objects.raw(sql, (roi.json, first_year,
+                                                 last_year, spc_ids))
+            else:
+                sql = 'select * from cwts_stocking_events_geom(%s, %s, %s);'
+                events = Event.objects.raw(sql, (roi.json, first_year,
+                                                 last_year))
+
+            #can't serialize a raw query set. Creat list of points to plot:
+            event_pts = []
+            for event in events:
+                event_pts.append({'geom':event.geom,
+                                  'popup_text':event.popup_text})
+
+            #count the number of records - raw queryset don't have count()
+            events_count = len(event_pts)
+
+            #get cwt recovery events and apply filters
+            recoveries = CWT_recovery.objects.filter(geom__within=roi)
+            if first_year:
+                recoveries = recoveries.filter(recovery_year__gte=first_year)
+            if last_year:
+                    recoveries = recoveries.filter(recovery_year__lte=last_year)
+            if species:
+                recoveries = recoveries.filter(spc__in=species)
+
+            #distinct cwts in our recoveries
+            distinct_cwts = recoveries.values_list('cwt').distinct()
+            cwts = CWT.objects.filter(cwt__in=distinct_cwts)
+
+            #add on the number of recaptures of each tag:
+            tmp = recoveries.values('cwt').annotate(N=Count('cwt'))
+            recovery_count = {x['cwt']: x['N'] for x in tmp}
+
+            for x in cwts:
+                x.recovery_count = recovery_count.get(x.cwt, 0)
+
+            #this should also include a join on species
+            us_events = CWT.objects.filter(cwt__in=distinct_cwts).\
+                        exclude(agency='OMNR').\
+                        order_by('seq_start', '-stock_year')
+
+
+            return render_to_response('fsis2/cwt_recovered_mu.html',
+                                      {'mu':'the Region of Interest',
+                                       'species':species,
+                                       'fyear': first_year,
+                                       'lyear': last_year,
+                                       'roi':roi,
+                                       'what':'recovery',
+                                       'cwts':cwts,
+                                       'recoveries':recoveries,
+                                       'events':events,
+                                       'events_count':events_count,
+                                       'event_pts':event_pts,
+                                       'us_events':us_events
+                                   }, context_instance=RequestContext(request))
+
+        else:
+            return render_to_response('fsis2/find_events_gis.html',
+                                      {'form':form, 'what':what,
+                                       'subcaption':subcaption},
+                                      context_instance = RequestContext(request))
+    else:
+        form = GeoForm() # An unbound form
+        return render_to_response('fsis2/find_events_gis.html',
+                                  {'form':form, 'what':what,
+                                   'subcaption':subcaption},
+                                  context_instance = RequestContext(request)
+        )
+
+
+
+
+def cwt_stocked_roi(request):
+    '''render a map in a form and return a list of cwts stocked within in
+    the selected polygon.  The returned map includes the selected
+    region of interest, any filters or species selected, points for
+    each of the stocking and subsequen recovery points, and summary
+    tables of the cwt details, the cwt recovery events, and the
+    associated stocking events.
+
+    this view uses the stored procedure cwts_recovered_geom() to
+    get the recovery events for the cwts stocked in the region of
+    interest.
+
+    '''
+    what = "cwts stocked"
+    subcaption = "Where did these fish go?"
+
+    if request.method == 'POST':
+        form = GeoForm(request.POST)
+        if form.is_valid():
+            roi = form.cleaned_data.get('selection')[0]
+            species = form.cleaned_data.get('species')
+            first_year = form.cleaned_data.get('earliest')
+            last_year = form.cleaned_data.get('latest')
+
+            if roi.geom_type=='LinearRing':
+                roi = Polygon(roi)
+
+            #stocking events
+            if species:
+                #spc_ids = ','.join([str(x.id) for x in species])
+                spc_ids = [x.id for x in species]
+                sql = ('select * from cwts_recovered_geom(%s,' +
+                       ' %s, %s, %s);')
+                recoveries = CWT_recovery.objects.raw(sql, (roi.json,
+                                                            first_year,
+                                                            last_year, spc_ids))
+            else:
+                sql = 'select * from cwts_recovered_geom(%s, %s, %s);'
+                recoveries = CWT_recovery.objects.raw(sql, (roi.json,
+                                                            first_year,
+                                                            last_year))
+
+            #can't serialize a raw query set. Creat list of points to
+            #plot and a dictionary containing the number of recaps for
+            #each cwt:
+            recovery_pts = []
+            recovered_numbers = {}
+            for x in recoveries:
+                recovery_pts.append({'geom':x.geom,
+                                  'popup_text':x.popup_text})
+                if recovered_numbers.get(x.cwt):
+                    recovered_numbers[x.cwt] += 1
+                else:
+                    recovered_numbers[x.cwt] = 1
+
+            #count the number of records - raw queryset don't have count()
+            recovery_count = len(recovery_pts)
+
+
+            #get cwt stocking events with cwts that occured in the roi
+            #and apply filters
+            events = Event.objects.filter(geom__within=roi).\
+                     filter(taggingevent__tag_type='6').\
+                     filter(year__gte=first_year).\
+                     filter(year__lte=last_year)
+            if species:
+                events = events.filter(lot__species__in=species)
+
+            #this should also include a join on species
+            us_events = CWT.objects.filter(cwt__in=recovered_numbers.keys()).\
+                        exclude(agency='OMNR').\
+                        order_by('seq_start', '-stock_year')
+
+
+            #get the distinct list of cwt numbers that have been stocked in
+            #those events
+            distinct_cwts = events.values_list(
+                'taggingevent__cwts_applied__cwt').distinct()
+            #get those cwt numbers to filter the cwt objects
+            tmp = [x[0] for x in distinct_cwts]
+            cwts = CWT.objects.filter(cwt__in=tmp)
+            recoveries = CWT_recovery.objects.filter(cwt__in=tmp)
+
+            for x in cwts:
+                x.recovery_count = recovered_numbers.get(x.cwt, 0)
+
+            return render_to_response('fsis2/cwt_recovered_mu.html',
+                                      {'mu':'the Region of Interest',
+                                       'species':species,
+                                       'fyear': first_year,
+                                       'lyear': last_year,
+                                       'roi':roi,
+                                       'what':what,
+                                       'cwts':cwts,
+                                       'recoveries':recoveries,
+                                       'recovery_count':recovery_count,
+                                       'recovery_pts':recovery_pts,
+                                       'events':events,
+                                       'us_events':us_events
+                                   }, context_instance=RequestContext(request))
+
+        else:
+            return render_to_response('fsis2/find_events_gis.html',
+                                      {'form':form, 'what':what,
+                                       'subcaption':subcaption},
+                                      context_instance = RequestContext(request))
+    else:
+        form = GeoForm() # An unbound form
+        return render_to_response('fsis2/find_events_gis.html',
+                                  {'form':form, 'what':what,
+                                   'subcaption':subcaption},
+                                  context_instance = RequestContext(request)
+        )
+
+
+
+
+
 def cwt_recovered_mu(request, slug):
     """a view to find all of the cwt recovered in a managment unit and their
     associated stocking information
@@ -760,7 +986,7 @@ def cwt_recovered_mu(request, slug):
         recoveries = recoveries.filter(recovery_year__lte=lyear)
 
 
-    #Look into creating a specialized view in POST gres that is
+    #Look into creating a specialized view in POSTgres that is
     #declared in Django as an unmanaged table.  The view would join
     #our recoveries to cwts using both cwt number and species.
 
