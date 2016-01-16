@@ -1,0 +1,51 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+{% block extrahead %}
+{{ map.media }}
+<!-- tablesorter plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
+{% endblock %}
+
+{% block title %} {{ object.title  }}  {% endblock %}
+
+{% block content %}
+{% load humanize %}
+
+
+<div class="container">
+
+  <div class="row">
+      <h2> LTRZ: {{ ltrz }} </h2>
+
+  </div>
+
+
+</div>
+
+<script type="text/javascript">
+  $(".tablesorter").tablesorter({
+  theme: 'bootstrap',
+  widthFixed: true,
+  showProcessing: true,
+  headerTemplate: '{content} {icon}',
+  widgets: ['zebra', 'uitheme', 'scroller'],
+  widgetOptions: {
+  scroller_height: 300,
+  scroller_barWidth: 17,
+  scroller_jumpToHeader: true,
+  scroller_idPrefix: 's_'
+  }
+  });
+</script>
+
+<script type="text/javascript">
+  $('#myTab a').click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+</script>
+
+
+{% endblock %}

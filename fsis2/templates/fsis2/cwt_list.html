@@ -1,27 +1,17 @@
 {% extends "fsis2/fsis2_base.html" %}
 
-{% block extrahead %} 
-
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script> 
-
-{% endblock %}
-
-
 {% block content %}
 
 {% load humanize %}
 {% load fsis2_filters %}
 
 <div class="container">
-  
+
   <div class="row">
-    <div class="col-sm-9">          
+    <div class="col-sm-9">
       <h2>Coded Wire Tags</h2>
     </div>
-    <div class="col-sm-3">          
+    <div class="col-sm-3">
       <form class="" role="search" action="">
         <div class="input-group">
           <input type="text" class="form-control" name="cwt"
@@ -39,8 +29,8 @@
 
 
 
-  {% if page_obj %} 
-  {% if page_obj.paginator.num_pages > 1 %}  
+  {% if page_obj %}
+  {% if page_obj.paginator.num_pages > 1 %}
   <ul class="pager">
     {% if page_obj.has_previous %}
     <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
@@ -67,7 +57,7 @@
 
   <table id="myTable" class="table tablesorter table-striped">
     <thead>
-      <tr>    
+      <tr>
         <td>Tag Number</td>
         <td>Year Class</td>
         <td>Stocking Year</td>
@@ -98,33 +88,14 @@
   <ul>
 
   </ul>
-  
+
   {% else %}
-  <p>Sorry no events match that criteria.</p>
+  <p>Sorry no cwts match that criteria.</p>
   {% endif %}
 
 </div>
 
-
-<script type="text/javascript">
-  $(".tablesorter").tablesorter({
-  theme: 'bootstrap',
-  widthFixed: true,
-  showProcessing: true,
-  headerTemplate: '{content} {icon}',
-  widgets: ['zebra', 'uitheme', 'scroller'],
-  widgetOptions: {
-  scroller_height: 300,
-  scroller_barWidth: 17,
-  scroller_jumpToHeader: true,
-  scroller_idPrefix: 's_'
-  }
-  });
-</script>
-
-
+{% include 'fsis2/_table_sorter.html '%}
 
 
 {% endblock %}
-
-

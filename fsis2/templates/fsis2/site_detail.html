@@ -1,18 +1,24 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
-{{ map.media }}
+
+{% load geojson_tags %}
+{% load leaflet_tags %}
+
+{% leaflet_js %}
+{% leaflet_css %}
 
 {% endblock %}
 
 {% block title %} {{ object.title  }}  {% endblock %}
 
-{% block header %} 
-<h2> Named Stocking Site: {{ object.site_name }} </h2>
+{% block header %}
+<h2> Stocking Site: {{ object.site_name }} </h2>
 <hr />
 {% endblock %}
 
 {% block content %}
+{% load humanize %}
 {% load fsis2_filters %}
 
 <div class="container">
@@ -66,19 +72,62 @@
           <td><b>UTM:</b></td>
           <td> {{ object.utm }}</td>
         </tr>
-        
+
       </table>
-      
+
     </div>
     <div class="col-md-8">
-      {{ map }}
+          <div id="main_map" style="width: 800px; height: 700px;"></div>
     </div>
-    
+
   </div>
 
   <hr />
 
+  <div id="event_list" class="row">
+    <h3>Stocking Events (N={{ events|length }}): </h3>
+    {% if events %}
+      <table id="myTable" class="table tablesorter table-striped">
+      <thead>
+          <tr>
+              <td>FSIS Event</td>
+              <td>Number Stocked</td>
+              <td>Event Date</td>
+              <td>Species</td>
+              <td>Strain</td>
+              <td>Clip Applied</td>
+              <td>Development Stage</td>
+              <td>Proponent</td>
+          </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr class="{% cycle row1,row2 %}">
+          <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
+          <td> {{ event.stkcnt|intcomma }} </td>
+          {% if event.event_date %}
+            <td> {{ event.event_date|date }} </td>
+          {% else %}
+            <td> {{ event.year }} </td>
+          {% endif %}
+          <td> {{ event.lot.species }} </td>
+          <td> {{ event.lot.strain.strain_name }} </td>
+          <td> {{ event.clipa }} </td>
+          <td> {{ event.get_development_stage_display }} </td>
+          <td> {{ event.lot.proponent.proponent_name }}({{ event.lot.proponent.abbrev }}) </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>There are currenly no stocking events associated with this location.</p>
+    {% endif %}
+
+  </div>
 
 </div>
+
+{% include 'fsis2/_table_sorter.html' %}
+{% include 'fsis2/_doc_ready_simple_map.html' %}
 
 {% endblock %}

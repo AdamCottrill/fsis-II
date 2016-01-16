@@ -6,34 +6,31 @@
 {% endblock %}
 -->
 
-{% block extrahead %} 
+{% block extrahead %}
 
-{{ map.media }}
+{% load geojson_tags %}
+{% load leaflet_tags %}
 
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
-
+{% leaflet_js %}
+{% leaflet_css %}
 
 {% endblock %}
-
 
 {% block content %}
 {% load humanize %}
 {% load fsis2_filters %}
 
-
 <div class="row">
-  <div class="col-md-10 col-md-offset-1">
-    {{ map }}    
-  </div>
+    <div class="col-md-10 col-md-offset-1">
+        <div id="main_map" style="width: 800px; height: 700px;"></div>
+    </div>
 </div>
 
- {% if object_list %}
+
+ {% if events %}
 
 <br />
-<h4>{{ object_list|length }} events found.</h4>
+<h4>{{ events|length }} events found.</h4>
 <br />
 
   <table id="myTable" class="table tablesorter">
@@ -41,22 +38,22 @@
         <td>FSIS Event</td>
         <td>Species</td>
         <td>Strain</td>
-        <td>Number Stocked</td> 
+        <td>Number Stocked</td>
         <td>Event Date</td>
         <td>Site Name</td>
-        <td>Clip Applied</td> 
+        <td>Clip Applied</td>
         <td>Development Stage</td></tr>
     </thead>
     <tbody>
-      {% for event in object_list %}
+      {% for event in events %}
       <tr class="{% cycle row1,row2 %}">
         <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
-        <td> {{ event.lot.species.common_name | title }} </td> 
-        <td> {{ event.lot.strain.strain_name | title }} </td> 
-        <td> {{ event.stkcnt|intcomma }} </td> 
+        <td> {{ event.lot.species.common_name | title }} </td>
+        <td> {{ event.lot.strain.strain_name | title }} </td>
+        <td> {{ event.stkcnt|intcomma }} </td>
         <td> {{ event.event_date|date }} </td>
-        <td> {{ event.site.site_name }} </td> 
-        <td> {{ event.clipa }} </td> 
+        <td> {{ event.site.site_name }} </td>
+        <td> {{ event.clipa }} </td>
         <td> {{ event.get_development_stage_display }} </td>
       </tr>
       {% endfor %}
@@ -68,6 +65,11 @@
   {% endif %}
 
 
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 <script type="text/javascript">
 
@@ -87,8 +89,6 @@
 
 </script>
 
-
+{% include 'fsis2/_doc_ready_simple_map.html' %}
 
 {% endblock %}
-
-

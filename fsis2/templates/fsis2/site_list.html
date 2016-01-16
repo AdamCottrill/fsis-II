@@ -1,33 +1,16 @@
 {% extends "fsis2/fsis2_base.html" %}
 
-<!-- {% block pages %}
-
-
-{% endblock %}
--->
-
-{% block extrahead %} 
-
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
-
-{% endblock %}
-
-
 {% block content %}
-
 
 {% load fsis2_filters %}
 
 <div class="container">
-  
+
   <div class="row">
-    <div class="col-sm-9">          
+    <div class="col-sm-9">
       <h2>Named Stocking Sites</h2>
     </div>
-    <div class="col-sm-3">          
+    <div class="col-sm-3">
       <form class="" role="search" action="{% url "site_list" %}">
         <div class="input-group">
           <input type="text" class="form-control" name="q"
@@ -43,8 +26,8 @@
   </div>
 
 
-  {% if page_obj %} 
-  {% if page_obj.paginator.num_pages > 1 %}  
+  {% if page_obj %}
+  {% if page_obj.paginator.num_pages > 1 %}
   <ul class="pager">
     {% if page_obj.has_previous %}
     <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
@@ -74,7 +57,7 @@
 	<td>FSIS Site ID</td>
 	<td>Site Name</td>
 	<td>Basin</td>
-	<td>Grid</td> 
+	<td>Grid</td>
 	<td>Latitude</td>
 	<td>Longitude</td>
     </thead>
@@ -82,12 +65,12 @@
       {% for site in object_list %}
       <tr class="{% cycle row1,row2 %}">
 	<td> <a href="{% url 'site_detail'  site.id  %}">{{ site.fsis_site_id }}</a> </td>
-	<td> {{ site.site_name }} </td> 
+	<td> {{ site.site_name }} </td>
 	<td> {{ site.basin }} </td>
 	<td> {{ site.grid }} </td>
 	{% autoescape off %}
-	<td> {{ site.dd_lat|format_ddlat }} </td> 
-	<td> {{ site.dd_lon|format_ddlon }} </td> 
+	<td> {{ site.dd_lat|format_ddlat }} </td>
+	<td> {{ site.dd_lon|format_ddlon }} </td>
         {% endautoescape %}
       </tr>
       {% endfor %}
@@ -98,8 +81,13 @@
   <p>Sorry no named stocking sites match that criteria.</p>
   {% endif %}
 
-</div> 
+</div>
 
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 <script type="text/javascript">
  $(".tablesorter").tablesorter({
@@ -119,5 +107,3 @@
 
 
 {% endblock %}
-
-

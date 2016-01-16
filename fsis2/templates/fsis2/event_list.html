@@ -6,16 +6,10 @@
 {% endblock %}
 -->
 
-{% block extrahead %} 
+{% block extrahead %}
  {% if cwt %}
     {{ map.media }}
  {% endif %}
-
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script>
-
 {% endblock %}
 
 {% block content %}
@@ -29,11 +23,11 @@
 
   {% if not cwt %}
 
-  <div class="row">
-    <div class="col-sm-9">          
+    <div class="row">
+    <div class="col-sm-9">
       <div class="btn-group btn-group-xs">
         {% for yr in years|slice:":10" %}
-        <a href="{% url 'event_year_list' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a>
+        <a href="{% url 'annual_events' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a>
         {% endfor %}
         <div class="btn-group">
           <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
@@ -41,14 +35,14 @@
           </button>
           <ul class="dropdown-menu">
             {% for yr in years|slice:"10:" %}
-            <li> <a href="{% url 'event_year_list' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a></li>
+            <li> <a href="{% url 'annual_events' yr.year %}" class="btn btn-default" role="button">{{ yr.year }}</a></li>
             {% endfor %}
           </ul>
         </div>
       </div>
 
     </div>
-    <div class="col-sm-3">          
+    <div class="col-sm-3">
       <form class="" role="search" action="{% url "event_list" %}">
         <div class="input-group">
           <input type="text" class="form-control" name="event"
@@ -65,8 +59,8 @@
 
 {% endif %}
 
-{% if page_obj %} 
-{% if page_obj.paginator.num_pages > 1 %}  
+{% if page_obj %}
+{% if page_obj.paginator.num_pages > 1 %}
 <ul class="pager">
   {% if page_obj.has_previous %}
   <li class="previous"><a href="?page={{ page_obj.previous_page_number }}">Newer Events</a></li>
@@ -96,22 +90,22 @@
       <td>FSIS Event</td>
       <td>Species</td>
       <td>Strain</td>
-      <td>Number Stocked</td> 
+      <td>Number Stocked</td>
       <td>Event Date</td>
       <td>Site Name</td>
-      <td>Clip Applied</td> 
+      <td>Clip Applied</td>
       <td>Development Stage</td></tr>
   </thead>
   <tbody>
     {% for event in object_list %}
     <tr class="{% cycle row1,row2 %}">
       <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
-      <td> {{ event.lot.species.common_name | title }} </td> 
-      <td> {{ event.lot.strain.strain_name | title }} </td> 
-      <td> {{ event.stkcnt|intcomma }} </td> 
+      <td> {{ event.lot.species.common_name | title }} </td>
+      <td> {{ event.lot.strain.strain_name | title }} </td>
+      <td> {{ event.stkcnt|intcomma }} </td>
       <td> {{ event.event_date|date }} </td>
-      <td> {{ event.site.site_name }} </td> 
-      <td> {{ event.clipa }} </td> 
+      <td> {{ event.site.site_name }} </td>
+      <td> {{ event.clipa }} </td>
       <td> {{ event.get_development_stage_display }} </td>
     </tr>
     {% endfor %}
@@ -126,15 +120,22 @@
 
 
 
-{% if cwt %} 
+{% if cwt %}
 <div id="outer" style="width:800px;" >
   <div id="map">
     {{ map }}
   </div>
-</div> 
+</div>
 {% endif %}
 
 </div>
+
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
 
 
 <script type="text/javascript">
@@ -159,5 +160,3 @@
 
 
 {% endblock %}
-
-
