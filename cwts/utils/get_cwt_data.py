@@ -1,52 +1,62 @@
-'''
-=============================================================
+'''=============================================================
 c:/1work/Python/djcode/fsis2/cwts/utils/get_cwt_data.py
 Created: 21 Nov 2013 11:39:01
 
 DESCRIPTION:
 
-#this script migrates data from 'cwt master' and inserts into the
-#database associated with a django application (cwts).  The US and
-#Ontario tags are imported seperately and appended into the same
-#table.  The US tags come from a table "~/US_CWTs/WhatThe_USCWTS.mdb"
-#while the ontario tags are derived from a query in
-#~/CWTcodes_InventoryUGLMUv1.mdb
+# this script migrates data from 'cwt master' and inserts into the
+# database associated with a django application (cwts).  The US and
+# Ontario tags are imported seperately and appended into the same
+# table.  The US tags come from a table "~/US_CWTs/WhatThe_USCWTS.mdb"
+# while the ontario tags are derived from a query in
+# ~/CWTcodes_InventoryUGLMUv1.mdb
 
+# if DEPLOY==False, the data will be inserted into the local postgres
+# instance.  If DEPLOY==TRUE, the cwt data will be inserted into the
+# postgres server on the remote desktop machine.
 
 A. Cottrill
 =============================================================
+
 '''
 
-
-import adodbapi
+import pyodbc
 import psycopg2
 
+DBASE = 'fsis2'
+PG_USER = 'cottrillad'
+PG_PW = 'django'
 
-def drop_cwts_cwt():
-    """'a helper function to drop table cwts_cwt.'
-    Arguments: - `spc_code`:
+DEPLOY = False
+REMOTE_IP = '142.143.160.51'
+
+def truc_cwts_cwt(pgconstr):
+    """'a helper function to clear data out of the table [cwts_cwt].'
+
+    Arguments: - `constr`: connection string required for postgres
+    server in question
 
     """
-    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-    pgconn = psycopg2.connect(constr)
+    pgconn = psycopg2.connect(pgconstr)
     pgcur = pgconn.cursor()
 
-    pgcur.execute("DROP TABLE cwts_cwt")
+    pgcur.execute("TRUNCATE TABLE cwts_cwt")
+
     pgconn.commit()
     pgcur.close()
     pgconn.close()
 
     return None
 
-def get_spc_id(species_code):
+def get_spc_id(species_code, pgconstr):
     """'a helper function to get the id number for a given species
     code.  the id number is queried from the species table in fsis2
     application.'
     Arguments: - `spc_code`:
 
     """
-    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-    pgconn = psycopg2.connect(constr)
+    #constr = "dbname={0} user={1}".format('fsis2', 'adam')
+    pgconn = psycopg2.connect(pgconstr)
     pgcur = pgconn.cursor()
     sql = "select id from fsis2_species where species_code={0}"
     sql = sql.format(species_code)
@@ -60,184 +70,227 @@ def get_spc_id(species_code):
 
     return result
 
+print("Retrieving US tags...")
 
-def get_us_grid_id(us_grid_no):
-    '''a little helper function to get the id number or us grids from
-    the lookup table in cwt
+usdbase = "C:/1work/LakeTrout/Stocking/CWTs/US_CWTs/WhatThe_USCWTS.mdb"
 
-    '''
-    constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-    pgconn = psycopg2.connect(constr)
-    pgcur = pgconn.cursor()
-    sql = "select id from cwts_usgrid where us_grid_no='{0}'"
-    sql = sql.format(us_grid_no)
-    pgcur.execute(sql)
-    try:
-        result = pgcur.fetchall()[0]
-    except IndexError:
-        result = None
-    pgcur.close()
-    pgconn.close()
-
-    return result
-
-
-
-print "Retrieving US tags..."
-
-usdbase = 'C:/1work/LakeTrout/Stocking/CWTs/US_CWTs/WhatThe_USCWTS.mdb'
-constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source={0}'.format(usdbase)
 #============================================
 # get the database locations
+constr =r'DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={};'
+constr = constr.format(usdbase)
 
 # connect to the database
-usconn = adodbapi.connect(constr)
+usconn = pyodbc.connect(constr)
 # create a cursor
-#try the lookup tables first - keep things simple
 uscur = usconn.cursor()
 
 #use this query when live:
-#uscur.callproc('Get_US_TagData_for_Django')
-
-sql = 'select * from cwt_data_django'
-uscur.execute(sql)
-
+uscur.execute('exec Get_US_TagData_for_Django2')
 result = uscur.fetchall()
 
-col_names = [i[0] for i in uscur.description]
-#print col_names
-#print result[0]
-print '{0} records found'.format(len(result))
+#col_names = [i[0] for i in uscur.description]
+col_names = [i[0].lower() for i in uscur.description]
+print('{0} records found'.format(len(result)))
 
 uscur.close()
 usconn.close()
 
 
-#now connect to postges and insert the us cwt data into the cwt table
+#build the appropriate connection string depending on which PG
+#instance we want to connect to.
+if DEPLOY:
+    PG_HOST = REMOTE_IP
+else:
+    PG_HOST = 'localhost'
+pgconstr = "host={0} dbname={1} user={2} password = {3}".format(
+        PG_HOST, DBASE, PG_USER, PG_PW)
 
-constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-pgconn = psycopg2.connect(constr)
+
+#Clean out the old data:
+trunc_cwts_cwt(pgconstr)
+
+pgconn = psycopg2.connect(pgconstr)
 pgcur = pgconn.cursor()
 
+#this sql string is scary looking, but can be easily built/updated
+#based on contents of col_names.  The format is required to allow a
+#point to be created from ddlat and ddlon using dictionary
+#substitution.
 
-reused_index = [x.lower() for x in col_names].index('cwt_reused')
-spc_index = [x.lower() for x in col_names].index('spc')
-grid_index = [x.lower() for x in col_names].index('us_grid_no')
-#rename the column for species to 'spc_id'
-col_names[spc_index] = 'spc_id'
-col_names[grid_index] = 'us_grid_no_id'
+sql = """
+INSERT INTO cwts_cwt
+(
+  stocked,
+  cwt,
+  seq_start,
+  seq_end,
+  cwt_mfr,
+  cwt_reused,
+  spc_id,
+  strain,
+  development_stage,
+  year_class,
+  stock_year,
+  plant_site,
+  ltrz,
+  agency,
+  hatchery,
+  tag_cnt,
+  clipa,
+  tag_type,
+  comments,
+  us_grid_no,
+  release_basin,
+  popup_text,
+  geom
+)
+VALUES
+(
+  %(stocked)s,
+  %(cwt)s,
+  %(seq_start)s,
+  %(seq_end)s,
+  %(cwt_mfr)s,
+  %(cwt_reused)s,
+  %(spc_id)s,
+  %(strain)s,
+  %(development_stage)s,
+  %(year_class)s,
+  %(stock_year)s,
+  %(plant_site)s,
+  %(ltrz)s,
+  %(agency)s,
+  %(hatchery)s,
+  %(tag_cnt)s,
+  %(clipa)s,
+  %(tag_type)s,
+  %(comments)s,
+  %(us_grid_no)s,
+  %(release_basin)s,
+  %(popup_text)s,
+  ST_SetSRID(ST_MakePoint (%(ddlon)s,%(ddlat)s),4326)
+);
+"""
 
-for row in result:    
-    spc_code = row['spc']
-    spc_id = get_spc_id(spc_code)
+for row in result:
+    data = {key: value for (key, value) in zip(col_names, row)}
+    data['spc_id'] = get_spc_id(data['spc'], pgconstr)
+    #add a placeholder for popup_text - updated later
+    data['popup_text'] = data['cwt']
+    pgcur.execute(sql, data)
 
-    us_grid = row['us_grid_no']
-    us_grid_id = get_us_grid_id(us_grid)
-    
-    values = [x for x in row]
-    
-    values[spc_index] = spc_id
-    values[grid_index] = us_grid_id    
-    #convert reused from 0/-1 to False/True
-    values[reused_index] = False if values[reused_index]==0 else True   
-
-    sql = '''insert into cwts_cwt ({0}) values ({1})'''.format(
-        ", ".join(col_names).lower(),
-        ",".join(['%s']*len(col_names))
-    )
-    pgcur.execute(sql, values)
-
-print 'Done inserting US tags.'
+print('Done inserting US tags.')
 pgconn.commit()
 pgcur.close()
 pgconn.close()
-print 'US tags committed and connection closed.'
-
-
-
-
+print('US tags committed and connection closed.')
 
 
 #============================================
 # get the database locations
 
-dbase = ('Y:/Information Resources/Dataset_Utilities/FS_Maker/'
-          'CWTledger/CWTcodes_InventoryUGLMUv1.mdb')
+dbase = ("Y:/Information Resources/Dataset_Utilities/FS_Maker/"
+         "CWTledger/CWTcodes_InventoryUGLMUv1.mdb")
+#dbase = ("C:/1work/ScrapBook/CWTcodes_InventoryUGLMUv1.mdb")
+
+constr =r'DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={};'
+constr = constr.format(dbase)
 
 # connect to the database
-print "Retrieving OMNR tags..."
-constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source={0}'.format(dbase)
-conn = adodbapi.connect(constr)
+print("Retrieving OMNR tags...")
+
+#conn = adodbapi.connect(constr)
+conn = pyodbc.connect(constr)
 # create a cursor
 #try the lookup tables first - keep things simple
 cur = conn.cursor()
-
-cur.callproc('Get_CWT_Data_Django')
-#sql = 'select * from cwt_data_django'
-#cur.execute(sql)
+cur.execute('exec Get_CWT_Data_Django')
+col_names = [i[0].lower() for i in cur.description]
 
 result = cur.fetchall()
-
-col_names = [i[0] for i in cur.description]
-#print col_names
-#print result[0]
-print '{0} records found'.format(len(result))
+print('{0} records found'.format(len(result)))
 
 cur.close()
 conn.close()
 
-
-
 #now connect to postges and insert the us cwt data into the cwt table
 
-constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-pgconn = psycopg2.connect(constr)
+sql = """
+INSERT INTO cwts_cwt
+(
+  stocked,
+  cwt,
+  seq_start,
+  seq_end,
+  cwt_mfr,
+  cwt_reused,
+  spc_id,
+  strain,
+  development_stage,
+  year_class,
+  stock_year,
+  plant_site,
+  ltrz,
+  agency,
+  hatchery,
+  tag_cnt,
+  clipa,
+  tag_type,
+  comments,
+  release_basin,
+  popup_text
+)
+VALUES
+(
+  %(stocked)s,
+  %(cwt)s,
+  %(seq_start)s,
+  %(seq_end)s,
+  %(cwt_mfr)s,
+  %(cwt_reused)s,
+  %(spc_id)s,
+  %(strain)s,
+  %(development_stage)s,
+  %(year_class)s,
+  %(stock_year)s,
+  %(plant_site)s,
+  %(ltrz)s,
+  %(agency)s,
+  %(hatchery)s,
+  %(tag_cnt)s,
+  %(clipa)s,
+  %(tag_type)s,
+  %(comments)s,
+  %(release_basin)s,
+  %(popup_text)s
+);
+ """
+
+
+#constr = "dbname={0} user={1}".format('fsis2', 'adam')
+pgconn = psycopg2.connect(pgconstr)
 pgcur = pgconn.cursor()
 
 
-reused_index = [x.lower() for x in col_names].index('cwt_reused')
-spc_index = [x.lower() for x in col_names].index('spc')
-stocked_index = [x.lower() for x in col_names].index('stocked')
-#rename the column for species to 'spc_id'
-col_names[spc_index] = 'spc_id'
+for row in result:
+    data = {key: value for (key, value) in zip(col_names, row)}
+    #convert spc to an int and take the first element returned
+    data['spc_id'] = get_spc_id(int(data['spc']), pgconstr)[0]
+    #add a placeholder for popup_text - updated later
+    data['popup_text'] = data['cwt']
+    pgcur.execute(sql, data)
 
-for row in result:    
-    spc_code = row['spc']
-    spc_id = get_spc_id(spc_code)
 
-    values = [x for x in row]
-    values[spc_index] = spc_id
-    #convert reused from 0/-1 to False/True
-    values[reused_index] = False if values[reused_index]==0 else True
-    values[stocked_index] = False if values[stocked_index]==0 else True   
-
-    sql = '''insert into cwts_cwt ({0}) values ({1})'''.format(
-        ", ".join(col_names).lower(),
-        ",".join(['%s']*len(col_names))
-    )
-    pgcur.execute(sql, values)
-
-print 'Done inserting OMNR tags.'
+print('Done inserting OMNR tags.')
 pgconn.commit()
 pgcur.close()
 pgconn.close()
-print 'OMNR tags committed and connection closed.'
+print('OMNR tags committed and connection closed.')
 
+print("Don't forget to open a django shell and resave the cwts!")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# from cwts.models import CWT
+# cwts = CWT.objects.all()
+# for cwt in cwts:
+#     cwt.save()
+# print('Done populating cwt.popup_text.')

@@ -12,8 +12,6 @@ django database.  these values are use to provide approximate stocking
 locations for American CWTs (since we have grid, but not lat-long.)
 
 
-
-
 A. Cottrill
 =============================================================
 
@@ -24,7 +22,15 @@ import fiona
 import psycopg2
 from shapely.geometry import Polygon
 
-#
+
+DEPLOY = False
+REMOTE_IP = '142.143.160.56'
+
+DBASE = 'fsis2'
+PG_USER = 'cottrillad'
+PG_PW = 'django'
+
+
 shp = ("E:/LHMU_GIS/Lake_Huron_GIS_new/Base_Layers/Great_Lakes/"
        "Grid_Layers/MI_Waters/Grids_10_Minute_No_Island_Bounds.shp")
 
@@ -43,12 +49,20 @@ with fiona.open(shp) as c:
         ddlon = centroid.x
         centroids.append({'grid': grid, 'ddlat': ddlat, 'ddlon': ddlon})
 #check
-print centroids[0]
+print(centroids[0])
 
 
 #now connect to our postgres database and insert the records.
-constr = "dbname={0} user={1}".format('fsis2', 'adam')            
-pgconn = psycopg2.connect(constr)
+if DEPLOY:
+    PG_HOST = REMOTE_IP
+else:
+    PG_HOST = 'localhost'
+
+pgconstr = "host={0} dbname={1} user={2} password = {3}".format(
+        PG_HOST, DBASE, PG_USER, PG_PW)
+
+
+pgconn = psycopg2.connect(pgconstr)
 pgcur = pgconn.cursor()
 
 
@@ -59,7 +73,6 @@ sql = """INSERT INTO cwts_usgrid (us_grid_no, geom)
 pgcur.executemany(sql, centroids)
 pgconn.commit()
 
-print "done!"
+print("done!")
 pgcur.close()
 pgconn.close()
-

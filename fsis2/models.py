@@ -1,7 +1,7 @@
 import re
 #from django.db import models
 #from django.contrib.auth.models import User
-#from django.template.defaultfilters import slugify
+from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
 from django.contrib.gis.db import models
 
@@ -9,8 +9,27 @@ from django.contrib.gis.geos import Point
 
 #from fsis2 import managers
 
-
 from datetime import datetime
+
+
+
+
+def dd2ddm(dd):
+    """given a coordinate in decimal degrees, return the degrees and
+    decimal minutes as a tow element tuple.  THis function is used by
+    get_popup_text() method of the StockingSite class.
+
+    Arguments:
+    - `dd`:
+
+    """
+
+    negative = -1 if dd < 0 else 1
+    degrees = int(abs(dd))
+    dminutes = (abs(dd) - degrees) * 60
+    degrees *= negative
+    return {'degrees':degrees, 'dminutes':dminutes}
+
 
 
 class BuildDate(models.Model):
@@ -20,7 +39,7 @@ class BuildDate(models.Model):
     def __unicode__(self):
         return self.build_date.strftime("%d-%b-%Y")
 
-    
+
 class Readme(models.Model):
     #a table to hold all of the information regarding last FSIS
     #download and FS_Master rebuild (it appear as a footer on every
@@ -45,24 +64,23 @@ class Readme(models.Model):
         if datestring:
             xx = datestring.group()
             try:
-                formatted_date = datetime.strptime(xx, "%d-%b-%Y")          
+                formatted_date = datetime.strptime(xx, "%d-%b-%Y")
                 return formatted_date
             except ValueError:
                 pass
             try:
-                formatted_date = datetime.strptime(xx, "%m/%d/%Y")          
+                formatted_date = datetime.strptime(xx, "%m/%d/%Y")
                 return formatted_date
             except ValueError:
-                return None               
+                return None
         else:
             return None
-                
+
 
 class Species(models.Model):
     species_code = models.IntegerField(unique=True)
     common_name = models.CharField(max_length=30)
     scientific_name = models.CharField(max_length=50, null=True, blank=True)
-
 
     class Meta:
         ordering = ['species_code']
@@ -107,7 +125,7 @@ class Proponent(models.Model):
 
 class StockingSite(models.Model):
     #many of these should be choice fields or foreign keys to look-up tables
-    #eventually they will be replaced with spatail queries
+    #eventually they will be replaced with spatial queries
     fsis_site_id =  models.IntegerField(unique=True)
     site_name = models.CharField(max_length=50) #this should be unique
     stkwby  = models.CharField(max_length=30)
@@ -120,8 +138,16 @@ class StockingSite(models.Model):
     deswby_lid  = models.CharField(max_length=30)
     deswby  = models.CharField(max_length=30)
 
+    #a field to hold the text that will be displayed when we click on
+    #a stocking site - saving it as a field reduces the number of
+    #database queries when the pages are rendered.
+    popup_text = models.CharField(max_length=1500)
+
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
+
+
+
 
     objects = models.GeoManager()
 
@@ -134,7 +160,93 @@ class StockingSite(models.Model):
     def save(self, *args, **kwargs):
         if not self.geom:
             self.geom = Point(float(self.dd_lon), float(self.dd_lat))
+        self.popup_text = self.get_popup_text()
         super(StockingSite, self).save( *args, **kwargs)
+
+
+    def get_popup_text(self):
+        '''The popup text will be displayed when the user clicks on a stocking
+        event on a map.  The popup text contains an html table witl
+        all of the relabant information associated with a stocking
+        event.  For perfomance reasons, get_popup_text() is not
+        intended to be called directly, but is used to populate the
+        popup_text field each time the stocking event is saved.
+        '''
+
+        popup_base = '''
+        <table>
+        <tr>
+          <td><b>FSIS Site Number:</b></td>
+          <td>{fsis_site_id}</td>
+        </tr>
+
+        <tr>
+          <td><b>Name Site:</b></td>
+          <td><a href="/fsis2/sites/detail/{id}">{site_name}</a></td>
+        </tr>
+
+        <tr>
+          <td><b>Destination Waterbody (LID):</b></td>
+          <td>{deswby} ({deswby_lid})</td>
+        </tr>
+
+        <tr>
+          <td><b>Basin:</b></td>
+          <td>{basin} </td>
+        </tr>
+
+        <tr>
+          <td><b>5-minute Grid:</b></td>
+          <td>{grid}</td>
+        </tr>
+
+
+        <tr>
+          <td><b>Stocked Waterbody (LID):</b> </td>
+          <td>{stkwby} ({stkwby_lid}) </td>
+        </tr>
+
+        <tr>
+          <td><b>Latitude:</b></td>
+          <td>{dd_lat}</td>
+        </tr>
+
+        <tr>
+          <td><b>Longitude:</b></td>
+          <td>{dd_lon}</td>
+        </tr>
+        <tr>
+          <td><b>UTM:</b></td>
+          <td>{utm}</td>
+        </tr>
+
+        </table>
+        '''
+
+        base = "{degrees}&#176;{dminutes:.3f}&#39; N"
+        dd_lat = base.format(**dd2ddm(self.dd_lat))
+
+        base = "{degrees}&#176;{dminutes:.3f}&#39; W"
+        dd_lon = base.format(**dd2ddm(self.dd_lon))
+
+
+        value_dict = {
+            'id':self.id,
+            'fsis_site_id':self.fsis_site_id,
+            'site_name':self.site_name,
+            'deswby_lid':self.deswby_lid,
+            'deswby':self.deswby,
+            'basin':self.basin,
+            'stkwby':self.stkwby,
+            'stkwby_lid':self.stkwby_lid,
+            'dd_lat':dd_lat,
+            'dd_lon':dd_lon,
+            'grid':self.grid,
+            'utm':self.utm,
+                }
+
+        return popup_base.format(**value_dict)
+
 
 
 
@@ -175,7 +287,7 @@ class Lot(models.Model):
 
 
     def get_year(self):
-            """          
+            """
             Arguments:
             - `self`:
             """
@@ -186,7 +298,7 @@ class Lot(models.Model):
             else:
                 yr = "20" + x[6:8]
             return yr
-                  
+
 
     def get_event_points(self):
         '''get the coordinates of events associated with this lot.  Returns a
@@ -202,7 +314,7 @@ class Event(models.Model):
 
     lot = models.ForeignKey(Lot)
     prj_cd =  models.CharField(max_length=13)
-    year = models.IntegerField()
+    year = models.IntegerField(db_index=True)
     fs_event = models.IntegerField(unique=True)
     lotsam = models.CharField(max_length=8, null=True, blank=True)
     event_date = models.DateTimeField(editable=True, null=True, blank=True)
@@ -221,6 +333,11 @@ class Event(models.Model):
 
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
+
+    #a field to hold the text that will be displayed when we click on
+    #a stocking event - saving it as a field reduces the number of
+    #database queries when the pages are rendered.
+    popup_text = models.CharField(max_length=1500)
 
     DEVELOPMENT_STAGE_CHOICES = (
         (99, 'Unknown'),
@@ -299,10 +416,104 @@ class Event(models.Model):
     def get_absolute_url(self):
         return ('event_detail', (), {'pk':self.id})
 
+    def get_popup_text(self):
+        '''The popup text will be displayed when the user clicks on a stocking
+        event on a map.  The popup text contains an html table witl
+        all of the relabant information associated with a stocking
+        event.  For perfomance reasons, get_popup_text() is not
+        intended to be called directly, but is used to populate the
+        popup_text field each time the stocking event is saved.
+        '''
+
+        popup_base = '''
+        <table>
+            <tr>
+                <td>FSIS ID:</td>
+                <td><a href="/fsis2/events/detail/{id}">{fsis_id}</a></td>
+            </tr>
+
+            <tr>
+                <td>Species:</td>
+                <td>{common_name} ({scientific_name})</td>
+            </tr>
+
+            <tr>
+                <td>Strain:</td>
+                <td>{strain_name}</td>
+            </tr>
+
+            <tr>
+                <td>No. Stocked:</td>
+                <td>{stkcnt:,}</td>
+            </tr>
+
+            <tr>
+                <td>Lifestage:</td>
+                <td>{lifestage}</td>
+            </tr>
+
+            <tr>
+                <td>Event Date:</td>
+                <td>{event_date}</td>
+            </tr>
+
+            <tr>
+                <td>Location:</td>
+                <td>{site_name}</td>
+            </tr>
+
+            <tr>
+                <td>proponent:</td>
+                <td>{proponent_name}</td>
+            </tr>
+
+        </table>
+        '''
+
+
+        if self.event_date:
+            event_date = self.event_date.strftime('%B %d %Y')
+        else:
+            event_date = "Some time in {}".format(self.year)
+
+        value_dict = {
+                'id': self.id,
+                'fsis_id': self.fs_event,
+                'proponent_name': self.lot.proponent.proponent_name,
+                'site_name': self.site.site_name,
+                'event_date': event_date,
+                'stkcnt': self.stkcnt,
+                'lifestage':self.get_development_stage_display(),
+                'strain_name':self.lot.strain.strain_name,
+                'common_name':self.lot.species.common_name,
+                'scientific_name':self.lot.species.scientific_name,
+                }
+
+        return popup_base.format(**value_dict)
+
+    @property
+    def spc_code(self):
+        '''we need to return the species code for a stocking event so that we
+        can display them on the map using different colours.'''
+        return self.lot.species.species_code
+
+    @property
+    def strain_code(self):
+        '''we need to return the strain code for a stocking event so that we
+        can display them on the map using different colours.'''
+        return self.lot.strain.strain_code
+
+    @property
+    def hatchery_code(self):
+        '''we need to return the hatchery code for a stocking event so that we
+        can display them on the map using different colours.'''
+        return self.lot.proponent.abbrev
+
 
     def save(self, *args, **kwargs):
         if not self.geom:
             self.geom = Point(float(self.dd_lon), float(self.dd_lat))
+        self.popup_text = self.get_popup_text()
         super(Event, self).save( *args, **kwargs)
 
 
@@ -325,7 +536,6 @@ class Event(models.Model):
         return(yr)
 
 
-
 class TaggingEvent(models.Model):
     stocking_event= models.ForeignKey(Event)
     fs_tagging_event_id = models.IntegerField(unique=True)
@@ -342,7 +552,7 @@ class TaggingEvent(models.Model):
         (17, 'Sequential_CWT')
         )
 
-    tag_type =  models.IntegerField(choices=TAG_TYPE_CHOICES,
+    tag_type =  models.IntegerField(choices=TAG_TYPE_CHOICES, db_index=True,
                                      default=6)
 
     TAG_POSITION_CHOICES = (
@@ -390,7 +600,7 @@ class CWTs_Applied(models.Model):
     #tagging = models.ManyToMany(TaggingEvent)
     tagging_event = models.ForeignKey(TaggingEvent)
     fs_tagging_event_id = models.IntegerField()
-    cwt = models.CharField(max_length=6)
+    cwt = models.CharField(max_length=6, db_index=True)
 
     def __unicode__(self):
         cwt = str(self.cwt)
@@ -400,3 +610,94 @@ class CWTs_Applied(models.Model):
         #def get_absolute_url(self):
         #
         #return ('cwt_events', self.cwt)
+
+    def get_stocking_events(self):
+        pass
+
+
+
+class Lake(models.Model):
+    '''A lookup table to hold the names of the different lakes'''
+    lake = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "Lake"
+
+    def __unicode__(self):
+        '''return the lake name as its string representation'''
+        return self.lake
+
+
+class ManagementUnit(models.Model):
+    '''a class to hold geometries associated with arbirary ManagementUnits
+    that can be represented as polygons.  Examples include quota
+    management units and lake trout rehabilitation zones.  Used to find
+    stocking events, cwts, and cwt recoveries occurred in (or
+    potentially near) specific management Units.
+
+    '''
+    label = models.CharField(max_length=25)
+    slug = models.SlugField(blank=True, unique=True, editable=False)
+    geom = models.MultiPolygonField(srid=4326)
+    lake = models.ForeignKey(Lake, default=1)
+
+    MU_TYPE_CHOICES = (
+       ('ltrz', 'Lake Trout Rehabilitation Zone'),
+       ('qma', 'Quota Management Area'),
+        #       ('stat_dist', 'Statistical District'),
+       )
+
+    mu_type =  models.CharField(max_length=10,
+                                choices=MU_TYPE_CHOICES,
+                                default='qma')
+
+    class Meta:
+        ordering = ['mu_type','label']
+
+    def get_slug(self):
+        '''the name is a concatenation of lake base name, the managemnet unit
+        type and and the management unit label'''
+        lake = str(self.lake)
+        lake = lake.lower().replace('lake','').strip()
+        return slugify('_'.join([lake, self.mu_type, self.label]))
+
+    def name(self):
+        return ' '.join([str(self.lake), self.mu_type.upper(), self.label])
+
+    def __unicode__(self):
+        return self.name()
+
+    def save(self, *args, **kwargs):
+        """
+        Populate slug when we save the object.
+        """
+        #if not self.slug:
+        self.slug = self.get_slug()
+        super(ManagementUnit, self).save( *args, **kwargs)
+
+
+##
+##
+## class LTRZ(models.Model):
+##     '''a class to hold geometries associated wth lake trout rehab-zones.
+##     Used to find stocking events, cwts, and cwt recoveries occurred in
+##     (or potentially near) specific LTRZs.
+##     '''
+##     ltrz = models.IntegerField('LTRZ')
+##     geom = models.MultiPolygonField(srid=26917)
+##
+##     def __unicode__(self):
+##         ret = 'LTRZ-{0}'.format(self.ltrz)
+##         return ret
+##
+##
+## class QMA(models.Model):
+##     '''a class to hold geometries associated wth Quota Management Areas.
+##     Used to find stocking events, cwts, and cwt recoveries that
+##     occurred in (or potentially near) specific areas.
+##     '''
+##     qma = models.CharField('QMA', max_length=6)
+##     geom = models.MultiPolygonField(srid=26917)
+##
+##     def __unicode__(self):
+##         return self.qma

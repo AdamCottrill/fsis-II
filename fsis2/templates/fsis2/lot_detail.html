@@ -1,11 +1,14 @@
 {% extends "fsis2/fsis2_base.html" %}
 
 {% block extrahead %}
-{{ map.media }}
-<!-- tablesorter plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
-<!-- tablesorter widget file - loaded after the plugin -->
-<script src="{{ STATIC_URL }}js/jquery.tablesorter.widgets.js"></script> 
+
+{% load geojson_tags %}
+{% load leaflet_tags %}
+
+{% leaflet_js %}
+{% leaflet_css %}
+
+
 {% endblock %}
 
 {% block title %} {{ object.title  }}  {% endblock %}
@@ -13,12 +16,13 @@
 {% block content %}
 {% load humanize %}
 
+
 <div class="container">
 
   <div class="row">
     <div class="col-md-4">
       <h2> FSIS Lot: {{ object.fs_lot }} </h2>
-      <table class="table">        
+      <table class="table">
         <tr>
           <td>  <b>Species:</b></td>
           <td> {{ object.species.common_name }}
@@ -49,29 +53,36 @@
           <td> {{ object.get_Proponent_Type_display }} </td>
         </tr>
       </table>
-      
+
     </div>
     <div class="col-md-8">
-      {{ map }}
+          <div id="main_map" style="width: 800px; height: 700px;"></div>
     </div>
   </div>
 
   <div id="event_list" class="row">
-    <hr />  
-    <h3>Stocking Events: </h3>
-    {% if object.event_set.all %}  
+    <hr />
+    <h3>Stocking Events: (N={{ object.event_set.all|length }})</h3>
+    {% if object.event_set.all %}
     <table id="myTable" class="table tablesorter">
-      <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
-          <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
+      <thead>
+          <tr>
+              <td>FSIS Event</td>
+              <td>Number Stocked</td>
+              <td>Event Date</td>
+              <td>Site Name</td>
+              <td>Clip Applied</td>
+              <td>Development Stage</td>
+          </tr>
       </thead>
       <tbody>
         {% for event in object.event_set.all %}
         <tr class="{% cycle row1,row2 %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
-          <td> {{ event.stkcnt|intcomma }} </td> 
+          <td> {{ event.stkcnt|intcomma }} </td>
           <td> {{ event.event_date|date }} </td>
-          <td> {{ event.site.site_name }} </td> 
-          <td> {{ event.clipa }} </td> 
+          <td> <a href="{% url 'site_detail' event.site.id %}">{{ event.site.site_name }}</a> </td>
+          <td> {{ event.clipa }} </td>
           <td> {{ event.get_development_stage_display }} </td>
         </tr>
         {% endfor %}
@@ -80,25 +91,12 @@
     {% else %}
     <p>There are currenly No events associated with lot {{ object.fs_lot }} </p>
     {% endif %}
-    
+
   </div>
 
 </div>
 
-<script type="text/javascript">
-  $(".tablesorter").tablesorter({
-  theme: 'bootstrap',
-  widthFixed: true,
-  showProcessing: true,
-  headerTemplate: '{content} {icon}',
-  widgets: ['zebra', 'uitheme', 'scroller'],
-  widgetOptions: {
-  scroller_height: 300,
-  scroller_barWidth: 17,
-  scroller_jumpToHeader: true,
-  scroller_idPrefix: 's_'
-  }
-  });
-</script>
+{% include 'fsis2/_table_sorter.html' %}
+{% include 'fsis2/_doc_ready_simple_map.html' %}
 
 {% endblock %}
