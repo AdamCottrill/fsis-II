@@ -237,7 +237,7 @@ class CWT(models.Model):
                                       default=99, null=True, blank=True)
 
     year_class = models.IntegerField(null=True, blank=True)
-    stock_year = models.IntegerField(null=True, blank=True)
+    stock_year = models.IntegerField(null=True, blank=True, db_index=True)
 
     #stocking_site = models.ForeignKey(StockingSite)
     plant_site = models.CharField(max_length=80, null=True, blank=True)
