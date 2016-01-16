@@ -51,7 +51,7 @@ class CWT_recovery(models.Model):
 
     '''
 
-    cwt = models.CharField(max_length=6)
+    cwt = models.CharField(max_length=6, db_index=True)
     sequence_number = models.IntegerField(default=0)
 
     RECOVERY_SOURCE_CHOICES = (
@@ -66,7 +66,7 @@ class CWT_recovery(models.Model):
     )
     recovery_source = models.CharField(max_length=20,
                                        choices=RECOVERY_SOURCE_CHOICES)
-    recovery_year = models.IntegerField()
+    recovery_year = models.IntegerField(db_index=True)
     recovery_date = models.DateField(null=True, blank=True)
     recovery_grid= models.CharField(max_length=4)
     composite_key = models.CharField(max_length=50)
@@ -165,7 +165,7 @@ class CWT_recovery(models.Model):
 class CWT(models.Model):
 
     stocked = models.BooleanField(default=True)
-    cwt = models.CharField(max_length=6)
+    cwt = models.CharField(max_length=6, db_index=True)
     seq_start = models.IntegerField(default=0)
     seq_end = models.IntegerField(default=1)
     #spool_cnt = models.IntegerField(default=1)
