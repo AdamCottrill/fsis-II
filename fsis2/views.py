@@ -25,8 +25,6 @@ A. Cottrill
 
 '''
 
-
-
 from datetime import datetime
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.urlresolvers import reverse
@@ -46,13 +44,11 @@ from django.views.generic.detail import DetailView
 from django.views.generic.dates import YearArchiveView
 from django.views.generic import CreateView, UpdateView
 
-
-
 from .models import (Event, Lot, TaggingEvent, CWTs_Applied, StockingSite,
                      Proponent, Species, Strain,
                      ManagementUnit, Lake)
 
-from cwts.models import CWT, CWT_recovery #, USgrid
+from cwts.models import CWT, CWT_recovery    #, USgrid
 
 from .forms import GeoForm
 
@@ -65,13 +61,8 @@ from fsis2.utils import (timesince, footer_string, prj_cd_Year,
                          get_cwts_stocked_mu,
                          get_map,
                          #get_map2,
-                         empty_map,
+                         #empty_map,
                          get_recovery_map)
-
-
-
-
-
 
 #==============================================================
 #                  SPECIES stocked
@@ -197,8 +188,7 @@ def find_sites(request):
             if roi.geom_type=='LinearRing':
                 roi = Polygon(roi)
 
-            sites = StockingSite.objects.filter(
-                    geom__within=roi)
+            sites = StockingSite.objects.filter(geom__within=roi)
 
             #now filter for our optional fields:
             if species:
@@ -211,19 +201,19 @@ def find_sites(request):
             sites = sites.annotate(event_count=Count('event'))
 
             return render_to_response('fsis2/show_sites_gis.html',
-                                      {'roi':roi,
-                                       'sites':sites},
-                                  context_instance = RequestContext(request))
+                                      {'roi': roi,
+                                       'sites': sites},
+                                      context_instance=RequestContext(request))
         else:
             return render_to_response('fsis2/find_events_gis.html',
-                                      {'form':form, 'what':'sites'},
-                                      context_instance = RequestContext(request))
+                                      {'form': form, 'what': 'sites'},
+                                      context_instance=RequestContext(request))
 
     else:
-        form = GeoForm() # An unbound form
+        form = GeoForm()   # An unbound form
         return render_to_response('fsis2/find_events_gis.html',
-                                  {'form':form, 'what':'sites'},
-                                  context_instance = RequestContext(request)
+                                  {'form': form, 'what': 'sites'},
+                                  context_instance=RequestContext(request)
         )
 
 
@@ -245,14 +235,14 @@ class ProponentListView(ListView):
                    filter(latest__isnull=False)
         if q:
             return queryset.filter(Q(abbrev__icontains=q) |
-                                      Q(proponent_name__icontains=q))
+                                   Q(proponent_name__icontains=q))
         return queryset
-
 
     def get_context_data(self, **kwargs):
         context = super(ProponentListView, self).get_context_data(**kwargs)
         context['footer'] = footer_string()
         return context
+
 
 class ProponentLotListView(ListView):
     '''Render a list of lots stocked by a specific proponent'''
@@ -265,7 +255,7 @@ class ProponentLotListView(ListView):
         '''
         lot = self.request.GET.get("lot")
         if lot:
-            lot = get_object_or_404(Lot, fs_lot = lot)
+            lot = get_object_or_404(Lot, fs_lot=lot)
         if lot:
             url = reverse('lot_detail', kwargs={'pk': lot.id})
             return HttpResponseRedirect(url)
@@ -379,7 +369,7 @@ class EventListView(ListView):
 
         years = Event.objects.values('year').distinct().order_by('-year')
 
-        cwt = self.kwargs.get('cwt',None)
+        cwt = self.kwargs.get('cwt', None)
         context['cwt'] = cwt
         context['footer'] = footer_string()
         context['years'] = years
@@ -432,7 +422,7 @@ def find_events(request):
             first_year = form.cleaned_data.get('earliest')
             last_year = form.cleaned_data.get('latest')
 
-            if roi.geom_type=='LinearRing':
+            if roi.geom_type == 'LinearRing':
                 roi = Polygon(roi)
 
             events = Event.objects.filter(geom__within=roi).order_by('-year')
@@ -445,21 +435,18 @@ def find_events(request):
                 events = events.filter(year__lte=last_year)
 
             return render_to_response('fsis2/show_events_gis.html',
-                              {'roi': roi, 'events': events},
-                            context_instance = RequestContext(request))
-
+                                      {'roi': roi, 'events': events},
+                                      context_instance=RequestContext(request))
         else:
-
             return render_to_response('fsis2/find_events_gis.html',
-                                      {'form':form, 'what':'events'},
-                                      context_instance = RequestContext(request)
+                                      {'form': form, 'what': 'events'},
+                                      context_instance=RequestContext(request)
             )
-
     else:
-        form = GeoForm() # An unbound form
+        form = GeoForm()     # An unbound form
         return render_to_response('fsis2/find_events_gis.html',
-                                  {'form':form, 'what':'events'},
-                                  context_instance = RequestContext(request)
+                                  {'form': form, 'what': 'events'},
+                                  context_instance=RequestContext(request)
         )
 
 
@@ -496,11 +483,11 @@ def annual_events(request, year):
     other_years = [x['year'] for x in tmp]
 
     return render_to_response('fsis2/annual_events.html',
-                              {   'object_list':events,
-                                  'year':year,
-                                  'totals':totals,
-                                  'footer':footer_string(),
-                                  'other_years':other_years},
+                              {'object_list': events,
+                               'year': year,
+                               'totals': totals,
+                               'footer': footer_string(),
+                               'other_years': other_years},
                               context_instance=RequestContext(request))
 
 
@@ -553,14 +540,13 @@ def proponent_annual_events(request, hatchery, year):
 
     other_years = [x['year'] for x in tmp]
 
-
     return render_to_response('fsis2/annual_events.html',
-                              {   'object_list':events,
-                                  'proponent':proponent,
-                                  'year':year,
-                                  'totals':totals,
-                                  'footer':footer_string(),
-                                  'other_years':other_years},
+                              {'object_list': events,
+                               'proponent': proponent,
+                               'year': year,
+                               'totals': totals,
+                               'footer': footer_string(),
+                               'other_years': other_years},
                               context_instance=RequestContext(request))
 
 
@@ -570,11 +556,10 @@ def proponent_most_recent_events(request, hatchery):
     """
 
     latest = Event.objects.filter(lot__proponent__abbrev=hatchery).\
-                 aggregate(Max('year'))
+             aggregate(Max('year'))
     year = latest.get('year__max')
 
     return proponent_annual_events(request, hatchery, year)
-
 
 
 def species_annual_events(request, spc, year):
@@ -615,17 +600,13 @@ def species_annual_events(request, spc, year):
     other_years = [x['year'] for x in tmp]
 
     return render_to_response('fsis2/annual_events.html',
-                              {   'object_list':events,
-                                  'species':species,
-                                  'totals':totals,
-                                  'year':year,
-                                  'footer':footer_string(),
-                                  'other_years':other_years},
+                              {'object_list': events,
+                               'species': species,
+                               'totals': totals,
+                               'year': year,
+                               'footer': footer_string(),
+                               'other_years': other_years},
                               context_instance=RequestContext(request))
-
-
-
-
 
 
 #==============================================================
@@ -634,8 +615,7 @@ def species_annual_events(request, spc, year):
 class CwtListView(ListView):
 
     model = CWT
-
-    template_name='fsis2/cwt_list.html'
+    template_name = 'fsis2/cwt_list.html'
     paginate_by = 50
 
     def get_queryset(self):
@@ -647,7 +627,7 @@ class CwtListView(ListView):
         cwt = self.request.GET.get("cwt")
         if cwt:
             # Return a filtered queryset
-            cwt = cwt.replace('-','')
+            cwt = cwt.replace('-', '')
             return queryset.filter(cwt__icontains=cwt)
         return queryset
 
@@ -655,7 +635,6 @@ class CwtListView(ListView):
         context = super(CwtListView, self).get_context_data(**kwargs)
         context['footer'] = footer_string()
         return context
-
 
 
 def cwt_detail_view(request, cwt_number):
@@ -668,10 +647,10 @@ def cwt_detail_view(request, cwt_number):
     that accomodates multiple tagging events and includes a warning is
     used instead.
 
-    **Context:**
+    **Context: **
 
     ``cwt``
-        a :model:`cwts.CWT` object if only one cwt is found in cwt
+        a : model: `cwts.CWT` object if only one cwt is found in cwt
 
 
     ``cwt_number``
@@ -679,17 +658,17 @@ def cwt_detail_view(request, cwt_number):
         multiple cwt template.
 
     ``cwt_list``
-        a query set of :model:`cwts.CWT` filtered by cwt_number.  None
+        a query set of : model: `cwts.CWT` filtered by cwt_number.  None
         if cwt_number returns only one record.
 
     ``event_list``
-        a list of :model:`fsis2.Event` objects associated with this
+        a list of : model: `fsis2.Event` objects associated with this
         cwt.
 
-    **Templates:**
+    **Templates: **
 
-    :template:`fsis2/cwt_detail.html`
-    :template:`fsis2/multiple_cwt_detail.html`
+    : template: `fsis2/cwt_detail.html`
+    : template: `fsis2/multiple_cwt_detail.html`
 
     '''
 
@@ -719,7 +698,6 @@ def cwt_detail_view(request, cwt_number):
 
     us_events = CWT.objects.filter(cwt=cwt_number).exclude(agency='OMNR').\
                 order_by('seq_start', '-stock_year')
-
 
     return render_to_response('fsis2/cwt_detail.html',
                               {'cwt': cwt,
@@ -755,10 +733,8 @@ def cwt_recovered_roi(request):
             first_year = form.cleaned_data.get('earliest')
             last_year = form.cleaned_data.get('latest')
 
-            if roi.geom_type=='LinearRing':
+            if roi.geom_type == 'LinearRing':
                 roi = Polygon(roi)
-
-            import pdb;pdb.set_trace()
 
             #stocking events
             if species:
@@ -777,8 +753,8 @@ def cwt_recovered_roi(request):
             #can't serialize a raw query set. Creat list of points to plot:
             event_pts = []
             for event in events:
-                event_pts.append({'geom':event.geom,
-                                  'popup_text':event.popup_text})
+                event_pts.append({'geom': event.geom,
+                                  'popup_text': event.popup_text})
 
             #count the number of records - raw queryset don't have count()
             events_count = len(event_pts)
@@ -808,36 +784,33 @@ def cwt_recovered_roi(request):
                         exclude(agency='OMNR').\
                         order_by('seq_start', '-stock_year')
 
-
             return render_to_response('fsis2/cwt_recovered_mu.html',
-                                      {'mu':'the Region of Interest',
-                                       'species':species,
+                                      {'mu': 'the Region of Interest',
+                                       'species': species,
                                        'fyear': first_year,
                                        'lyear': last_year,
-                                       'roi':roi,
-                                       'what':'recovery',
-                                       'cwts':cwts,
-                                       'recoveries':recoveries,
-                                       'events':events,
-                                       'events_count':events_count,
-                                       'event_pts':event_pts,
-                                       'us_events':us_events
+                                       'roi': roi,
+                                       'what': what,
+                                       'cwts': cwts,
+                                       'recoveries': recoveries,
+                                       'events': events,
+                                       'events_count': events_count,
+                                       'event_pts': event_pts,
+                                       'us_events': us_events
                                    }, context_instance=RequestContext(request))
 
         else:
             return render_to_response('fsis2/find_events_gis.html',
-                                      {'form':form, 'what':what,
-                                       'subcaption':subcaption},
-                                      context_instance = RequestContext(request))
+                                      {'form': form, 'what': what,
+                                       'subcaption': subcaption},
+                                      context_instance=RequestContext(request))
     else:
-        form = GeoForm() # An unbound form
+        form = GeoForm()    # An unbound form
         return render_to_response('fsis2/find_events_gis.html',
-                                  {'form':form, 'what':what,
-                                   'subcaption':subcaption},
-                                  context_instance = RequestContext(request)
+                                  {'form': form, 'what': what,
+                                   'subcaption': subcaption},
+                                  context_instance=RequestContext(request)
         )
-
-
 
 
 def cwt_stocked_roi(request):
@@ -864,7 +837,7 @@ def cwt_stocked_roi(request):
             first_year = form.cleaned_data.get('earliest')
             last_year = form.cleaned_data.get('latest')
 
-            if roi.geom_type=='LinearRing':
+            if roi.geom_type == 'LinearRing':
                 roi = Polygon(roi)
 
             #stocking events
@@ -888,8 +861,8 @@ def cwt_stocked_roi(request):
             recovery_pts = []
             recovered_numbers = {}
             for x in recoveries:
-                recovery_pts.append({'geom':x.geom,
-                                  'popup_text':x.popup_text})
+                recovery_pts.append({'geom': x.geom,
+                                     'popup_text': x.popup_text})
                 if recovered_numbers.get(x.cwt):
                     recovered_numbers[x.cwt] += 1
                 else:
@@ -897,7 +870,6 @@ def cwt_stocked_roi(request):
 
             #count the number of records - raw queryset don't have count()
             recovery_count = len(recovery_pts)
-
 
             #get cwt stocking events with cwts that occured in the roi
             #and apply filters
@@ -913,7 +885,6 @@ def cwt_stocked_roi(request):
                         exclude(agency='OMNR').\
                         order_by('seq_start', '-stock_year')
 
-
             #get the distinct list of cwt numbers that have been stocked in
             #those events
             distinct_cwts = events.values_list(
@@ -927,42 +898,39 @@ def cwt_stocked_roi(request):
                 x.recovery_count = recovered_numbers.get(x.cwt, 0)
 
             return render_to_response('fsis2/cwt_recovered_mu.html',
-                                      {'mu':'the Region of Interest',
-                                       'species':species,
+                                      {'mu': 'the Region of Interest',
+                                       'species': species,
                                        'fyear': first_year,
                                        'lyear': last_year,
-                                       'roi':roi,
-                                       'what':what,
-                                       'cwts':cwts,
-                                       'recoveries':recoveries,
-                                       'recovery_count':recovery_count,
-                                       'recovery_pts':recovery_pts,
-                                       'events':events,
-                                       'us_events':us_events
+                                       'roi': roi,
+                                       'what': what,
+                                       'cwts': cwts,
+                                       'recoveries': recoveries,
+                                       'recovery_count': recovery_count,
+                                       'recovery_pts': recovery_pts,
+                                       'events': events,
+                                       'us_events': us_events
                                    }, context_instance=RequestContext(request))
 
         else:
             return render_to_response('fsis2/find_events_gis.html',
-                                      {'form':form, 'what':what,
-                                       'subcaption':subcaption},
-                                      context_instance = RequestContext(request))
+                                      {'form': form, 'what': what,
+                                       'subcaption': subcaption},
+                                      context_instance=RequestContext(request))
     else:
-        form = GeoForm() # An unbound form
+        form = GeoForm()              # An unbound form
         return render_to_response('fsis2/find_events_gis.html',
-                                  {'form':form, 'what':what,
-                                   'subcaption':subcaption},
-                                  context_instance = RequestContext(request)
+                                  {'form': form, 'what': what,
+                                   'subcaption': subcaption},
+                                  context_instance=RequestContext(request)
         )
-
-
-
 
 
 def cwt_recovered_mu(request, slug):
     """a view to find all of the cwt recovered in a managment unit and their
     associated stocking information
 
-    **Context:**
+    **Context: **
 
     ``slug`` a slug representing a unique management unit name.
         Management unit slugs are derived from their lake, management
@@ -970,7 +938,7 @@ def cwt_recovered_mu(request, slug):
         the table ManagementUnits.  Only cwt numbers recovered inside
         the management unit are returned and plotted on map.
 
-    :template:`fsis2/cwt_recovered_mu.html`
+    : template: `fsis2/cwt_recovered_mu.html`
 
     """
 
@@ -985,7 +953,6 @@ def cwt_recovered_mu(request, slug):
         recoveries = recoveries.filter(recovery_year__gte=fyear)
     if lyear:
         recoveries = recoveries.filter(recovery_year__lte=lyear)
-
 
     #Look into creating a specialized view in POSTgres that is
     #declared in Django as an unmanaged table.  The view would join
@@ -1003,14 +970,12 @@ def cwt_recovered_mu(request, slug):
     for x in cwts:
         x.recovery_count = recovery_count.get(x.cwt, 0)
 
-
     #now get the stocking events associated with these cwts:
     #this does not account for sequential CWTS!!!
     events = Event.objects.filter(taggingevent__cwts_applied__cwt__in=cwt_nums)
 
     us_events = CWT.objects.filter(cwt__in=cwt_nums).exclude(agency='OMNR').\
                 order_by('seq_start', '-stock_year')
-
 
     #recovered_cwts = get_recovered_cwts(mu_poly)
     #
@@ -1034,13 +999,13 @@ def cwt_recovered_mu(request, slug):
     #recovered_cwts['mu'] = mu_poly
 
     return render_to_response('fsis2/cwt_recovered_mu.html',
-                              {'mu':mu_poly.label,
-                               'roi':mu_poly,
-                               'what':'recovery',
-                               'cwts':cwts,
-                               'recoveries':recoveries,
-                               'events':events,
-                               'us_events':us_events
+                              {'mu': mu_poly.label,
+                               'roi': mu_poly,
+                               'what': 'recovery',
+                               'cwts': cwts,
+                               'recoveries': recoveries,
+                               'events': events,
+                               'us_events': us_events
 },
                               context_instance=RequestContext(request))
 
@@ -1049,14 +1014,14 @@ def cwt_stocked_mu(request, slug):
     """a view to find all of the cwts stocked in a mu and their
     associated recovery information
 
-    **Context:**
+    **Context: **
 
     ``mu`` a Management Unit name.  Used to select
         appropriate mu polygon from fsis2_MU table.  Only cwt
         numbers stocked inside the mu are returned and plotted on
         map.
 
-    :template:`fsis2/cwt_stocked_mu.html`
+    : template: `fsis2/cwt_stocked_mu.html`
 
 
     """
@@ -1074,7 +1039,6 @@ def cwt_stocked_mu(request, slug):
     if lyear:
         events = events.filter(year__lte=lyear)
 
-
     #get the distinct list of cwt numbers that have been stocked in those events
     cwt_nums = events.values_list('taggingevent__cwts_applied__cwt').distinct()
     #get those cwt numbers to filter the cwt objects
@@ -1089,19 +1053,16 @@ def cwt_stocked_mu(request, slug):
     for x in cwts:
         x.recovery_count = recovery_count.get(x.cwt, 0)
 
-
     return render_to_response('fsis2/cwt_stocked_mu.html',
-                              {'mu':mu_poly.label,
-                               'roi':mu_poly,
-                               'what':'stocked',
-                               'cwts':cwts,
-                               'recoveries':recoveries,
-                               #'us_events':us_events,
-                               'events':events,},
+                              {'mu': mu_poly.label,
+                               'roi': mu_poly,
+                               'what': 'stocked',
+                               'cwts': cwts,
+                               'recoveries': recoveries,
+                               #'us_events': us_events,
+                               'events': events,
+                           },
                               context_instance=RequestContext(request))
-
-
-
 
 
     #stocked_cwts = get_cwts_stocked_mu(mu_poly)
@@ -1139,9 +1100,10 @@ class AnnualTotalSpcView(ListView):
     def get_queryset(self):
         self.spc = self.kwargs.get('spc', None)
         queryset = Proponent.objects.filter(
-            lot__species__species_code=self.spc).values('proponent_name',
-            'lot__event__prj_cd').annotate(total=Sum('lot__event__stkcnt'
-                                                 )).order_by('-lot__event__year')
+            lot__species__species_code=self.spc).\
+            values('proponent_name', 'lot__event__prj_cd').\
+            annotate(total=Sum('lot__event__stkcnt')).\
+            order_by('-lot__event__year')
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -1157,11 +1119,10 @@ class AnnualTotalSpcView(ListView):
         return context
 
 
-
 class AnnualStockingBySpcStrainView(ListView):
     '''render a view that plots the stocking events associated with a
     strain and year on a map and summarizes those events in a
-    table:'''
+    table: '''
 
     template_name = "fsis2/annual_stocking_events.html"
 
@@ -1193,16 +1154,18 @@ class AnnualStockingBySpcStrainView(ListView):
         context['year'] = yr
         context['species'] = get_object_or_404(Species, species_code=spc)
         context['strain'] = Strain.objects.filter(species__species_code=spc,
-                                                  strain_code=strain).values_list(
-                                                      'strain_name').distinct()[0][0]
+                                                  strain_code=strain).\
+            values_list('strain_name').distinct()[0][0]
 
-        context['strain_code'] = Strain.objects.filter(species__species_code=spc,
-                                                  strain_code=strain).values_list(
-                                                      'strain_code').distinct()[0][0]
+        context['strain_code'] = Strain.objects.\
+                                 filter(species__species_code=spc,
+                                        strain_code=strain).\
+                                 values_list('strain_code').distinct()[0][0]
         #get the lists required for this view:
         context['species_list'] = Species.objects.all()
-        context['strain_list'] = Strain.objects.filter(species__species_code=81
-                                ).values('strain_name','strain_code').distinct()
+        context['strain_list'] = Strain.objects.\
+                                 filter(species__species_code=81).\
+                                 values('strain_name', 'strain_code').distinct()
 
         project_list = Event.objects.filter(lot__species__species_code=spc,
                                         lot__strain__strain_code=strain,
@@ -1234,7 +1197,7 @@ class AnnualStockingBySpcStrainView(ListView):
 #    def get_queryset(self):
 #        self.spc = self.kwargs.get('spc', None)
 #        self.yr = self.kwargs.get('year', None)
-#        project = 'LHA_FS%s_001' % self.yr[2:]
+#        project = 'LHA_FS%s_001' % self.yr[2: ]
 #
 #        queryset = Event.objects.filter(lot__species__species_code=self.spc,
 #                                        prj_cd=project)
@@ -1296,7 +1259,7 @@ class AnnualStockingBySpcStrainView(ListView):
 #        self.hatchery = self.kwargs.get('hatchery', None)
 #        #self.strain = self.kwargs.get('strain', None)
 #        self.yr = self.kwargs.get('year', None)
-#        project = 'LHA_FS%s_001' % self.yr[2:]
+#        project = 'LHA_FS%s_001' % self.yr[2: ]
 #
 #        queryset = Event.objects.filter(lot__species__species_code=self.spc,
 #                                        prj_cd=project,
