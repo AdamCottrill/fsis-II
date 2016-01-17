@@ -177,7 +177,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 TEMPLATE_DIRS = (
     root('templates'),
     root('fsis2/templates'),
-    #root('simple_auth/templates'),
+    root('simple_auth/templates'),
 )
 
 LOGIN_REDIRECT_URL = "/"
