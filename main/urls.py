@@ -14,8 +14,8 @@ urlpatterns = patterns('',
                        url(r'^$', most_recent_events, name='index'),
 
                        url(r'^accounts/', include('simple_auth.urls')),
-                       url(r'^password_reset/',
-                           include('password_reset.urls')),
+                       #url(r'^password_reset/',
+                       #    include('password_reset.urls')),
 
                        # Uncomment the next line to enable the admin:
                        url(r'^coregonusclupeaformis/admin/', include(admin.site.urls)),
