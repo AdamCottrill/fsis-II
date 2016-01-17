@@ -40,7 +40,6 @@
        var us_pts = {{ us_events|geojsonfeature:"popup_text"|safe }};
      {% endif %}
 
-
      function onEachFeature(feature, layer) {
          if (feature.properties && feature.properties.popup_text) {
              layer.bindPopup(feature.properties.popup_text);
@@ -71,7 +70,6 @@
 
          event_points.addTo(my_map);
 
-
      var recovery_pts = L.geoJson(recoveries, {
          style: {color: "#00FF00", fillColor:"#00FF00"},
          pointToLayer: function(feature, latlng) {
@@ -91,7 +89,6 @@
 
          sites.addTo(my_map);
 
-
      // us stocking events
      {% if us_events %}
        var us_event_pts = L.geoJson(us_pts, {
@@ -100,8 +97,6 @@
              return new L.CircleMarker(latlng, {radius: 5, fillOpacity: 0.75});
          },
          onEachFeature: onEachFeature})
-
-         console.log(us_event_pts)
 
          us_event_pts.addTo(my_map);
      {% endif %}
