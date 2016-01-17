@@ -16,11 +16,6 @@
 {% block content %}
 {% load humanize %}
 
-<h3>Ontario Events</h3>
-{{ events|geojsonfeature:"popup_text"|safe }}
-<h3>US Events:</h3>
-{{ us_events|geojsonfeature:"popup_text"|safe }}
-
   <div class="row">
 
     {% if multiple %}
