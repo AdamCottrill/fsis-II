@@ -2,6 +2,7 @@
 
 import os
 from django.core.exceptions import ImproperlyConfigured
+import sys
 
 
 def get_env_variable(var_name):
@@ -13,6 +14,25 @@ def get_env_variable(var_name):
         error_msg = "Set the %s environment variable" % var_name
         raise ImproperlyConfigured(error_msg)
 
+ON_OPENSHIFT = False
+if 'OPENSHIFT_REPO_DIR' in os.environ.keys():
+    ON_OPENSHIFT = True
+
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+DJ_PROJECT_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.dirname(DJ_PROJECT_DIR)
+WSGI_DIR = os.path.dirname(BASE_DIR)
+REPO_DIR = os.path.dirname(WSGI_DIR)
+
+sys.path.append(os.path.join(REPO_DIR, 'libs'))
+
+print("WSGI_DIR = {}".format(WSGI_DIR))
+
+
+DATA_DIR = os.environ.get('OPENSHIFT_DATA_DIR', BASE_DIR)
+
+
 PROJECT_ROOT =  os.path.abspath(os.path.join(
     os.path.dirname(__file__), '../..'))
 
@@ -22,20 +42,26 @@ here = lambda * x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
 root = lambda * x: os.path.join(os.path.abspath(PROJECT_ROOT), *x)
 
 
-DEBUG = True
+if ON_OPENSHIFT:
+    DEBUG = os.environ.get('DEBUG') == 'True'
+    if DEBUG:
+        print("WARNING: The DEBUG environment is set to True.")
+else:
+    DEBUG = True
+
 TEMPLATE_DEBUG = DEBUG
+
 
 ADMINS = (
     ('Adam Cottrill', 'racottrill@bmts.com'),
 )
-
 MANAGERS = ADMINS
 
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 # not supposed to use * in production, but nothing else seems to work:
-ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['*']
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -62,13 +88,14 @@ USE_TZ = False
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-#MEDIA_ROOT = ''
-MEDIA_ROOT = root("uploads/")
+MEDIA_ROOT = ''
+#MEDIA_ROOT = root("uploads/")
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://example.com/media/", "http://media.example.com/"
-MEDIA_URL = 'http://fsis2/uploads/'
+#MEDIA_URL = 'http://fsis2/uploads/'
+MEDIA_URL = '/media/'
 
 ADMIN_MEDIA_PREFIX = '/admin/media/'
 
@@ -77,22 +104,35 @@ ADMIN_MEDIA_PREFIX = '/admin/media/'
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
 #STATIC_ROOT = ''
-STATIC_ROOT = root("static_root/")
+#STATIC_ROOT = root("static_root/")
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = '/static/'
 
 
+if ON_OPENSHIFT:
+    STATIC_ROOT = os.path.join(WSGI_DIR, 'static')
+    ALLOWED_HOSTS = ['blog-salvelinus.rhcloud.com']
+    MEDIA_ROOT = os.environ.get('OPENSHIFT_DATA_DIR', '')
+else:
+    #STATIC_ROOT = os.path.join(PROJECT_ROOT, STATIC_URL.strip("/"))
+    STATICFILES_DIRS = (
+        os.path.join(PROJECT_ROOT, "static_root"),
+        root('static'),
+    )
+    ALLOWED_HOSTS = ['*']
+    MEDIA_ROOT = os.path.join(PROJECT_ROOT, "media")
 
-# Additional locations of static files
-STATICFILES_DIRS = (
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths
-    #os.path.join(PROJECT_ROOT, 'staticfiles'),
-    os.path.join(PROJECT_ROOT, 'static'),
-)
+
+## Additional locations of static files
+#STATICFILES_DIRS = (
+#    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+#    # Always use forward slashes, even on Windows.
+#    # Don't forget to use absolute paths, not relative paths
+#    #os.path.join(PROJECT_ROOT, 'staticfiles'),
+#    os.path.join(PROJECT_ROOT, 'static'),
+#)
 
 # List of finder classes that know how to find static files in
 # various locations.
@@ -103,7 +143,12 @@ STATICFILES_FINDERS = (
 )
 
 #SECRET_KEY = get_env_variable("SECRET_KEY")
-SECRET_KEY = "1234"
+***REMOVED***
+
+if ON_OPENSHIFT:
+    import secrets
+    SECRETS = secrets.getter(os.path.join(DATA_DIR, 'secrets.json'))
+    SECRET_KEY = SECRETS['secret_key']
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -209,8 +254,8 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 ##}
 
 #password criteria
-PASSWORD_MIN_LENGTH = 8
-PASSWORD_COMPLEXITY = { "UPPER":  1, "LOWER":  1, "DIGITS": 1 }
+#PASSWORD_MIN_LENGTH = 8
+#PASSWORD_COMPLEXITY = { "UPPER":  1, "LOWER":  1, "DIGITS": 1 }
 
 POSTGIS_VERSION = (2, 1, 8)
 
