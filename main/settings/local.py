@@ -4,7 +4,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'fsis2',
-        ***REMOVED***
+        'USER': 'adam',
         'PASSWORD': 'django',
     }
 }
