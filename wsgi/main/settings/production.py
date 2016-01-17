@@ -10,7 +10,7 @@ if ON_OPENSHIFT:
 
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'fsis2',
             'USER': os.getenv('OPENSHIFT_POSTGRESQL_DB_USERNAME'),
             'PASSWORD': os.getenv('OPENSHIFT_POSTGRESQL_DB_PASSWORD'),
@@ -21,7 +21,7 @@ if ON_OPENSHIFT:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'fsis2',
     ***REMOVED***
     ***REMOVED***
