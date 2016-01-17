@@ -131,8 +131,8 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 TEMPLATE_DIRS = (
     root('templates'),
-    root('fsis/templates'),
-    root('simple_auth/templates'),
+    root('fsis2/templates'),
+    #root('simple_auth/templates'),
 )
 
 LOGIN_REDIRECT_URL = "/"
@@ -151,7 +151,7 @@ DJANGO_APPS = (
 
 THIRDPARTY_APPS = (
     'crispy_forms',
-    'passwords',
+#    'passwords',
     'djgeojson',
     'leaflet',
 
@@ -161,7 +161,7 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 MY_APPS =(
-    'simple_auth',
+#    'simple_auth',
     'fsis2',
     'cwts',
     )

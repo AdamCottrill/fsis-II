@@ -766,11 +766,11 @@ def cwt_recovered_roi(request):
                 sql = ('select * from cwts_stocking_events_geom(%s,' +
                        ' %s, %s, %s);')
                 #import pdb;pdb.set_trace()
-                events = Event.objects.raw(sql, (roi.json, first_year,
+                events = Event.objects.raw(sql, (roi.wkt, first_year,
                                                  last_year, spc_ids))
             else:
                 sql = 'select * from cwts_stocking_events_geom(%s, %s, %s);'
-                events = Event.objects.raw(sql, (roi.json, first_year,
+                events = Event.objects.raw(sql, (roi.wkt, first_year,
                                                  last_year))
 
             #can't serialize a raw query set. Creat list of points to plot:
@@ -872,12 +872,12 @@ def cwt_stocked_roi(request):
                 spc_ids = [x.id for x in species]
                 sql = ('select * from cwts_recovered_geom(%s,' +
                        ' %s, %s, %s);')
-                recoveries = CWT_recovery.objects.raw(sql, (roi.json,
+                recoveries = CWT_recovery.objects.raw(sql, (roi.wkt,
                                                             first_year,
                                                             last_year, spc_ids))
             else:
                 sql = 'select * from cwts_recovered_geom(%s, %s, %s);'
-                recoveries = CWT_recovery.objects.raw(sql, (roi.json,
+                recoveries = CWT_recovery.objects.raw(sql, (roi.wkt,
                                                             first_year,
                                                             last_year))
 
