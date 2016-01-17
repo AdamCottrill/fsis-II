@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     # GETTING-STARTED: set your app name:
-    name='MyBlog',
+    name='FSIS-II',
     # GETTING-STARTED: set your app version:
     version='1.0',
     # GETTING-STARTED: set your app description:
@@ -16,7 +16,7 @@ setup(
     # GETTING-STARTED: set author url (your url):
     url='http://www.python.org/sigs/distutils-sig/',
     # GETTING-STARTED: define required django version:
-    install_requires =open('%swsgi/requirements/base.txt'
+    install_requires =open('%swsgi/requirements.txt'
                             % os.environ.get('OPENSHIFT_REPO_DIR')).readlines(),
 #    dependency_links=[
 #        'https://pypi.python.org/simple/django/'
