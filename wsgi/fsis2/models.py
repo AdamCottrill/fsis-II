@@ -7,11 +7,8 @@ from django.contrib.gis.db import models
 
 from django.contrib.gis.geos import Point
 
-#from fsis2 import managers
 
 from datetime import datetime
-
-
 
 
 def dd2ddm(dd):
@@ -28,22 +25,22 @@ def dd2ddm(dd):
     degrees = int(abs(dd))
     dminutes = (abs(dd) - degrees) * 60
     degrees *= negative
-    return {'degrees':degrees, 'dminutes':dminutes}
-
+    return {'degrees': degrees, 'dminutes': dminutes}
 
 
 class BuildDate(models.Model):
     '''A database to hold the date that the database was last refreshed.'''
-    build_date =  models.DateField(editable=False)
+    build_date = models.DateField(editable=False)
 
     def __unicode__(self):
         return self.build_date.strftime("%d-%b-%Y")
 
 
 class Readme(models.Model):
-    #a table to hold all of the information regarding last FSIS
-    #download and FS_Master rebuild (it appear as a footer on every
-    #page)
+    '''a table to hold all of the information regarding last FSIS
+    download and FS_Master rebuild (it appear as a footer on every
+    page)'''
+
     date = models.DateField(editable=False)
     comment = models.TextField()
     initials = models.CharField(max_length=4)
@@ -53,7 +50,6 @@ class Readme(models.Model):
 
     def __unicode__(self):
         return self.comment
-
 
     def get_download_date(self, ):
         """a little function to pull the FSIS download date out of the
@@ -89,13 +85,14 @@ class Species(models.Model):
         if self.scientific_name:
             spc_unicode = "%s (%s)" % (self.common_name, self.scientific_name)
         else:
-            spc_unicode =  "%s" % self.common_name
+            spc_unicode = "%s" % self.common_name
         return spc_unicode
+
 
 class Strain(models.Model):
 
     species = models.ForeignKey(Species)
-    sto_code = models.CharField(max_length=5) #crap from fsis
+    sto_code = models.CharField(max_length=5)  #crap from fsis
     strain_code = models.CharField(max_length=5)
     strain_name = models.CharField(max_length=20)
 
@@ -110,7 +107,7 @@ class Strain(models.Model):
 class Proponent(models.Model):
 
     abbrev = models.CharField(max_length=7, unique=True)
-    proponent_name =  models.CharField(max_length=50)
+    proponent_name = models.CharField(max_length=50)
 
     class Meta:
         ordering = ['proponent_name']
@@ -126,17 +123,17 @@ class Proponent(models.Model):
 class StockingSite(models.Model):
     #many of these should be choice fields or foreign keys to look-up tables
     #eventually they will be replaced with spatial queries
-    fsis_site_id =  models.IntegerField(unique=True)
-    site_name = models.CharField(max_length=50) #this should be unique
-    stkwby  = models.CharField(max_length=30)
+    fsis_site_id = models.IntegerField(unique=True)
+    site_name = models.CharField(max_length=50)   # this should be unique
+    stkwby = models.CharField(max_length=30)
     stkwby_lid = models.CharField(max_length=15)
-    utm  = models.CharField(max_length=20)
+    utm = models.CharField(max_length=20)
     grid = models.CharField(max_length=4)
     dd_lat = models.FloatField()
     dd_lon = models.FloatField()
     basin = models.CharField(max_length=15)
-    deswby_lid  = models.CharField(max_length=30)
-    deswby  = models.CharField(max_length=30)
+    deswby_lid = models.CharField(max_length=30)
+    deswby = models.CharField(max_length=30)
 
     #a field to hold the text that will be displayed when we click on
     #a stocking site - saving it as a field reduces the number of
@@ -145,9 +142,6 @@ class StockingSite(models.Model):
 
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
-
-
-
 
     objects = models.GeoManager()
 
@@ -161,8 +155,7 @@ class StockingSite(models.Model):
         if not self.geom:
             self.geom = Point(float(self.dd_lon), float(self.dd_lat))
         self.popup_text = self.get_popup_text()
-        super(StockingSite, self).save( *args, **kwargs)
-
+        super(StockingSite, self).save(*args, **kwargs)
 
     def get_popup_text(self):
         '''The popup text will be displayed when the user clicks on a stocking
@@ -229,25 +222,22 @@ class StockingSite(models.Model):
         base = "{degrees}&#176;{dminutes:.3f}&#39; W"
         dd_lon = base.format(**dd2ddm(self.dd_lon))
 
-
         value_dict = {
-            'id':self.id,
-            'fsis_site_id':self.fsis_site_id,
-            'site_name':self.site_name,
-            'deswby_lid':self.deswby_lid,
-            'deswby':self.deswby,
-            'basin':self.basin,
-            'stkwby':self.stkwby,
-            'stkwby_lid':self.stkwby_lid,
-            'dd_lat':dd_lat,
-            'dd_lon':dd_lon,
-            'grid':self.grid,
-            'utm':self.utm,
-                }
+            'id': self.id,
+            'fsis_site_id': self.fsis_site_id,
+            'site_name': self.site_name,
+            'deswby_lid': self.deswby_lid,
+            'deswby': self.deswby,
+            'basin': self.basin,
+            'stkwby': self.stkwby,
+            'stkwby_lid': self.stkwby_lid,
+            'dd_lat': dd_lat,
+            'dd_lon': dd_lon,
+            'grid': self.grid,
+            'utm': self.utm,
+        }
 
         return popup_base.format(**value_dict)
-
-
 
 
 class Lot(models.Model):
@@ -277,14 +267,12 @@ class Lot(models.Model):
     class Meta:
         ordering = ['-spawn_year']
 
-
     def __unicode__(self):
         return "%s (%s yc %s)" % (self.fs_lot, self.spawn_year,
                                   self.species.common_name)
 
     def get_absolute_url(self):
         return reverse('lot_detail', args=[str(self.id)])
-
 
     def get_year(self):
             """
@@ -299,7 +287,6 @@ class Lot(models.Model):
                 yr = "20" + x[6:8]
             return yr
 
-
     def get_event_points(self):
         '''get the coordinates of events associated with this lot.  Returns a
         list of tuples.  Each tuple contains the fs_event id, dd_lat and
@@ -313,7 +300,7 @@ class Lot(models.Model):
 class Event(models.Model):
 
     lot = models.ForeignKey(Lot)
-    prj_cd =  models.CharField(max_length=13)
+    prj_cd = models.CharField(max_length=13)
     year = models.IntegerField(db_index=True)
     fs_event = models.IntegerField(unique=True)
     lotsam = models.CharField(max_length=8, null=True, blank=True)
@@ -352,37 +339,37 @@ class Event(models.Model):
         (81, 'Sac Fry (0-1 month)'),
         )
     development_stage = models.IntegerField(
-                                      choices=DEVELOPMENT_STAGE_CHOICES,
-                                      default=99)
+        choices=DEVELOPMENT_STAGE_CHOICES,
+        default=99)
 
     TRANSIT_METHOD_CHOICES = (
-        ('ATV','All-terrain vehicle'),
-        ('BOAT','Boat'),
-        ('PLANE','Fixed wing Airplane'),
-        ('TUG','Great Lakes Tug'),
-        ('HELICOPTER','Helicopter'),
-        ('INCUBATOR','In-stream incubation'),
-        ('BACKPACK','Personal backpack'),
-        ('SNOWMOBILE','Snowmobile'),
-        ('TRUCK','Truck'),
-        ('UNKNOWN','Unknown'), )
+        ('ATV', 'All-terrain vehicle'),
+        ('BOAT', 'Boat'),
+        ('PLANE', 'Fixed wing Airplane'),
+        ('TUG', 'Great Lakes Tug'),
+        ('HELICOPTER', 'Helicopter'),
+        ('INCUBATOR', 'In-stream incubation'),
+        ('BACKPACK', 'Personal backpack'),
+        ('SNOWMOBILE', 'Snowmobile'),
+        ('TRUCK', 'Truck'),
+        ('UNKNOWN', 'Unknown'), )
     transit = models.CharField(max_length=20,
-                                      choices=TRANSIT_METHOD_CHOICES,
-                                      default='UNKNOWN',
-                                      null=True, blank=True)
+                               choices=TRANSIT_METHOD_CHOICES,
+                               default='UNKNOWN',
+                               null=True, blank=True)
 
     STOCKING_METHOD_CHOICES = (
-        ('AERIAL DROP','Areal Drop'),
-        ('ICE','Under Ice'),
-        ('SUBMERGED','Submerged'),
-        ('SUBSURFACE','Subsurface'),
-        ('SURFACE','surface'),
-        ('UNKNOWN','Unknown'),
+        ('AERIAL DROP', 'Areal Drop'),
+        ('ICE', 'Under Ice'),
+        ('SUBMERGED', 'Submerged'),
+        ('SUBSURFACE', 'Subsurface'),
+        ('SURFACE', 'surface'),
+        ('UNKNOWN', 'Unknown'),
         )
-    stocking_method  = models.CharField(max_length=20,
-                                      choices=STOCKING_METHOD_CHOICES,
-                                      default='UNKNOWN',
-                                      null=True, blank=True)
+    stocking_method = models.CharField(max_length=20,
+                                        choices=STOCKING_METHOD_CHOICES,
+                                        default='UNKNOWN',
+                                        null=True, blank=True)
 
     STOCKING_PURPOSE_CHOICES = (
         ('UNKN', 'Unknown'),
@@ -401,10 +388,10 @@ class Event(models.Model):
         ('I', 'Re-introduction'),
         )
 
-    stocking_purpose =  models.CharField(max_length=4,
-                                      choices=STOCKING_PURPOSE_CHOICES,
-                                      default='UNKNOWN',
-                                      null=True, blank=True)
+    stocking_purpose = models.CharField(max_length=4,
+                                        choices=STOCKING_PURPOSE_CHOICES,
+                                        default='UNKNOWN',
+                                        null=True, blank=True)
     objects = models.GeoManager()
 
     class Meta:
@@ -414,7 +401,7 @@ class Event(models.Model):
         return 'fsis event : %s' % self.fs_event
 
     def get_absolute_url(self):
-        return ('event_detail', (), {'pk':self.id})
+        return ('event_detail', (), {'pk': self.id})
 
     def get_popup_text(self):
         '''The popup text will be displayed when the user clicks on a stocking
@@ -470,24 +457,23 @@ class Event(models.Model):
         </table>
         '''
 
-
         if self.event_date:
             event_date = self.event_date.strftime('%B %d %Y')
         else:
             event_date = "Some time in {}".format(self.year)
 
         value_dict = {
-                'id': self.id,
-                'fsis_id': self.fs_event,
-                'proponent_name': self.lot.proponent.proponent_name,
-                'site_name': self.site.site_name,
-                'event_date': event_date,
-                'stkcnt': self.stkcnt,
-                'lifestage':self.get_development_stage_display(),
-                'strain_name':self.lot.strain.strain_name,
-                'common_name':self.lot.species.common_name,
-                'scientific_name':self.lot.species.scientific_name,
-                }
+            'id': self.id,
+            'fsis_id': self.fs_event,
+            'proponent_name': self.lot.proponent.proponent_name,
+            'site_name': self.site.site_name,
+            'event_date': event_date,
+            'stkcnt': self.stkcnt,
+            'lifestage': self.get_development_stage_display(),
+            'strain_name': self.lot.strain.strain_name,
+            'common_name': self.lot.species.common_name,
+            'scientific_name': self.lot.species.scientific_name,
+        }
 
         return popup_base.format(**value_dict)
 
@@ -509,19 +495,17 @@ class Event(models.Model):
         can display them on the map using different colours.'''
         return self.lot.proponent.abbrev
 
-
     def save(self, *args, **kwargs):
         if not self.geom:
             self.geom = Point(float(self.dd_lon), float(self.dd_lat))
         self.popup_text = self.get_popup_text()
-        super(Event, self).save( *args, **kwargs)
-
+        super(Event, self).save(*args, **kwargs)
 
     def get_cwts(self):
         '''a simple method to get all of the cwts associated with a stocking
         event. (this should be optimized, but for now it works.)'''
 
-        cwts=[]
+        cwts = []
         te = self.taggingevent_set.values_list('id')
         if te:
             cwts = CWTs_Applied.objects.filter(tagging_event__in=te)
@@ -537,7 +521,7 @@ class Event(models.Model):
 
 
 class TaggingEvent(models.Model):
-    stocking_event= models.ForeignKey(Event)
+    stocking_event = models.ForeignKey(Event)
     fs_tagging_event_id = models.IntegerField(unique=True)
     retention_rate_pct = models.FloatField(null=True, blank=True)
     retention_rate_sample_size = models.IntegerField(null=True, blank=True)
@@ -552,8 +536,8 @@ class TaggingEvent(models.Model):
         (17, 'Sequential_CWT')
         )
 
-    tag_type =  models.IntegerField(choices=TAG_TYPE_CHOICES, db_index=True,
-                                     default=6)
+    tag_type = models.IntegerField(choices=TAG_TYPE_CHOICES, db_index=True,
+                                   default=6)
 
     TAG_POSITION_CHOICES = (
         (1, 'Flesh of Back'),
@@ -562,32 +546,30 @@ class TaggingEvent(models.Model):
         (4, 'Snout'),
         )
 
-    tag_position =  models.IntegerField(
-                                     choices=TAG_POSITION_CHOICES,
-                                     default=4)
+    tag_position = models.IntegerField(choices=TAG_POSITION_CHOICES,
+                                       default=4)
 
     TAG_ORIGIN_CHOICES = (
-       ('CFP', 'Community Fisheries Involvement Program(CFIP)'),
-       ('MNR', 'Ontario Ministry of Natural Resources'),
-       )
+        ('CFP', 'Community Fisheries Involvement Program(CFIP)'),
+        ('MNR', 'Ontario Ministry of Natural Resources'),
+    )
 
-    tag_origins =  models.CharField(max_length=3,
-                                     choices=TAG_ORIGIN_CHOICES,
-                                     default='MNR')
-
+    tag_origins = models.CharField(max_length=3,
+                                   choices=TAG_ORIGIN_CHOICES,
+                                   default='MNR')
 
     TAG_COLOUR_CHOICES = (
-       ('BLK', 'Black'),
-       ('BLU', 'Blue'),
-       ('GRN', 'Green'),
-       ('NON', 'Colourless'),
-       ('OTH', 'Other'),
-       ('UNK', 'Unknown'),
-       ('YEL', 'Yellow'),
-       )
-    tag_colour =  models.CharField(max_length=3,
-                                     choices=TAG_COLOUR_CHOICES,
-                                     default='NON')
+        ('BLK', 'Black'),
+        ('BLU', 'Blue'),
+        ('GRN', 'Green'),
+        ('NON', 'Colourless'),
+        ('OTH', 'Other'),
+        ('UNK', 'Unknown'),
+        ('YEL', 'Yellow'),
+    )
+    tag_colour = models.CharField(max_length=3,
+                                  choices=TAG_COLOUR_CHOICES,
+                                  default='NON')
 
     def __unicode__(self):
         return 'tagging event :%s' % self.id
@@ -613,7 +595,6 @@ class CWTs_Applied(models.Model):
 
     def get_stocking_events(self):
         pass
-
 
 
 class Lake(models.Model):
@@ -642,23 +623,23 @@ class ManagementUnit(models.Model):
     lake = models.ForeignKey(Lake, default=1)
 
     MU_TYPE_CHOICES = (
-       ('ltrz', 'Lake Trout Rehabilitation Zone'),
-       ('qma', 'Quota Management Area'),
+        ('ltrz', 'Lake Trout Rehabilitation Zone'),
+        ('qma', 'Quota Management Area'),
         #       ('stat_dist', 'Statistical District'),
-       )
+    )
 
-    mu_type =  models.CharField(max_length=10,
-                                choices=MU_TYPE_CHOICES,
-                                default='qma')
+    mu_type = models.CharField(max_length=10,
+                               choices=MU_TYPE_CHOICES,
+                               default='qma')
 
     class Meta:
-        ordering = ['mu_type','label']
+        ordering = ['mu_type', 'label']
 
     def get_slug(self):
         '''the name is a concatenation of lake base name, the managemnet unit
         type and and the management unit label'''
         lake = str(self.lake)
-        lake = lake.lower().replace('lake','').strip()
+        lake = lake.lower().replace('lake', '').strip()
         return slugify('_'.join([lake, self.mu_type, self.label]))
 
     def name(self):
@@ -673,7 +654,7 @@ class ManagementUnit(models.Model):
         """
         #if not self.slug:
         self.slug = self.get_slug()
-        super(ManagementUnit, self).save( *args, **kwargs)
+        super(ManagementUnit, self).save(*args, **kwargs)
 
 
 ##
