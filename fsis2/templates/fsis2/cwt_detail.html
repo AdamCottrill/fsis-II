@@ -16,146 +16,148 @@
 {% block content %}
 {% load humanize %}
 
-
-<div class="container">
+<h3>Ontario Events</h3>
+{{ events|geojsonfeature:"popup_text"|safe }}
+<h3>US Events:</h3>
+{{ us_events|geojsonfeature:"popup_text"|safe }}
 
   <div class="row">
 
-      {% if multiple %}
-      <h2> CWT Number: {{ cwt|first }} </h2>
-      <div class="alert alert-danger">
-          WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN  ONCE.  INTERPRET WITH CAUTION.</p>
-      </div>
+    {% if multiple %}
+    <h2> CWT Number: {{ cwt|first }} </h2>
+    <div class="alert alert-danger">
+      WARNING - THIS CWT APPEARS TO HAVE BEEN USED MORE THAN  ONCE.  INTERPRET WITH CAUTION.</p>
+    </div>
 
-      <div class="col-md-5">
-          <ul class="nav nav-pills">
-              {% for tag in cwt %}
-              <li><a href="#{{ forloop.counter }}" data-toggle="tab">{{ forloop.counter }}</a></li>
-              {% endfor %}
-          </ul>
-          <div class="tab-content">
-              {% for tag in cwt %}
-              {% if forloop.counter == 1 %}
-                 <div class="tab-pane active" id="{{ forloop.counter }}">
-              {% else %}
-                 <div class="tab-pane" id="{{ forloop.counter }}">
-               {% endif %}
-                      <ul class="nav nav-tabs">
-                          <li><a href="#details{{ forloop.counter }}" data-toggle="tab">Details</a></li>
-                          <li><a href="#ageatcapture{{ forloop.counter }}" data-toggle="tab">Age At Capture</a></li>
-                      </ul>
-                      <div class="tab-content">
-                          <div class="tab-pane active" id="details{{ forloop.counter }}">
-                              <table class="table">
-                                  <tr>
-                                      <td>  <b>Species:</b></td>
-                                      <td> {{ tag.spc.common_name }}
-                                          (<em>{{tag.spc.scientific_name}}</em>) </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Strain:</b></td>
-                                      <td> {{ tag.get_strain_display }} ({{ tag.strain }})</td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Year Class:</b></td>
-                                      <td> {{ tag.year_class }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Stocking Year:</b></td>
-                                      <td> {{ tag.stock_year }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Life Stage:</b></td>
-                                      <td> {{ tag.get_development_stage_display }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Clip Applied:</b></td>
-                                      <td> {{ tag.clipa }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Release Basin:</b></td>
-                                      <td> {{ tag.get_release_basin_display }} </td>
-                                  </tr>
+    <div class="col-md-5">
+      <ul class="nav nav-pills">
+        {% for tag in cwt %}
+        <li><a href="#{{ forloop.counter }}" data-toggle="tab">{{ forloop.counter }}</a></li>
+        {% endfor %}
+      </ul>
+      <div class="tab-content">
+        {% for tag in cwt %}
+        {% if forloop.counter == 1 %}
+        <div class="tab-pane active" id="{{ forloop.counter }}">
+          {% else %}
+          <div class="tab-pane" id="{{ forloop.counter }}">
+            {% endif %}
+            <ul class="nav nav-tabs">
+              <li><a href="#details{{ forloop.counter }}" data-toggle="tab">Details</a></li>
+              <li><a href="#ageatcapture{{ forloop.counter }}" data-toggle="tab">Age At Capture</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="details{{ forloop.counter }}">
+                <table class="table">
+                  <tr>
+                    <td>  <b>Species:</b></td>
+                    <td> {{ tag.spc.common_name }}
+                      (<em>{{tag.spc.scientific_name}}</em>) </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Strain:</b></td>
+                    <td> {{ tag.get_strain_display }} ({{ tag.strain }})</td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Year Class:</b></td>
+                    <td> {{ tag.year_class }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Stocking Year:</b></td>
+                    <td> {{ tag.stock_year }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Life Stage:</b></td>
+                    <td> {{ tag.get_development_stage_display }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Clip Applied:</b></td>
+                    <td> {{ tag.clipa }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Release Basin:</b></td>
+                    <td> {{ tag.get_release_basin_display }} </td>
+                  </tr>
 
-                                  <tr>
-                                      <td>  <b>Stocking Location:</b></td>
-                                      <td> {{ tag.plant_site|title }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>LTRZ:</b></td>
-                                      <td> {{ tag.get_ltrz_display }} ({{ tag.ltrz }}) </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Tag Count:</b></td>
-                                      <td> {{ tag.tag_cnt|intcomma }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Agency:</b></td>
-                                      <td> {{ tag.agency }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Hatchery:</b></td>
-                                      <td> {{ tag.hatchery }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Tag Manufacturer:</b></td>
-                                      <td> {{ tag.get_cwt_mfr_display }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Tag Type:</b></td>
-                                      <td> {{ tag.get_tag_type_display }} </td>
-                                  </tr>
+                  <tr>
+                    <td>  <b>Stocking Location:</b></td>
+                    <td> {{ tag.plant_site|title }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>LTRZ:</b></td>
+                    <td> {{ tag.get_ltrz_display }} ({{ tag.ltrz }}) </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Tag Count:</b></td>
+                    <td> {{ tag.tag_cnt|intcomma }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Agency:</b></td>
+                    <td> {{ tag.agency }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Hatchery:</b></td>
+                    <td> {{ tag.hatchery }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Tag Manufacturer:</b></td>
+                    <td> {{ tag.get_cwt_mfr_display }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Tag Type:</b></td>
+                    <td> {{ tag.get_tag_type_display }} </td>
+                  </tr>
 
-                                  {% if tag.tag_type == 17 %}
-                                  <tr>
-                                      <td>  <b>Sequence Range:</b></td>
-                                      <td> {{ tag.seq_start|intcomma }} - {{ tag.seq_end|intcomma }} </td>
-                                  </tr>
-                                  {% endif %}
+                  {% if tag.tag_type == 17 %}
+                  <tr>
+                    <td>  <b>Sequence Range:</b></td>
+                    <td> {{ tag.seq_start|intcomma }} - {{ tag.seq_end|intcomma }} </td>
+                  </tr>
+                  {% endif %}
 
-                                  <tr>
-                                      <td>  <b>CWT Reused:</b></td>
-                                      <td> {{ tag.cwt_reused }} </td>
-                                  </tr>
-                                  <tr>
-                                      <td>  <b>Comments:</b></td>
-                                      <td> {{ tag.comments }} </td>
-                                  </tr>
-                              </table>
-                          </div>
-
-                          <div class="tab-pane" id="ageatcapture{{ forloop.counter }}">
-                              {% if tag.age_at_capture %}
-                              <table class="table">
-                                  <tr>
-                                      <td>  <b>Year of Capture</b></td>
-                                      <td> <b>Age</b></td>
-                                  </tr>
-                                  {% for yr in tag.age_at_capture %}
-                                  <tr>
-                                      <td>{{ yr.1 }} </td><td> {{ yr.0}} </td>
-                                  </tr>
-                                  {% endfor %}
-                              </table>
-                              {% else %}
-                              <p>Age at capture is not currently available for {{ tag.cwt }}.</p>
-                              {% endif %}
-                          </div>
-                      </div>
-                      <script type="text/javascript">
-                       $('#myTab{{ forloop.counter }} a').click(function (e) {
-                           e.preventDefault()
-                               $(this).tab('show')
-                       })
-                      </script>
-                  </div>
-                  {% endfor %}
+                  <tr>
+                    <td>  <b>CWT Reused:</b></td>
+                    <td> {{ tag.cwt_reused }} </td>
+                  </tr>
+                  <tr>
+                    <td>  <b>Comments:</b></td>
+                    <td> {{ tag.comments }} </td>
+                  </tr>
+                </table>
               </div>
+
+              <div class="tab-pane" id="ageatcapture{{ forloop.counter }}">
+                {% if tag.age_at_capture %}
+                <table class="table">
+                  <tr>
+                    <td>  <b>Year of Capture</b></td>
+                    <td> <b>Age</b></td>
+                  </tr>
+                  {% for yr in tag.age_at_capture %}
+                  <tr>
+                    <td>{{ yr.1 }} </td><td> {{ yr.0}} </td>
+                  </tr>
+                  {% endfor %}
+                </table>
+                {% else %}
+                <p>Age at capture is not currently available for {{ tag.cwt }}.</p>
+                {% endif %}
+              </div>
+            </div>
+            <script type="text/javascript">
+             $('#myTab{{ forloop.counter }} a').click(function (e) {
+               e.preventDefault()
+               $(this).tab('show')
+             })
+            </script>
           </div>
+          {% endfor %}
+        </div>
+      </div>
 
 
       {% else %}
-         <!-- single cwt -->
+      <!-- single cwt -->
       <h2> CWT Number: {{ cwt }} </h2>
 
       <div class="col-md-5">
@@ -193,8 +195,8 @@
               </tr>
 
               <tr>
-                  <td>  <b>Release Basin:</b></td>
-                  <td>{{ cwt.get_release_basin_display }} </td>
+                <td>  <b>Release Basin:</b></td>
+                <td>{{ cwt.get_release_basin_display }} </td>
               </tr>
 
               <tr>
@@ -261,14 +263,14 @@
             {% endif %}
           </div>
         </div>
-    </div>
+      </div>
 
-    {% endif %}
+      {% endif %}
 
-    <div class="col-md-7">
-          <div id="main_map" style="width: 800px; height: 700px;"></div>
-    </div>
-  </div>
+      <div class="col-md-7">
+        <div id="main_map" style="width: 800px; height: 700px;"></div>
+      </div>
+    </div> <!-- row -->
 
   <div id="events" class="row">
     <hr />
@@ -276,7 +278,7 @@
     {% if events %}
     <table id="myTable" class="table tablesorter">
       <thead><tr><td>FSIS Event</td><td>Number Stocked</td> <td>Event Date</td>
-          <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
+        <td>Site Name</td><td>Clip Applied</td> <td>Development Stage</td></tr>
       </thead>
       <tbody>
         {% for event in events %}
@@ -292,13 +294,13 @@
       </tbody>
     </table>
     {% else %}
-      {% ifequal cwt.agency "OMNR" %}
+    {% ifequal cwt.agency "OMNR" %}
     <div class="alert alert-danger">
       <p>There are no Ontario stocking events associated with cwt {% if multiple %}{{ cwt|first }}{% else %}{{ cwt }}{% endif %}.   According to the Agency code there should be.</p>
     </div>
-      {% else %}
-      <p>There are no Ontario stocking events associated with cwt {% if multiple %}{{ cwt|first }}{% else %}{{ cwt }}{% endif %}.</p>
-      {% endifequal %}
+    {% else %}
+    <p>There are no Ontario stocking events associated with cwt {% if multiple %}{{ cwt|first }}{% else %}{{ cwt }}{% endif %}.</p>
+    {% endifequal %}
     {% endif %}
   </div>
 
@@ -308,14 +310,14 @@
     {% if recoveries %}
     <table id="myTable" class="table tablesorter">
       <thead><tr>
-          <td>Year</td>
-          <td>Source</td>
-          <td>Recovery Date</td>
-          <td>5-Minute Grid</td>
-          <td>Project Key</td>
-          <td>Species</td>
-          <td>Fork Length(mm)</td>
-          <td>Age</td></tr>
+        <td>Year</td>
+        <td>Source</td>
+        <td>Recovery Date</td>
+        <td>5-Minute Grid</td>
+        <td>Project Key</td>
+        <td>Species</td>
+        <td>Fork Length(mm)</td>
+        <td>Age</td></tr>
       </thead>
       <tbody>
         {% for recovery in recoveries %}
@@ -337,17 +339,19 @@
     {% endif %}
   </div>
 
-
 </div>
+
+
+
 
 {% include 'fsis2/_doc_ready_simple_map.html' %}
 {% include 'fsis2/_table_sorter.html' %}
 
 <script type="text/javascript">
-  $('#myTab a').click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
-  })
+ $('#myTab a').click(function (e) {
+   e.preventDefault()
+   $(this).tab('show')
+ })
 </script>
 
 

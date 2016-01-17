@@ -17,6 +17,7 @@ hatchery
 comments
 '''
 
+import re
 
 from django.db import models
 from django.contrib import admin
@@ -157,9 +158,12 @@ class CWT_recovery(models.Model):
             'age': self.age
         }
 
-        return base_string.format(**value_dict)
+        popup = base_string.format(**value_dict)
+        #strip out leading whitespaces and carriage returns from our popup html
+        r = re.compile(r'^\s+', re.MULTILINE)
+        popup = r.sub('', popup).replace('\n', '')
 
-
+        return popup
 
 
 class CWT(models.Model):
@@ -451,7 +455,15 @@ class CWT(models.Model):
 
         }
 
-        return base_string.format(**value_dict)
+        #return base_string.format(**value_dict)
+        popup = base_string.format(**value_dict)
+        #strip out leading whitespaces and carriage returns from our popup html
+        r = re.compile(r'^\s+', re.MULTILINE)
+        popup = r.sub('', popup).replace('\n', '')
+
+        return popup
+
+
 
     def age_at_capture(self):
         """return a tuple of two element tuples - respresenting the age of

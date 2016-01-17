@@ -693,7 +693,6 @@ def cwt_detail_view(request, cwt_number):
 
     '''
 
-
     #the cwt detail page required:
     # cwt(s) - from cwts_cwt that match cwt_number
     # events - omnr stocking events associated with cwt_number
@@ -721,15 +720,15 @@ def cwt_detail_view(request, cwt_number):
     us_events = CWT.objects.filter(cwt=cwt_number).exclude(agency='OMNR').\
                 order_by('seq_start', '-stock_year')
 
+
     return render_to_response('fsis2/cwt_detail.html',
                               {'cwt': cwt,
                                'events': events,
-                               'us_events':us_events,
+                               'us_events': us_events,
                                'recoveries': recoveries,
-                               'multiple':multiple,
-                           },
+                               'multiple': multiple,
+                               },
                               context_instance=RequestContext(request))
-
 
 
 def cwt_recovered_roi(request):
@@ -758,6 +757,8 @@ def cwt_recovered_roi(request):
 
             if roi.geom_type=='LinearRing':
                 roi = Polygon(roi)
+
+            import pdb;pdb.set_trace()
 
             #stocking events
             if species:
