@@ -17,3 +17,6 @@ main/whoosh_index/*
 *TAGS
 *.db
 *flymake*
+*.pdf
+*.png
+*.tex
