@@ -26,7 +26,7 @@
 
 
 
-CREATE OR REPLACE FUNCTION cwts_recovered_geom(_geom geometry, 
+CREATE OR REPLACE FUNCTION cwts_recovered_geom(_geom char, 
 						_fyear int, 
 						_lyear int, 
 						_spc_ids int[] DEFAULT '{}') 
@@ -56,7 +56,7 @@ JOIN fsis2_species AS spc on spc.id=cwt_recovery.spc_id
         fs_event.year <= _lyear and
         tagging_event.tag_type=6 and -- normal cwts        
         spc.id = ANY(_spc_ids) and
-        st_intersects (fs_event.geom,_geom)) AS events
+        st_intersects (fs_event.geom, st_setsrid(st_geomfromgeojson(_geom),4326))) AS events
     ON (events.species_id = cwt_recovery.spc_id
    AND events.cwt = cwt_recovery.cwt);
 
@@ -78,7 +78,7 @@ JOIN fsis2_species AS spc on spc.id=cwt_recovery.spc_id
         fs_event.year >= _fyear AND
         fs_event.year <= _lyear AND       
         tagging_event.tag_type=6 AND
-        st_intersects (fs_event.geom,_geom)) AS events
+        st_intersects (fs_event.geom,st_setsrid(st_geomfromgeojson(_geom),4326))) AS events
     ON (events.species_id = cwt_recovery.spc_id
    AND events.cwt = cwt_recovery.cwt);
 
@@ -86,15 +86,16 @@ END IF;
 END;
 $func$  LANGUAGE 'plpgsql'
 
+
+
 -- without speceis ids:
 select * from cwts_recovered_geom(
-	st_setsrid(st_geomfromgeojson(
 		'{"type": "Polygon", "coordinates": [[
 		[-82.271, 45.514], 
 		[-82.380, 44.512], 
 		[-81.128, 44.449], 
 		[-81.172, 45.406], 
-		[-82.271, 45.514]]]}'),4326), 1995, 2001);
+		[-82.271, 45.514]]]}', 1995, 2001);
 
 -- with several speceis ids:
 select * from cwts_recovered_geom(
@@ -263,7 +264,7 @@ select * from cwts_stocking_events_mu('4-4', 1990, 2005,  VARIADIC ARRAY[39]) li
 
 --===============================================================
 
-CREATE OR REPLACE FUNCTION cwts_stocking_events_geom(_geom geometry, 
+CREATE OR REPLACE FUNCTION cwts_stocking_events_geom(_geom char, 
 						   _fyear int, 
 						   _lyear int, 
 						   _spc_ids int[] DEFAULT '{}') 
@@ -293,7 +294,7 @@ FROM fsis2_event AS fs_event
         spc.id = ANY(_spc_ids) and 
         recovery.recovery_year >= _fyear and 
         recovery.recovery_year <= _lyear and
-        st_intersects (recovery.geom,_geom)) AS cwts
+        st_intersects (recovery.geom, st_setsrid(st_geomfromgeojson(_geom),4326))) AS cwts
     ON (cwts.cwt = cwts_applied.cwt
    AND cwts.spc_id = lot.species_id)
    WHERE tagging_event.tag_type=6;
@@ -315,7 +316,7 @@ FROM fsis2_event AS fs_event
         WHERE 
         recovery.recovery_year >= _fyear and 
         recovery.recovery_year <= _lyear and
-        st_intersects (recovery.geom,_geom)) AS cwts
+        st_intersects (recovery.geom, st_setsrid(st_geomfromgeojson(_geom),4326))) AS cwts
     ON (cwts.cwt = cwts_applied.cwt
    AND cwts.spc_id = lot.species_id)
    WHERE tagging_event.tag_type=6;
@@ -326,23 +327,21 @@ $func$  LANGUAGE 'plpgsql'
 
 -- without speceis ids:
 select * from cwts_stocking_events_geom(
-	st_setsrid(st_geomfromgeojson(
 		'{"type": "Polygon", "coordinates": [[
 		[-82.271, 45.514], 
 		[-82.380, 44.512], 
 		[-81.128, 44.449], 
 		[-81.172, 45.406], 
-		[-82.271, 45.514]]]}'),4326), 1995, 2001);
+		[-82.271, 45.514]]]}', 1995, 2001);
 
 -- with several speceis ids:
 select * from cwts_stocking_events_geom(
-	st_setsrid(st_geomfromgeojson(
 		'{"type": "Polygon", "coordinates": [[
 		[-82.271, 45.514], 
 		[-82.380, 44.512], 
 		[-81.128, 44.449], 
 		[-81.172, 45.406], 
-		[-82.271, 45.514]]]}'),4326), 1990, 2005,  VARIADIC ARRAY[31, 35, 39]);
+		[-82.271, 45.514]]]}', 1990, 2005,  VARIADIC ARRAY[31,35,39]);
 
 -- with one species id
 select * from cwts_stocking_events_geom(
