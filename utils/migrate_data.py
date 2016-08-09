@@ -59,8 +59,11 @@ TAG_POSITIONS = {
 
 #are we working in the deployment machine or just locally?
 DEPLOY = False
-#DEPLOY = True
 
+#override DEPLOY if it was passed in as a command line option.
+for arg in sys.argv[1:]:
+    exec(arg)
+assert type(DEPLOY) == bool
 
 #========================================
 #            DATA SOURCE
@@ -103,7 +106,7 @@ src_cur = src_conn.cursor()
 if DEPLOY:
     #engine = create_engine('postgresql://adam:django@localhost/fsis2')
     #this will connect to post gres instance on the desktop machine
-    engine = create_engine('postgresql://adam:django@142.143.160.56/fsis2')
+    engine = create_engine('postgresql://cottrillad:django@142.143.160.56/fsis2')
 else:
     #engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
     engine = create_engine('postgresql://cottrillad:django@localhost/fsis2')
@@ -118,6 +121,10 @@ session = Session()
 
 # make sure that any old data in the target database is removed before
 # we append in new data.
+
+session.execute('TRUNCATE cwts_cwt_recovery;')
+session.execute('TRUNCATE cwts_cwt;')
+
 
 session.query(CWTs_Applied).delete()
 session.query(TaggingEvent).delete()
@@ -163,11 +170,10 @@ print("'%s' Transaction Complete (%s)"  % \
 table = "species"
 print("Uploading '%s'..."  % table)
 
-sql = """
-SELECT SPC.SPC, StrConv(IIf(IsNull([sPC].[SPC_NMCO]),
-[SPC].[SPC_NMSC],[SPC].[SPC_NMCO]),3) AS SPC_NMCO, SPC.SPC_NMSC
+sql = """SELECT SPC, SPC_NM, SPC_NMSC
 FROM SPC
-WHERE (((SPC.SPC) Not In ('000','032', 998','999')))
+WHERE SPC.SPC Not In ('000','032', '998','999')
+AND SPC_NM is not null and SPC_NMSC is not null
 ORDER BY SPC.SPC;
 """
 
@@ -179,16 +185,20 @@ ORDER BY SPC.SPC;
 src_cur.execute(sql)
 data = src_cur.fetchall()
 
-8for row in data:
+for row in data:
     item = Species(species_code = row['SPC'],
             common_name = row['SPC_NM'],
             scientific_name = row['SPC_NMSC'])
     session.add(item)
 
-
-
+#manually add backcross - they don't have a sci. name but we need them
+#because they were stocked.
+item = Species(species_code = '087',
+            common_name = 'Backcross Lake Trout')
+session.add(item)
 
 session.commit()
+
 
 now = datetime.datetime.now()
 print("'%s' Transaction Complete (%s)"  % \
@@ -302,10 +312,17 @@ print("Uploading '%s'..."  % table)
 #note - query aggregates by strain, spawn year, rearing location
 # and does not include project code or year -
 
+#sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
+#         PROPONENT_NAME as abbrev, PROPONENT_TYPE FROM FS_Lots
+#         GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
+#         PROPONENT_NAME, PROPONENT_TYPE;'''
+
+## includes join to standardize proponent names:
 sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
-         PROPONENT_NAME as abbrev, PROPONENT_TYPE FROM FS_Lots
+         short as abbrev, PROPONENT_TYPE FROM FS_Lots
+         join TL_proponentNames as x on x.proponent_name_is=FS_Lots.proponent_name
          GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
-         PROPONENT_NAME, PROPONENT_TYPE;'''
+         abbrev, PROPONENT_TYPE;'''
 
 
 src_cur.execute(sql)
@@ -359,33 +376,38 @@ print("Uploading '%s'..."  % table)
 
 #SQLITE SYNTAX:
 
-sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
-            FS_Events.SITE_ID, FS_Events.PRJ_CD, FS_Events.Event AS fs_event,
-            FS_Events.LOTSAM, FS_Events.Year, FS_Events.Event_Date, FS_Events.CLIPA,
-            FS_Events.FISH_AGE, FS_Events.STKCNT, FS_Events.FISH_WT,
-            FS_Events.RECORD_BIOMASS_CALC, FS_Events.REARTEM, FS_Events.SITEM,
-            FS_Events.TRANSIT_MORTALITY_COUNT AS mortality, FS_Events.DD_LAT,
-            FS_Events.DD_LON,
-            CASE WHEN [FS_EVENTS].[DEV_CODE] is NULL THEN 99
-            ELSE [FS_EVENTS].[DEV_CODE] END as DEV_CODE,
-            DEV_CODE, FS_Events.TRANSIT, FS_Events.METHOD, FS_Events.STKPUR
-            FROM FS_Lots INNER JOIN FS_Events ON (FS_Lots.SPC = FS_Events.SPC)
-            AND (FS_Lots.LOT= FS_Events.LOT)
-            AND (FS_Lots.PRJ_CD = FS_Events.PRJ_CD);'''
+sql = '''select fs_events.spc, fs_lots.spawn_year, fs_events.lot,
+            fs_events.site_id, fs_events.prj_cd, fs_events.event as fs_event,
+            fs_events.lotsam, fs_events.year, fs_events.event_date, fs_events.clipa,
+            fs_events.fish_age, fs_events.stkcnt, fs_events.fish_wt,
+            fs_events.record_biomass_calc, fs_events.reartem, fs_events.sitem,
+            fs_events.transit_mortality_count as mortality, fs_events.dd_lat,
+            fs_events.dd_lon,
+            case when [fs_events].[dev_code] is null then 99
+            else [fs_events].[dev_code] end as dev_code,
+            dev_code, fs_events.transit, fs_events.method, fs_events.stkpur
+            from fs_lots inner join fs_events on (fs_lots.spc = fs_events.spc)
+            and (fs_lots.lot= fs_events.lot)
+            and (fs_lots.prj_cd = fs_events.prj_cd);'''
 
 
 src_cur.execute(sql)
 data = src_cur.fetchall()
 
-for row in data:
-    pt = "POINT(%s %s)" % (row['DD_LON'], row['DD_LAT'])
+col_names = [x[0].lower() for x in src_cur.description]
+
+for x in data:
+    row = dict(zip(col_names, x))
+    pt = "POINT(%s %s)" % (row['dd_lon'], row['dd_lat'])
     #get objects referenced by foreign key
-    spc = session.query(Species).filter_by(species_code=row['SPC']).one()
+
+    spc = session.query(Species).filter_by(species_code=row['spc']).one()
     lot = session.query(Lot).filter_by(species_id=spc.id,
-                                       fs_lot=row['lot'],
+                                       fs_lot=row['lot'].strip(),
                                        spawn_year=row['spawn_year']).one()
     site = session.query(StockingSite).filter_by(
         fsis_site_id=row['site_id']).one()
+
     item = Event(
         lot_id = lot.id,
         site_id = site.id,
@@ -402,7 +424,7 @@ for row in data:
         reartem = row['reartem'],
         sitem = row['sitem'],
         transit_mortality_count = row['mortality'],
-        development_stage = row['dev_code'],
+        development_stage =  99 if row.get('dev_code') is None else row.get('dev_code'),
         transit = upper_or_none(row['transit']),
         stocking_method = upper_or_none(row['method']),
         stocking_purpose = upper_or_none(row['stkpur']),

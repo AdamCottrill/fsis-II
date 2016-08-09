@@ -32,8 +32,8 @@ import sqlite3
 DEPLOY = False
 
 #here is where we will place the clone after we make it:
-deploy_dir = r'X:/djcode/fsis2/utils/data'
-#deploy_dir = r'C:/1work/python/djcode/fsis2/utils/data'
+#deploy_dir = r'X:/djcode/fsis2/utils/data'
+deploy_dir = r'C:/1work/python/djcode/fsis2/utils/data'
 
 #trg =  r'C:/1work/ScrapBook/clone_fs_master/FS_Master.db'
 trg = r'c:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db'
