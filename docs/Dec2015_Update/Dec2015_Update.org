@@ -1,0 +1,64 @@
+#+TITLE:FSIS-II
+#+AUTHOR: An Update
+#+DATE:  December 10, 2015.
+
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [presentation, smaller]
+#+BEAMER_THEME: default
+#+COLUMNS: %40ITEM %10BEAMER_env(Env) %9BEAMER_envargs(Env Args) %4BEAMER_col(Col) %10BEAMER_extra(Extra)
+
+#+BEAMER_FRAME_LEVEL: 1
+
+#+OPTIONS:   toc:nil ^:nil
+#+latex_header: \mode<beamer>{\usetheme{Boadilla}\usecolortheme[RGB={40,100,30}]{structure}}
+#+latex_header: \usebackgroundtemplate{\includegraphics[width=\paperwidth]{MNRwhite}}
+#+latex_header: \setbeamersize{text margin left=10mm}
+
+
+* Refresh of FSIS-II
+  + available at: [[http:\\142.143.160.56:8090]]
+  + Django 1.8.7
+  + >90% test coverage
+
+* Updates include:
+  - default view stocking in most recent year
+  - better, more interactive maps
+  - pages are 'save and send'
+  - hatchery list has year range and quick-search
+  - all cwts :
+    + all species in CWT_Master.xls
+    + including those from other jurisdictions
+* Maps
+
+** Text
+    :PROPERTIES:
+    :BEAMER_col: 0.4
+    :END:
+  + informative, context specific pop-up
+  + some maps have tabs control what is displayed
+  + 'Find Sites' and 'Find Events' save 'Region of Interest'
+    + editable with back-button
+** Map
+    :PROPERTIES:
+    :BEAMER_col: 0.6
+    :END:
+#+latex:\fbox{\includegraphics[width=0.9\textwidth]{example_map}}
+
+
+* Comments and Caveats
+
+** Text
+    :PROPERTIES:
+    :BEAMER_col: 0.4
+    :END:
+
+  + still under development
+  + interpret CWT recovery by Management Unit with caution - re-used
+    tags currently cause problems
+  + Stocking events by strain by year not currently available
+
+** Map
+    :PROPERTIES:
+    :BEAMER_col: 0.6
+    :END:
+#+latex:\fbox{\includegraphics[width=0.9\textwidth]{caution}}
