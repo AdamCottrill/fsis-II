@@ -22,15 +22,21 @@ A. Cottrill
 
 import pyodbc
 import psycopg2
+import sys
 
 DBASE = 'fsis2'
 PG_USER = 'cottrillad'
 PG_PW = 'django'
 
 DEPLOY = False
-REMOTE_IP = '142.143.160.51'
+#override DEPLOY if it was passed in as a command line option.
+for arg in sys.argv[1:]:
+    exec(arg)
+assert type(DEPLOY) == bool
 
-def truc_cwts_cwt(pgconstr):
+REMOTE_IP = '142.143.160.56'
+
+def trunc_cwts_cwt(pgconstr):
     """'a helper function to clear data out of the table [cwts_cwt].'
 
     Arguments: - `constr`: connection string required for postgres
@@ -287,7 +293,7 @@ pgcur.close()
 pgconn.close()
 print('OMNR tags committed and connection closed.')
 
-print("Don't forget to open a django shell and resave the cwts!")
+print("Don\'t forget to open a django shell and resave the cwts!")
 
 # from cwts.models import CWT
 # cwts = CWT.objects.all()

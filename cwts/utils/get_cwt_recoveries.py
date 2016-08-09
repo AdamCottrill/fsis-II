@@ -18,12 +18,20 @@ A. Cottrill
 
 import pyodbc
 import psycopg2
+import sys
 
 DBASE = 'fsis2'
 PG_USER = 'cottrillad'
 PG_PW = 'django'
 
 DEPLOY = False
+
+#override DEPLOY if it was passed in as a command line option.
+for arg in sys.argv[1:]:
+    exec(arg)
+assert type(DEPLOY) == bool
+
+
 REMOTE_IP = '142.143.160.56'
 
 print("Retrieving  recoveries ...")
@@ -59,6 +67,8 @@ sql = '''SELECT All_Sam_Info.Source, All_BioData.Year AS recovery_year,
       '''
 
 cur.execute(sql)
+
+
 
 col_names = [x[0].lower() for x in cur.description]
 
