@@ -200,6 +200,9 @@ def find_sites(request):
             sites = StockingSite.objects.filter(
                     geom__within=roi)
 
+
+            import pdb;pdb.set_trace()
+
             #now filter for our optional fields:
             if species:
                 sites = sites.filter(event__lot__species__in=species)
