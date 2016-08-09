@@ -125,7 +125,7 @@ class StockingSite(Base):
     popup_text  = Column(String(2000))
 
     def __repr__(self):
-        return "<%s (%s)>" % (self.site_name, self.site_id)
+        return "<%s (%s)>" % (self.site_name, self.fsis_site_id)
 
 
 class Lot(Base):
