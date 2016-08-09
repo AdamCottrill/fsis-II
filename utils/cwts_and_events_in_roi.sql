@@ -33,7 +33,7 @@ FROM fsis2_event AS fs_event
 
 
 -- same as above but with a filter on species code and recovery year:
-SELECT distinct spc.common_name, fs_event.*
+SELECT distinct fs_event.*
 FROM fsis2_event AS fs_event
   JOIN fsis2_lot AS lot ON lot.id = fs_event.lot_id
   join fsis2_species as spc on spc.id=lot.species_id
@@ -50,7 +50,10 @@ FROM fsis2_event AS fs_event
         st_intersects (recovery.geom,(SELECT geom FROM fsis2_managementunit WHERE slug = 'ltrz-12'))) AS cwts
     ON (cwts.cwt = cwts_applied.cwt
    AND cwts.spc_id = lot.species_id)
+   WHERE tagging_event.tag_type=6;
 
+
+select * from cwts_cwt_recovery where cwt like '%-%';
 
 -- now find all of the recoveries of stocking events in a roi given a species code, first year and last year:
 SELECT distinct common_name, cwt_recovery.*
@@ -106,3 +109,143 @@ drop function foofunc();
 create function GetSpecies() returns setof fsis2_species as 'select * from fsis2_species;' language 'sql';
 drop function GetSpecies();
 select * from getspecies();
+
+
+select prosrc from pg_proc where proname= 'foofunc'; 
+
+prosrc
+
+BEGIN
+RETURN QUERY
+SELECT * from cwts_cwt_recovery as r
+WHERE r.recovery_year >= _fyear
+AND   r.recovery_year <= _lyear 
+
+LIMIT 10;
+END
+
+
+BEGIN
+IF _spc_ids <> '{}'::int[] then
+RETURN QUERY
+SELECT * from cwts_cwt_recovery as r
+WHERE r.recovery_year >= _fyear
+AND   r.recovery_year <= _lyear 
+AND r.spc_id = ANY(_spc_ids)
+LIMIT 10;
+
+ELSE
+RETURN QUERY
+SELECT * from cwts_cwt_recovery as r
+WHERE r.recovery_year >= _fyear
+AND   r.recovery_year <= _lyear 
+LIMIT 10;
+
+END IF;
+
+END;
+
+
+BEGIN
+IF _spc_ids <> '{}'::int[] then
+RETURN QUERY
+
+SELECT distinct cwt_recovery.* 
+FROM cwts_cwt_recovery AS cwt_recovery
+join fsis2_species as spc on spc.id=cwt_recovery.spc_id
+  JOIN (SELECT DISTINCT fs_event.id,
+               cwt,
+               species_id
+        FROM fsis2_cwts_applied AS cwts_applied
+          JOIN fsis2_taggingevent AS tagging_event ON cwts_applied.tagging_event_id = tagging_event.id
+          JOIN fsis2_event AS fs_event ON fs_event.id = tagging_event.stocking_event_id
+          JOIN fsis2_lot AS lot ON lot.id = fs_event.lot_id
+          join fsis2_species as spc on spc.id=lot.species_id
+        WHERE 
+        fs_event.year >= _fyear and
+        fs_event.year <= _lyear and
+        spc.species_code = ANY(_spc_ids) and
+        st_intersects (fs_event.geom,(SELECT geom FROM fsis2_managementunit WHERE slug = _geom))) AS events
+    ON (events.species_id = cwt_recovery.spc_id
+   AND events.cwt = cwt_recovery.cwt);
+
+ELSE
+RETURN QUERY
+
+SELECT distinct cwt_recovery.* 
+FROM cwts_cwt_recovery AS cwt_recovery
+join fsis2_species as spc on spc.id=cwt_recovery.spc_id
+  JOIN (SELECT DISTINCT fs_event.id,
+               cwt,
+               species_id
+        FROM fsis2_cwts_applied AS cwts_applied
+          JOIN fsis2_taggingevent AS tagging_event ON cwts_applied.tagging_event_id = tagging_event.id
+          JOIN fsis2_event AS fs_event ON fs_event.id = tagging_event.stocking_event_id
+          JOIN fsis2_lot AS lot ON lot.id = fs_event.lot_id
+          join fsis2_species as spc on spc.id=lot.species_id
+        WHERE 
+        fs_event.year >= _fyear and
+        fs_event.year <= _lyear and       
+        st_intersects (fs_event.geom,(SELECT geom FROM fsis2_managementunit WHERE slug = _geom))) AS events
+    ON (events.species_id = cwt_recovery.spc_id
+   AND events.cwt = cwt_recovery.cwt);
+
+
+END IF;
+
+END;
+
+select geom from fsis2_managementunit where slug='4-1' 
+
+BEGIN
+IF _spc_ids <> '{}'::int[] then
+RETURN QUERY
+
+SELECT distinct cwt_recovery.* 
+FROM cwts_cwt_recovery AS cwt_recovery
+join fsis2_species as spc on spc.id=cwt_recovery.spc_id
+  JOIN (SELECT DISTINCT fs_event.id,
+               cwt,
+               species_id
+        FROM fsis2_cwts_applied AS cwts_applied
+          JOIN fsis2_taggingevent AS tagging_event ON cwts_applied.tagging_event_id = tagging_event.id
+          JOIN fsis2_event AS fs_event ON fs_event.id = tagging_event.stocking_event_id
+          JOIN fsis2_lot AS lot ON lot.id = fs_event.lot_id
+          join fsis2_species as spc on spc.id=lot.species_id
+        WHERE 
+        fs_event.year >= _fyear and
+        fs_event.year <= _lyear and
+        tagging_event.tagtype=6 and        
+        spc.species_code = ANY(_spc_ids) and
+        st_intersects (fs_event.geom,_geom)) AS events
+    ON (events.species_id = cwt_recovery.spc_id
+   AND events.cwt = cwt_recovery.cwt);
+
+ELSE
+RETURN QUERY
+
+SELECT distinct cwt_recovery.* 
+FROM cwts_cwt_recovery AS cwt_recovery
+join fsis2_species as spc on spc.id=cwt_recovery.spc_id
+  JOIN (SELECT DISTINCT fs_event.id,
+               cwt,
+               species_id
+        FROM fsis2_cwts_applied AS cwts_applied
+          JOIN fsis2_taggingevent AS tagging_event ON cwts_applied.tagging_event_id = tagging_event.id
+          JOIN fsis2_event AS fs_event ON fs_event.id = tagging_event.stocking_event_id
+          JOIN fsis2_lot AS lot ON lot.id = fs_event.lot_id
+          join fsis2_species as spc on spc.id=lot.species_id
+        WHERE 
+        fs_event.year >= _fyear and
+        fs_event.year <= _lyear and       
+        tagging_event.tagtype=6 and
+        st_intersects (fs_event.geom,_geom)) AS events
+    ON (events.species_id = cwt_recovery.spc_id
+   AND events.cwt = cwt_recovery.cwt);
+
+
+END IF;
+
+END;
+
+select * from fsis2_taggingevent limit 10;
