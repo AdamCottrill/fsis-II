@@ -1,77 +1,115 @@
-Django on OpenShift
-===================
+FSIS-II
+=======
 
-This git repository helps you get up and running quickly w/ a Django
-installation on OpenShift.  The Django project name used in this repo
-is 'main' but you can feel free to change it.  Right now the
-backend is sqlite3 and the database runtime is found in
-`$OPENSHIFT_DATA_DIR/db.sqlite3`.
+Background
+----------
 
-Before you push this app for the first time, you will need to change
-the [Django admin password](#admin-user-name-and-password).
-Then, when you first push this
-application to the cloud instance, the sqlite database is copied from
-`wsgi/main/db.sqlite3` with your newly changed login
-credentials. Other than the password change, this is the stock
-database that is created when `python manage.py syncdb` is run with
-only the admin app installed.
+FSIS-II was build to graphically display fish stocking data for the
+Ontario waters of Lake Huron.
 
-On subsequent pushes, a `python manage.py syncdb` is executed to make
-sure that any models you added are created in the DB.  If you do
-anything that requires an alter table, you could add the alter
-statements in `GIT_ROOT/.openshift/action_hooks/alter.sql` and then use
-`GIT_ROOT/.openshift/action_hooks/deploy` to execute that script (make
-sure to back up your database w/ `rhc app snapshot save` first :) )
+Originally developed as an exercise in developing a web-based,
+geo-enabled application, FSIS-II has proven to be an effective tool
+for reporting and data review. This is particularly with respect to
+the complicate relationships between stocking events, coded wire tags
+and subsequent recoveries.
 
-You can also turn on the DEBUG mode for Django application using the
-`rhc env set DEBUG=True --app APP_NAME`. If you do this, you'll get
-nicely formatted error pages in browser for HTTP 500 errors.
 
-Do not forget to turn this environment variable off and fully restart
-the application when you finish:
+Data Model
+----------
 
-```
-$ rhc env unset DEBUG
-$ rhc app stop && rhc app start
-```
+The underlying data model for FSIS-II is based on hierarchical
+relationship between a lot of fish which can be stocked in one or more
+stocking events.  A lot of fish is defined as a group of fish of the
+same species, strain, and year class, raised by a single proponent
+(hatchery).
 
-Running on OpenShift
---------------------
+Tags (both coded wire and standard) are modelled using a many-to-many
+relationship to stocking events.  Sequential coded wire tags are a
+special case of standard cwt.  If multiple cwts are returned, they are
+rendered in the response along with an appropriate warning.
 
-Create an account at https://www.openshift.com
+Additional tables are included in the data model to accommodate
+proponents, species, strains, and stocking locations.
 
-Install the RHC client tools if you have not already done so:
 
-    sudo gem install rhc
-    rhc setup
+List Views
+----------
 
-Select the version of python (2.7 or 3.3) and create a application
+A number of list views provide quick access to each of the data
+elements in FSIS-II.  List views are provided for lots, stocking
+events, coded wire tags, species and strain, and proponents
+(hatchery).  In most cases, list views are provided in reverse
+chronological order so that the most recent elements are presented
+first.  Species, stocking locations and hatcheries are presented in
+alphabetical order.  List views are presented in sortable, paginated
+tables with some associated data for each record include a link to
+detail view.  Most list views also have search box that allows users
+to jump to specific records or filter the list.
 
-    rhc app create django python-$VERSION
 
-Add this upstream repo
+Detail Views
+------------
 
-    cd django
-    git remote add upstream -m master git://github.com/openshift/django-example.git
-    git pull -s recursive -X theirs upstream master
+Detail views are provided for lots, stocking events, coded wire tags,
+species and strain, proponents (hatchery) and stocking locations.
+Detail views represent a single data element and present all of the
+information in a single page.  In most cases, a table summarizing any
+associated child records is included, as is a map.  In the case of
+lots, the map illustrate location of associated stocking events.  In
+the case of cwts, the map illustrates the location of stocking
+event(s) and any subsequent recoveries.
 
-Then push the repo upstream
 
-    git push
+Summary Views
+-------------
 
-Now, you have to create [admin account](#admin-user-name-and-password), so you
-can setup your Django instance.
+Summary views are also provided for annual stocking events associated
+with a specific species (and in the case of lake trout, strain).  The
+summary views provide map and table associated with all of the
+stocking events associated with the specified species and year.
+Widgets are provided to quickly change species, strain or year.  These
+views have been particularly useful when exploring stocking patterns
+through time.
 
-That's it. You can now checkout your application at:
 
-    http://django-$yournamespace.rhcloud.com
+Spatial Queries
+---------------
 
-Admin user name and password
-----------------------------
-Use `rhc ssh` to log into python gear and run this command:
+A form-based view is used to retrieve all of the stocking events in an
+arbitrary polygon drawn on the supplied map widget by the user.  The
+user can filter the resultant record-set by species if desired.
+Records are returned in a paginated table in reverse chronological
+order.
 
-	python $OPENSHIFT_REPO_DIR/wsgi/main/manage.py createsuperuser
 
-You should be now able to login at:
+Data Entry Forms
+----------------
 
-	http://django-$yournamespace.rhcloud.com/admin/
+Currently data entry/editing forms are disabled in FSIS-II but could
+be used to add or edit fish stocking information.
+
+
+Future Plans
+------------
+
+- cwt recoveries - predefined and user supplied geometries
+
+- cwts stocked - predefined and user supplied geometries
+
+- hatchery summaries - views for hatchery managers to verify stocking
+  events associated with their facility
+
+- common graphs and plots - standard plots might include number of
+  fish stocked by region and strain thought time.
+
+
+Disclaimer
+---------
+
+The data in FSIS-II should not be considered definitive.  FSIS-II
+contains data cloned from provincial servers and merged with
+historical stocking data.  If there are discrepancies between the
+contents of FSIS-II and FSIS, FSIS should be considered correct.  A
+time stamp in the footer of most pages rendered by FSIS-II indicate
+when data was last downloaded from the provincial server and when
+FSIS-II was last rebuild.
