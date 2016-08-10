@@ -1,3 +1,1 @@
-#!/bin/bash
-
-python manage.py test myblog --settings=main.settings.test
+python manage.py test fsis2 --settings=main.settings.test
