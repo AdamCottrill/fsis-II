@@ -1,0 +1,170 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+{% block extrahead %}
+
+{% load geojson_tags %}
+{% load leaflet_tags %}
+
+{% leaflet_js %}
+{% leaflet_css %}
+
+{% endblock %}
+
+{% block title %} {{ object.title  }}  {% endblock %}
+
+{% block content %}
+
+{% load humanize %}
+{% load fsis2_filters %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <h2> FSIS Event: {{ object.fs_event }} </h2>
+      <table class="table">
+        <tr>
+          <td>  <b>FSIS Event Number:</b></td>
+          <td>{{ object.fs_event }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>FSIS Lot Number:</b>
+          <td> <a href="{% url 'lot_detail' object.lot.id %}">{{ object.lot.fs_lot }}</a> </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Species:</b></td>
+          <td>{{ object.lot.species.common_name }} (<em>{{object.lot.species.scientific_name}}</em>)  </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Strain:</b></td>
+          <td>{{ object.lot.strain.strain_name }} ({{object.lot.strain.sto_code}}) </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Stocking Date:</b></td>
+          {% if object.event_date %}
+            <td>{{ object.event_date|date }} </td>
+          {% else %}
+            <td>{{ object.year }} </td>
+          {% endif %}
+        </tr>
+
+        <tr>
+          <td>  <b>Clip Applied:</b></td>
+          <td>{{ object.clipa }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Fish Age (months):</b></td>
+          <td>{{ object.fish_age }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Number Stocked:</b></td>
+          <td>{{ object.stkcnt|intcomma }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Life Stage:</b></td>
+          <td>{{ object.get_development_stage_display }} ({{ object.development_stage }}) </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Transit Method:</b></td>
+          <td>{{ object.get_transit_display|title }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Stocking Method:</b></td>
+          <td>{{ object.get_stocking_method_display }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Stocking Purpose:</b></td>
+          <td>{{ object.get_stocking_purpose_display }} ({{ object.stocking_purpose }}) </td>
+        </tr>
+
+        {% autoescape off %}
+        <tr>
+          <td>  <b>Latitude:</b></td>
+          <td>{{ object.dd_lat |format_ddlat }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Longitude:</b></td>
+          <td>{{ object.dd_lon |format_ddlon }} </td>
+        </tr>
+        {% endautoescape %}
+
+        <tr>
+          <td>  <b>Closest Named Stocking Site:</b> </td>
+          <td>  <a href="{% url 'site_detail' object.site.id %}">{{ object.site.site_name }} ({{ object.site.fsis_site_id }})</a></td>
+        </tr>
+
+        <tr>
+          <td>  <b>Basin:</b></td>
+          <td>{{ object.site.basin }} </td>
+        </tr>
+
+        <tr>
+          <td>  <b>Grid Number:</b></td>
+          <td>{{ object.site.grid }} </td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-md-8">
+          <div id="main_map" style="width: 800px; height: 700px;"></div>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row" id="related">
+
+    <h3>Tags associated with this stocking event: </h3>
+
+    {% if cwt_list %}
+      <table id="myTable" class="table tablesorter table-striped">
+        <thead>
+          <tr>
+            <td>Tag Number</td>
+            <td>Tag Type</td>
+            <td>Year Class</td>
+            <td>Stocking Year</td>
+            <td>Species </td>
+            <td>Strain </td>
+            <td>Lifestage </td>
+            <td>Agency</td>
+            <td>Stocking Location </td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cwt in cwt_list %}
+          <tr>
+            <td> <a href="{% url 'cwt_detail' cwt.cwt %}"> {{ cwt }} </a> </td>
+            <td {% ifequal cwt.tag_type 17 %} style="color:red" {% endifequal %}>
+                {{ cwt.get_tag_type_display }} </td>
+            <td>{{ cwt.year_class }} </td>
+            <td>{{ cwt.stock_year }} </td>
+            <td>{{ cwt.spc.common_name }} </td>
+            <td>{{ cwt.get_strain_display }} </td>
+            <td>{{ cwt.get_development_stage_display }} </td>
+            <td>{{ cwt.agency }} </td>
+            <td>{{ cwt.plant_site|title }} </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+    <p>There do not appear to be any tags associated with this event. </p>
+    {% endif %}
+  </div>
+  <hr />
+
+</div>
+
+{% include 'fsis2/_doc_ready_simple_map.html' %}
+
+{% endblock %}

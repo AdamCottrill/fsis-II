@@ -1,0 +1,154 @@
+{% extends "fsis2/fsis2_base.html" %}
+
+{% load leaflet_tags %}
+
+{% block extrahead %}
+
+
+{% leaflet_js plugins="forms" %}
+{% leaflet_css plugins="forms" %}
+
+
+{% endblock %}
+
+{% block content %}
+{% load humanize %}
+{% load fsis2_filters %}
+
+
+<style>
+
+    .leaflet-container {  /* all maps */
+        width:  600px;
+        height: 600px;
+    }
+
+</style>
+
+{% if what == "sites" %}
+<h3>Find Stocking Sites:</h3>
+{% elif what == "events" %}
+<h3>Find Stocking Events:</h3>
+{% elif what == "cwt recoveries" %}
+<h3>Find CWT Revovered in Region of Interest:</h3>
+<p>{{ subcaption }}</p>
+{% elif what == "cwts stocked" %}
+<h3>Find CWTs Stocked in Region of Interest:</h3>
+<p>{{ subcaption }}</p>
+{% endif %}
+
+
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    Please fix the errors in the form below.
+    {% for error in form.non_field_errors %}
+    <p class="error">{{ error }}</p>
+    {% endfor %}
+
+    {% if form.selection.errors %}
+    {% for error in form.selection.errors %}
+    <div class="has-error help-block text-danger">{{ error }}</div>
+    {% endfor %}
+    {% endif %}
+
+</div>
+{% endif %}
+
+
+
+
+  <div class="row well">
+    <form method="post" id="" action="">{% csrf_token %}
+      <div class="row">
+        <div class="col-md-7">
+
+            {{ form.selection }}
+
+        </div>
+        <div class="col-md-5">
+          <div class="panel panel-default">
+            <div class="panel-body">
+          <h4>Select Species:</h4>
+          <p>(leave blank for all species)</p>
+                  <div class="form-group {% if form.species.errors %}has-error{% endif %}">
+                      {{ form.species.label_tag }}
+                      {{ form.species }}
+                      {% if form.species.errors %}
+                      {% for error in form.species.errors %}
+                      <div class="has-error help-block text-danger">{{ error }}</div>
+                      {% endfor %}
+                      {% endif %}
+                  </div>
+            </div>
+          </div>
+
+          <div class="panel panel-default">
+              <div class="panel-body">
+                  <div class="form-group {% if form.earliest.errors %}has-error{% endif %}">
+                      {{ form.earliest.label_tag }}
+                      {{ form.earliest }}
+                      {% if form.earliest.errors %}
+                      {% for error in form.earliest.errors %}
+                      <div class="has-error help-block text-danger">{{ error }}</div>
+                      {% endfor %}
+                      {% endif %}
+                  </div>
+                  <div class="form-group {% if form.latest.errors %}has-error{% endif %}">
+                      {{ form.latest.label_tag }}
+                      {{ form.latest }}
+                      {% if form.latest.errors %}
+                      {% for error in form.latest.errors %}
+                      <div class="has-error help-block text-danger">{{ error }}</div>
+                      {% endfor %}
+                      {% endif %}
+                  </div>
+              </div>
+          </div>
+
+          {% if what == "sites" %}
+          <a href="{% url 'find_sites' %}" class="btn btn-default">Reset</a>
+          {% elif what == "events" %}
+          <a href="{% url 'find_events' %}" class="btn btn-default">Reset</a>
+          {% elif what == 'cwts stocked' %}
+          <a href="{% url 'cwt_stocked_roi' %}" class="btn btn-default">Reset</a>
+          {% else %}
+          <a href="{% url 'cwt_recovered_roi' %}" class="btn btn-default">Reset</a>
+          {% endif %}
+          <button type="submit" class="btn  btn-success">Submit</button>
+
+        </div>
+      </div>
+    </form>
+  </div>
+
+
+
+<!-- tablesorter plugin-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.js"></script>
+
+<!-- tablesorter widget file - loaded after the plugin -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.7/js/jquery.tablesorter.widgets.js"></script>
+
+
+<script type="text/javascript">
+
+  $(".tablesorter").tablesorter({
+  theme: 'bootstrap',
+  widthFixed: true,
+  showProcessing: true,
+  headerTemplate: '{content} {icon}',
+  widgets: ['zebra', 'uitheme', 'scroller'],
+  widgetOptions: {
+  scroller_height: 300,
+  scroller_barWidth: 17,
+  scroller_jumpToHeader: true,
+  scroller_idPrefix: 's_'
+  }
+  });
+
+</script>
+
+
+
+{% endblock %}
