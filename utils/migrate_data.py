@@ -30,6 +30,7 @@
 #=============================================================
 
 import os
+import sys
 
 os.chdir('c:/1work/Python/djcode/fsis2/utils/')
 
@@ -41,6 +42,7 @@ import sqlite3
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 #from geoalchemy.base import WKTSpatialElement
 from geoalchemy2.elements import WKTElement
 
@@ -64,6 +66,76 @@ DEPLOY = False
 for arg in sys.argv[1:]:
     exec(arg)
 assert type(DEPLOY) == bool
+
+
+
+#========================================
+#          HELPER FUNCTIONS
+
+def get_spc(species_code, session):
+    """ a little helper function to get the appropriate species given
+    an (Ontario) species code.
+    Arguments:
+    - `abbrev`: species abbreviation (eg - '081')
+    - `session` - sqlalchemy session used to connect to target database
+    """
+    spc_code = int(species_code)
+    try:
+        species = session.query(Species).filter_by(species_code=spc_code).one()
+        return species
+    except (MultipleResultsFound, NoResultFound) as e:
+        msg = "Species: {} with species_code='{}'".format(e, spc_code)
+        print(msg)
+
+
+def get_lot(fs_lot, spawn_year, species, session):
+    """a little helper function to get the fish lot given a species,
+    lot number and spawn year.  fs_lot is an identifier used by
+    Fishculture section to track groups of fish, it is uniquue within
+    a species and yearclass, but may not be through time. The function
+    prints a meaningful message if an error occurs
+
+    Arguments: -
+
+    - `fs_lot`: fish culture's lot identifier
+    - `spawn_year`: the year the fish were spawned
+    - `species`: a sqlalchemy species instance (returned from get_spc())
+    - `session` - sqlalchemy session used to connect to target
+    database
+
+    """
+
+
+    try:
+        lot = session.query(Lot).filter_by(species_id=species.id,
+                                           fs_lot=fs_lot,
+                                           spawn_year=spawn_year).one()
+        return lot
+    except (MultipleResultsFound, NoResultFound) as e:
+        msg = "Lot: {} ({}, {}, {})".format(e, fs_lot, spawn_year, species)
+        print(msg)
+
+
+
+def get_site(site_id, session):
+    """a little helper function to the stocking site for a particular
+    stocking event.  Prints a meaningful message if a error occurs.
+
+    Arguments: -
+
+    - `site_id`: id number of the associated stocking site
+    - `session` - sqlalchemy session used to connect to target
+    database
+
+    """
+    try:
+        site = session.query(StockingSite).filter_by(
+            fsis_site_id=site_id).one()
+        return site
+    except (MultipleResultsFound, NoResultFound) as e:
+        msg = "Stocking Site: {} (site_id={}))".format(e, site_id)
+        print(msg)
+
 
 #========================================
 #            DATA SOURCE
@@ -227,7 +299,6 @@ for row in data:
    spc.strains.extend([Strain(sto_code= row['STO'].upper(),
                                 strain_code= row['StrainCode'].upper(),
                                 strain_name= row['StrainName'])])
-
 session.commit()
 
 now = datetime.datetime.now()
@@ -312,17 +383,17 @@ print("Uploading '%s'..."  % table)
 #note - query aggregates by strain, spawn year, rearing location
 # and does not include project code or year -
 
-#sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
-#         PROPONENT_NAME as abbrev, PROPONENT_TYPE FROM FS_Lots
-#         GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
-#         PROPONENT_NAME, PROPONENT_TYPE;'''
+sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
+         PROPONENT_NAME as abbrev, PROPONENT_TYPE FROM FS_Lots
+         GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
+         PROPONENT_NAME, PROPONENT_TYPE;'''
 
 ## includes join to standardize proponent names:
-sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
-         short as abbrev, PROPONENT_TYPE FROM FS_Lots
-         join TL_proponentNames as x on x.proponent_name_is=FS_Lots.proponent_name
-         GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
-         abbrev, PROPONENT_TYPE;'''
+#sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
+#         short as abbrev, PROPONENT_TYPE FROM FS_Lots
+#         join TL_proponentNames as x on x.short=FS_Lots.proponent_name
+#         GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
+#         abbrev, PROPONENT_TYPE having x.preferred=1;'''
 
 
 src_cur.execute(sql)
@@ -401,12 +472,16 @@ for x in data:
     pt = "POINT(%s %s)" % (row['dd_lon'], row['dd_lat'])
     #get objects referenced by foreign key
 
-    spc = session.query(Species).filter_by(species_code=row['spc']).one()
-    lot = session.query(Lot).filter_by(species_id=spc.id,
-                                       fs_lot=row['lot'].strip(),
-                                       spawn_year=row['spawn_year']).one()
-    site = session.query(StockingSite).filter_by(
-        fsis_site_id=row['site_id']).one()
+#    spc = session.query(Species).filter_by(species_code=row['spc']).one()
+#    lot = session.query(Lot).filter_by(species_id=spc.id,
+#                                       fs_lot=row['lot'].strip(),
+#                                       spawn_year=row['spawn_year']).one()
+#    site = session.query(StockingSite).filter_by(
+#        fsis_site_id=row['site_id']).one()
+
+    spc = get_spc(row['spc'], session)
+    lot = get_lot(row['lot'].strip(), row['spawn_year'], spc, session)
+    site = get_site(row['site_id'], session)
 
     item = Event(
         lot_id = lot.id,
@@ -545,7 +620,6 @@ for row in data:
     session.add(event)
 session.commit()
 print('Spatial up to date.')
-
 
 
 print("All Migrations Complete ({0})".format(build_date))
