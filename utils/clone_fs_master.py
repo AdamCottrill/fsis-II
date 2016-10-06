@@ -97,6 +97,7 @@ sql2 = '''insert into SPC values({0}?)'''.format("?," * (fldcnt -1))
 trg_cur.executemany(sql2, jj)
 trg_conn.commit()
 
+print("Successfully ported SPC lookup")
 
 #some final cleanup
 trg_cur.close()
