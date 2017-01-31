@@ -102,11 +102,11 @@ CREATE TABLE [FS_TagAttributes] (
 );
 CREATE INDEX [FS_TagAttributesEvent] ON [FS_TagAttributes] (EVENT ASC);
 
-DROP TABLE [TL_ProponentNames] /**WEAK**/;
-CREATE TABLE [TL_ProponentNames] (
-[PROPONENT_NAME_is] TEXT(255),
-[Short] TEXT(10),
-[Preferred] INTEGER NOT NULL
+DROP TABLE [TL_Proponents] /**WEAK**/;
+CREATE TABLE [TL_Proponents] (
+[ID] INTEGER,
+[Proponent_Name] TEXT(255),
+[Abbreviation] TEXT(10)
 );
 
 DROP TABLE [TL_Strains] /**WEAK**/;
