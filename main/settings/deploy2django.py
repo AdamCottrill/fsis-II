@@ -1,3 +1,6 @@
+#use main.settings.deploy2django to refresh pop-ups on remote machine
+#from local shell.
+
 from main.settings.base import *
 
 DATABASES = {
@@ -10,4 +13,3 @@ DATABASES = {
     }
 
 }
-

@@ -58,7 +58,6 @@ TAG_POSITIONS = {
     'Posterior Dorsal Fins':3,
     'Snout':4}
 
-
 #are we working in the deployment machine or just locally?
 DEPLOY = False
 
@@ -66,7 +65,6 @@ DEPLOY = False
 for arg in sys.argv[1:]:
     exec(arg)
 assert type(DEPLOY) == bool
-
 
 
 #========================================
@@ -311,13 +309,15 @@ print("'%s' Transaction Complete (%s)"  % \
 table = "Proponents"
 print("Uploading '%s'..."  % table)
 
-sql = '''SELECT TL_ProponentNames.Short AS abbrev,
-         TL_ProponentNames.PROPONENT_NAME_is AS name
-   FROM TL_ProponentNames
-   GROUP BY TL_ProponentNames.Short, TL_ProponentNames.PROPONENT_NAME_is,
-         TL_ProponentNames.Preferred
-   HAVING (((TL_ProponentNames.Preferred)=1));'''
+#sql = '''SELECT TL_ProponentNames.Short AS abbrev,
+#         TL_ProponentNames.PROPONENT_NAME_is AS name
+#   FROM TL_ProponentNames
+#   GROUP BY TL_ProponentNames.Short, TL_ProponentNames.PROPONENT_NAME_is,
+#         TL_ProponentNames.Preferred
+#   HAVING (((TL_ProponentNames.Preferred)=1));'''
 
+sql = """select abbreviation as abbrev,
+       proponent_name as Name from tl_proponents;"""
 
 src_cur.execute(sql)
 data = src_cur.fetchall()
@@ -382,16 +382,16 @@ print("Uploading '%s'..."  % table)
 
 #note - query aggregates by strain, spawn year, rearing location
 # and does not include project code or year -
-
 sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
          PROPONENT_NAME as abbrev, PROPONENT_TYPE FROM FS_Lots
          GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
          PROPONENT_NAME, PROPONENT_TYPE;'''
 
-## includes join to standardize proponent names:
+### includes join to standardize proponent names:
 #sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
 #         short as abbrev, PROPONENT_TYPE FROM FS_Lots
-#         join TL_proponentNames as x on x.short=FS_Lots.proponent_name
+#         join TL_proponentNames as x
+#         on x.proponent_name_is=FS_Lots.proponent_name
 #         GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
 #         abbrev, PROPONENT_TYPE having x.preferred=1;'''
 
@@ -402,7 +402,7 @@ data = src_cur.fetchall()
 for row in data:
     spc = session.query(Species).filter_by(species_code=row['SPC']).one()
     strain = session.query(Strain).filter_by(species_id=spc.id,
-                                         sto_code=row['STO'].upper()).one()
+                                             sto_code=row['STO'].upper()).one()
     proponent = session.query(Proponent).filter_by(abbrev=row['abbrev']).one()
     item = Lot(
     #prj_cd = row.prj_cd,
