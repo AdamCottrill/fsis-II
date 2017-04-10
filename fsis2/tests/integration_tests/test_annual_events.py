@@ -38,11 +38,9 @@ def db_setup():
     BuildDateFactory.create()
     ReadmeFactory.create()
 
-    laketrout = SpeciesFactory.create(species_code=81)
-    chinook = SpeciesFactory.create(common_name='Brown Trout',
-                                    species_code=78)
-    rainbow = SpeciesFactory.create(common_name='Rainbow Trout',
-                                    species_code=76)
+    laketrout = SpeciesFactory.create()
+    brown = SpeciesFactory.create(common_name='Brown Trout')
+    rainbow = SpeciesFactory.create(common_name='Rainbow Trout')
 
     hatchery1 = ProponentFactory(abbrev='ABC',
                                  proponent_name='ABC Fishin Club')
@@ -52,7 +50,7 @@ def db_setup():
 
     laketrout_lot = LotFactory(species=laketrout,proponent=hatchery2)
 
-    chinook_lot = LotFactory(species=chinook, proponent=hatchery1)
+    brown_lot = LotFactory(species=brown, proponent=hatchery1)
     rainbow_lot = LotFactory(species=rainbow, proponent=hatchery1)
 
     site1 = StockingSiteFactory(site_name='Site1')
@@ -67,21 +65,21 @@ def db_setup():
                           event_date=stocking_date)
 
     #These are events associated with hatchery 1 - two rainbow and one
-    #chinook event in 2010, two chinook events inthe spring of 2011.
+    #brown event in 2010, two brown events inthe spring of 2011.
     #stocking in 2010
     event2 = EventFactory(site=site2, lot=rainbow_lot,
                           event_date=stocking_date)
     event3 = EventFactory(site=site3, lot=rainbow_lot,
                           event_date=stocking_date)
 
-    event4 = EventFactory(site=site2, lot=chinook_lot,
+    event4 = EventFactory(site=site2, lot=brown_lot,
                           event_date=stocking_date)
 
     #Stocking events in the spring of 2011
     stocking_date = datetime(2011,4,15)
-    event6 = EventFactory(site=site4, lot=chinook_lot,
+    event6 = EventFactory(site=site4, lot=brown_lot,
                           event_date=stocking_date)
-    event7 = EventFactory(site=site5, lot=chinook_lot,
+    event7 = EventFactory(site=site5, lot=brown_lot,
                           event_date=stocking_date)
 
 

@@ -25,8 +25,11 @@
      {% if recovery_pts %}
        var recoveries = {{ recovery_pts|geojsonfeature:"popup_text"|safe }};
      {% elif recoveries %}
-       var recoveries = {{ recoveries|geojsonfeature:"popup_text"|safe }};
+     var recoveries = {{ recoveries|geojsonfeature:"popup_text"|safe }};
+     {% else %}
+     var recoveries = [];
      {% endif %}
+
 
      // stocking events
      {% if event_pts %}
