@@ -5,11 +5,9 @@
 # DESCRIPTION:
 #
 # This script migrates the data from our existing FS_Master.mdb
-# database to a sqlite or postgres database that can be used by Django
+# database to the postgres database that is by Django
 # to render the fsis2 webpages.
 #
-#  first run clone_fs_mater.py
-##
 # The script can be run from the command line by:
 #      ~/python migrate_data.py
 #
@@ -36,9 +34,8 @@ os.chdir('c:/1work/Python/djcode/fsis2/utils/')
 
 import pytz
 from datetime import datetime
-import sqlite3
 
-#import adodbapi
+import pyodbc
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -140,26 +137,11 @@ def get_site(site_id, session):
 
 #here is where the data will be coming from:
 #source db
-## srcdb = "C:/1work/Python/djcode/fsis2/utils/FS_Master_to_FSIS2.mdb"
-##
-## src_constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source=%s'  % srcdb
-## src_conn = adodbapi.connect(src_constr)
-## src_cur = src_conn.cursor()
-##
 
-#src = r"C:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db"
-src = r'c:/1work/Python/djcode/fsis2/utils/data/fs_master_clone.db'
-###sqlite clone of FS_master:
-##if DEPLOY:
-##    src = r'c:/1work/djcode/fsis2/utils/data/FS_Master_clone.db'
-##else:
-##    src = r'c:/1work/Python/djcode/fsis2/utils/data/FS_Master_clone.db'
-
-src_conn = sqlite3.connect(src)
-src_conn.row_factory = sqlite3.Row
-
-src_cur = src_conn.cursor()
-
+MDB = 'C:/1work/Data_Warehouse/FS_Master.mdb'
+mdbconstr ="DRIVER={{Microsoft Access Driver (*.mdb)}};DBQ={}"
+mdbcon = pyodbc.connect(mdbconstr.format(MDB))
+mdbcur = mdbcon.cursor()
 
 
 #========================================
@@ -169,22 +151,16 @@ src_cur = src_conn.cursor()
 #stocking database - it's database agnostic, so we just need to change
 #the engine if our database changes
 
-#trgdb = "C:/1work/Python/djcode/fsis2/db/fsis2.db"
-#trgdb = '/home/adam/Documents/djcode/fsis2/db/fsis2.db'
-#engine = create_engine('sqlite:///%s' % trgdb)
-
 if DEPLOY:
     #engine = create_engine('postgresql://adam:django@localhost/fsis2')
     #this will connect to post gres instance on the desktop machine
     engine = create_engine('postgresql://cottrillad:django@142.143.160.56/fsis2')
 else:
     #engine = create_engine('postgresql://COTTRILLAD:uglmu@localhost/fsis2')
-    engine = create_engine('postgresql://cottrillad:django@localhost/fsis2')
-
+    engine = create_engine('postgresql://cottrillad:django123@localhost/fsis2')
 
 Session = sessionmaker(bind=engine)
 session = Session()
-
 
 #========================================
 #           CLEAR TARGET
@@ -194,7 +170,6 @@ session = Session()
 
 session.execute('TRUNCATE cwts_cwt_recovery;')
 session.execute('TRUNCATE cwts_cwt;')
-
 
 session.query(CWTs_Applied).delete()
 session.query(TaggingEvent).delete()
@@ -216,14 +191,17 @@ sql = '''SELECT [__README].DATE, [__README].COMMENT, [__README].INIT
         FROM __README
         ORDER BY [__README].DATE DESC;'''
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0] for x in mdbcur.description]
 
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     item = Readme(
-            date =  datetime.datetime.strptime(row['DATE'],
-                                               '%Y-%m-%d  %H:%M:%S'),
-            comment = row['COMMENT'],
+            #date =  datetime.datetime.strptime(row['DATE'],
+            #                                   '%Y-%m-%d  %H:%M:%S'),
+        date = row['DATE'],
+        comment = row['COMMENT'],
             initials = row['INIT'])
     session.add(item)
 
@@ -247,15 +225,12 @@ AND SPC_NM is not null and SPC_NMSC is not null
 ORDER BY SPC.SPC;
 """
 
-#only species stocked by OMNR:
-#sql = '''SELECT SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC
-#         FROM FS_Events INNER JOIN SPC ON FS_Events.SPC = SPC.SPC
-#         GROUP BY SPC.SPC, SPC.SPC_NM, SPC.SPC_NMSC;'''
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0] for x in mdbcur.description]
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
-
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     item = Species(species_code = row['SPC'],
             common_name = row['SPC_NM'],
             scientific_name = row['SPC_NMSC'])
@@ -269,12 +244,9 @@ session.add(item)
 
 session.commit()
 
-
 now = datetime.datetime.now()
 print("'%s' Transaction Complete (%s)"  % \
   (table, now.strftime('%Y-%m-%d %H:%M:%S')))
-
-
 
 
 #========================================
@@ -286,17 +258,18 @@ sql='''SELECT TL_Strains.SPC, TL_Strains.STO, TL_Strains.StrainCode,
        TL_Strains.StrainName
       FROM TL_Strains;'''
 
-
-src_cur.execute(sql)
-data = src_cur.fetchall()
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0] for x in mdbcur.description]
 
 allspc = session.query(Species)
 
-for row in data:
-   spc = allspc.filter_by(species_code=row['SPC']).one()
-   spc.strains.extend([Strain(sto_code= row['STO'].upper(),
-                                strain_code= row['StrainCode'].upper(),
-                                strain_name= row['StrainName'])])
+for x in data:
+    row = dict(zip(colnames, x))
+    spc = allspc.filter_by(species_code=row['SPC']).one()
+    spc.strains.extend([Strain(sto_code= row['STO'].upper(),
+                               strain_code= row['StrainCode'].upper(),
+                               strain_name= row['StrainName'])])
 session.commit()
 
 now = datetime.datetime.now()
@@ -309,20 +282,15 @@ print("'%s' Transaction Complete (%s)"  % \
 table = "Proponents"
 print("Uploading '%s'..."  % table)
 
-#sql = '''SELECT TL_ProponentNames.Short AS abbrev,
-#         TL_ProponentNames.PROPONENT_NAME_is AS name
-#   FROM TL_ProponentNames
-#   GROUP BY TL_ProponentNames.Short, TL_ProponentNames.PROPONENT_NAME_is,
-#         TL_ProponentNames.Preferred
-#   HAVING (((TL_ProponentNames.Preferred)=1));'''
-
 sql = """select abbreviation as abbrev,
-       proponent_name as Name from tl_proponents;"""
+       proponentName as name from tl_proponents;"""
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0] for x in mdbcur.description]
 
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     item = Proponent(abbrev = row['abbrev'],
             proponent_name = row['name'])
     session.add(item)
@@ -332,7 +300,6 @@ session.commit()
 now = datetime.datetime.now()
 print("'%s' Transaction Complete (%s)"  % \
   (table, now.strftime('%Y-%m-%d %H:%M:%S')))
-
 
 
 #========================================
@@ -346,10 +313,12 @@ sql = '''SELECT SITE_ID, SITE_NAME, STKWBY, STKWBY_LID, UTM, GRID,
          GROUP BY SITE_ID, SITE_NAME, STKWBY, STKWBY_LID, UTM, GRID,
              DD_LAT, DD_LON, BASIN, DESWBY_LID, DESWBY;'''
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0] for x in mdbcur.description]
 
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     pt = "POINT(%s %s)" % (row['DD_LON'], row['DD_LAT'])
     item = StockingSite(
         fsis_site_id =  row['SITE_ID'],
@@ -368,7 +337,6 @@ for row in data:
         popup_text = row['SITE_NAME'],
         )
     session.add(item)
-
 session.commit()
 
 now = datetime.datetime.now()
@@ -382,8 +350,8 @@ print("Uploading '%s'..."  % table)
 
 #note - query aggregates by strain, spawn year, rearing location
 # and does not include project code or year -
-sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
-         PROPONENT_NAME as abbrev, PROPONENT_TYPE FROM FS_Lots
+sql = '''SELECT lot, SPC, STO, spawn_year, rearloc, rearloc_nm,
+         PROPONENT_NAME as abbrev, proponent_type FROM FS_Lots
          GROUP BY LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
          PROPONENT_NAME, PROPONENT_TYPE;'''
 
@@ -396,10 +364,12 @@ sql = '''SELECT LOT, SPC, STO, SPAWN_YEAR, REARLOC, REARLOC_NM,
 #         abbrev, PROPONENT_TYPE having x.preferred=1;'''
 
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0] for x in mdbcur.description]
 
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     spc = session.query(Species).filter_by(species_code=row['SPC']).one()
     strain = session.query(Strain).filter_by(species_id=spc.id,
                                              sto_code=row['STO'].upper()).one()
@@ -430,54 +400,45 @@ print("'%s' Transaction Complete (%s)"  % \
 table = "Events"
 print("Uploading '%s'..."  % table)
 
-##MS ACCESS SYNTAX:
-#sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
-#            FS_Events.SITE_ID, FS_Events.PRJ_CD, FS_Events.Event AS fs_event,
-#            FS_Events.LOTSAM, FS_Events.Year, FS_Events.Event_Date, FS_Events.CLIPA,
-#            FS_Events.FISH_AGE, FS_Events.STKCNT, FS_Events.FISH_WT,
-#            FS_Events.RECORD_BIOMASS_CALC, FS_Events.REARTEM, FS_Events.SITEM,
-#            FS_Events.TRANSIT_MORTALITY_COUNT AS mortality, FS_Events.DD_LAT,
-#            FS_Events.DD_LON,
-#            IIf(IsNull([FS_EVENTS].[DEV_CODE]),99,[FS_Events].[DEV_CODE]) AS
-#            DEV_CODE, FS_Events.TRANSIT, FS_Events.METHOD, FS_Events.STKPUR
-#            FROM FS_Lots INNER JOIN FS_Events ON (FS_Lots.SPC = FS_Events.SPC)
-#            AND (FS_Lots.LOT= FS_Events.LOT)
-#            AND (FS_Lots.PRJ_CD = FS_Events.PRJ_CD);'''
+#MS ACCESS SYNTAX:
+sql = '''SELECT FS_Events.Spc, FS_Lots.SPAWN_YEAR, FS_Events.LOT,
+            FS_Events.SITE_ID, FS_Events.PRJ_CD, FS_Events.Event AS fs_event,
+            FS_Events.LOTSAM, FS_Events.Year, FS_Events.Event_Date, FS_Events.CLIPA,
+            FS_Events.FISH_AGE, FS_Events.STKCNT, FS_Events.FISH_WT,
+            FS_Events.RECORD_BIOMASS_CALC, FS_Events.REARTEM, FS_Events.SITEM,
+            FS_Events.TRANSIT_MORTALITY_COUNT AS mortality, FS_Events.DD_LAT,
+            FS_Events.DD_LON,
+            IIf(IsNull([FS_EVENTS].[DEV_CODE]),99,[FS_Events].[DEV_CODE]) AS
+            DEV_CODE, FS_Events.TRANSIT, FS_Events.METHOD, FS_Events.STKPUR
+            FROM FS_Lots INNER JOIN FS_Events ON (FS_Lots.SPC = FS_Events.SPC)
+            AND (FS_Lots.LOT= FS_Events.LOT)
+            AND (FS_Lots.PRJ_CD = FS_Events.PRJ_CD);'''
 
 
-#SQLITE SYNTAX:
+##SQLITE SYNTAX:
+#sql = '''select fs_events.spc, fs_lots.spawn_year, fs_events.lot,
+#            fs_events.site_id, fs_events.prj_cd, fs_events.event as fs_event,
+#            fs_events.lotsam, fs_events.year, fs_events.event_date, fs_events.clipa,
+#            fs_events.fish_age, fs_events.stkcnt, fs_events.fish_wt,
+#            fs_events.record_biomass_calc, fs_events.reartem, fs_events.sitem,
+#            fs_events.transit_mortality_count as mortality, fs_events.dd_lat,
+#            fs_events.dd_lon,
+#            case when [fs_events].[dev_code] is null then 99
+#            else [fs_events].[dev_code] end as dev_code,
+#            dev_code, fs_events.transit, fs_events.method, fs_events.stkpur
+#            from fs_lots inner join fs_events on (fs_lots.spc = fs_events.spc)
+#            and (fs_lots.lot= fs_events.lot)
+#            and (fs_lots.prj_cd = fs_events.prj_cd);'''
+#
 
-sql = '''select fs_events.spc, fs_lots.spawn_year, fs_events.lot,
-            fs_events.site_id, fs_events.prj_cd, fs_events.event as fs_event,
-            fs_events.lotsam, fs_events.year, fs_events.event_date, fs_events.clipa,
-            fs_events.fish_age, fs_events.stkcnt, fs_events.fish_wt,
-            fs_events.record_biomass_calc, fs_events.reartem, fs_events.sitem,
-            fs_events.transit_mortality_count as mortality, fs_events.dd_lat,
-            fs_events.dd_lon,
-            case when [fs_events].[dev_code] is null then 99
-            else [fs_events].[dev_code] end as dev_code,
-            dev_code, fs_events.transit, fs_events.method, fs_events.stkpur
-            from fs_lots inner join fs_events on (fs_lots.spc = fs_events.spc)
-            and (fs_lots.lot= fs_events.lot)
-            and (fs_lots.prj_cd = fs_events.prj_cd);'''
-
-
-src_cur.execute(sql)
-data = src_cur.fetchall()
-
-col_names = [x[0].lower() for x in src_cur.description]
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0].lower() for x in mdbcur.description]
 
 for x in data:
-    row = dict(zip(col_names, x))
+    row = dict(zip(colnames, x))
     pt = "POINT(%s %s)" % (row['dd_lon'], row['dd_lat'])
     #get objects referenced by foreign key
-
-#    spc = session.query(Species).filter_by(species_code=row['spc']).one()
-#    lot = session.query(Lot).filter_by(species_id=spc.id,
-#                                       fs_lot=row['lot'].strip(),
-#                                       spawn_year=row['spawn_year']).one()
-#    site = session.query(StockingSite).filter_by(
-#        fsis_site_id=row['site_id']).one()
 
     spc = get_spc(row['spc'], session)
     lot = get_lot(row['lot'].strip(), row['spawn_year'], spc, session)
@@ -531,10 +492,12 @@ sql = '''SELECT EVENT AS fs_event, TAG_ID, RETENTION_RATE_PCT,
             TAG_COLOUR_CODE
          FROM FS_TagAttributes;'''
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0].lower() for x in mdbcur.description]
 
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     #get objects referenced by foreign key
     stocking_event=session.query(Event).filter_by(
         fs_event=row['fs_event']).one()
@@ -569,11 +532,12 @@ print("Uploading '%s'..."  % table)
 sql = ''' SELECT TAG_ID AS fs_tagging_event_id, CWT
           FROM FS_CWTs_Applied;'''
 
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0].lower() for x in mdbcur.description]
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
-
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     #get objects referenced by foreign key
     tagging_event = session.query(TaggingEvent).filter_by(
                         fs_tagging_event_id=row['fs_tagging_event_id']).one()
@@ -608,14 +572,16 @@ print('Updating spatial info...')
 
 sql = ''' SELECT * from TL_ActualStockingSites;'''
 
-src_cur.execute(sql)
-data = src_cur.fetchall()
+mdbcur.execute(sql)
+data = mdbcur.fetchall()
+colnames = [x[0].lower() for x in mdbcur.description]
 
-for row in data:
+for x in data:
+    row = dict(zip(colnames, x))
     event = session.query(Event).filter_by(fs_event=row['event']).one()
     event.dd_lat = row['dd_lat']
     event.dd_lon = row['dd_lon']
-    pt = "POINT(%s %s)" % (row['DD_LON'], row['DD_LAT'])
+    pt = "POINT(%s %s)" % (row['dd_lon'], row['dd_lat'])
     event.geom =  WKTElement(pt, srid=4326)
     session.add(event)
 session.commit()

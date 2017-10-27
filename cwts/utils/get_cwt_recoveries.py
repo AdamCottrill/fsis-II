@@ -22,7 +22,7 @@ import sys
 
 DBASE = 'fsis2'
 PG_USER = 'cottrillad'
-PG_PW = 'django'
+PG_PW = 'django123'
 
 DEPLOY = False
 
