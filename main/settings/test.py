@@ -10,7 +10,7 @@ DATABASES = {
          'ENGINE': 'django.contrib.gis.db.backends.postgis',
          'NAME': 'fsis2',
          ***REMOVED***
-         'PASSWORD': 'django',
+         ***REMOVED***
      }
 }
 
