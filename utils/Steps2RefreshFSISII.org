@@ -1,7 +1,10 @@
 * Fish Stocking Data
 1. Download FSIS and Rebuild FS_Master
-2. Clone FS_Master (clone_fs_master.py)
-3. Migrate sqlite clone to postgres by running migrate_data.py
+2. Migrate from FS_MASTER to  postgres by running migrate_data.py
+
+NOTE - there use to be a script called "clone_fs_master.py" that would
+re-create FS Master in sqlite. It has been removed from the process
+and should be considered obsolete.
 
 * CWT Recoveries
 
