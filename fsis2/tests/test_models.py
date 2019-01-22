@@ -39,7 +39,6 @@ class TestLot(TestCase):
         pass
 
 
-
 class TestStockingSite(TestCase):
     '''verify that the unicode, get_url, and slug of StockingSite work as
        expected'''
@@ -97,19 +96,19 @@ class TestReadme(TestCase):
     def setUp(self):
 
         self.comment1 = "good date with slashes 08/20/2012."
-        self.readme1 = ReadmeFactory(comment = self.comment1)
+        self.readme1 = ReadmeFactory(comment=self.comment1)
 
         self.comment2 = "good date with slashes 20-Aug-2012."
-        self.readme2 = ReadmeFactory(comment = self.comment2)
+        self.readme2 = ReadmeFactory(comment=self.comment2)
 
         self.comment3 = "Bad date with  20-20-2012."
-        self.readme3 = ReadmeFactory(comment = self.comment3)
+        self.readme3 = ReadmeFactory(comment=self.comment3)
 
         self.comment4 = "No date."
-        self.readme4 = ReadmeFactory(comment = self.comment4)
+        self.readme4 = ReadmeFactory(comment=self.comment4)
 
         self.comment5 = ""
-        self.readme5 = ReadmeFactory(comment = self.comment5)
+        self.readme5 = ReadmeFactory(comment=self.comment5)
 
     def test_download_date_unicode(self):
 

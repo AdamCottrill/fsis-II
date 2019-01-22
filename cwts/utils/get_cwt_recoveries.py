@@ -22,9 +22,9 @@ import sys
 
 DBASE = 'fsis2'
 PG_USER = 'cottrillad'
-PG_PW = 'django123'
+PG_PW = 'django'
 
-DEPLOY = False
+DEPLOY = True
 
 #override DEPLOY if it was passed in as a command line option.
 for arg in sys.argv[1:]:
@@ -36,7 +36,8 @@ REMOTE_IP = '142.143.160.56'
 
 print("Retrieving  recoveries ...")
 
-dbase = ("C:/1work/LakeTrout/Stocking/CWTs/CWT_Recovery.mdb")
+dbase = "C:/1work/Databases/GrandWazoo2/GrandWazoo2.mdb"
+#dbase = ("C:/Users/cottrillad/documents/1work/LakeTrout/Stocking/CWTs/CWT_Recovery.mdb")
 #constr = 'Provider=Microsoft.Jet.OLEDB.4.0; Data Source={0}'.format(dbase)
 
 constr =r'DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={};'
@@ -114,8 +115,6 @@ for rec in result_dict:
     rec['spc_id'] = spc_id_dict[rec['spc']]
     rec['sequence_number'] = (0 if rec['sequence_number'] is None else
                               rec['sequence_number'])
-
-
 
 
 pgcur.execute("TRUNCATE TABLE cwts_cwt_recovery")

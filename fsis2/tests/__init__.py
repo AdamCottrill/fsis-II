@@ -30,7 +30,8 @@ LOGGING['loggers']['tests'] = {'handlers': ['console'], 'level': 'INFO'}
 
 def get_hash(string, length=8):
     """ Shortcut for generating short hash strings """
-    return hashlib.sha1(string).hexdigest()[:length]
+    encoded = string.encode('utf-8')
+    return hashlib.sha1(encoded).hexdigest()[:length]
 
 def reloaded(obj):
     """ Reload an object from the database """

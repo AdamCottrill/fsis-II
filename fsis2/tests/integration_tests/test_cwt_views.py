@@ -96,8 +96,8 @@ from fsis2.tests.factories import *
 from cwts.tests.factories import *
 
 
-@pytest.fixture(scope='class')
-def db_setup():
+@pytest.fixture(scope='function')
+def db_setup(db):
     """For the tests in this file, we will need three different species,
     two different hatcheries, and several events.
 

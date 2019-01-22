@@ -17,7 +17,8 @@ class UserFactory(factory.DjangoModelFactory):
     #admin = False
     password = 'Abcdef12'
 
-    #from: http://www.rkblog.rk.edu.pl/w/p/using-factory-boy-django-application-tests/
+    #from: http://www.rkblog.rk.edu.pl/w/p/
+    # using-factory-boy-django-application-tests/
     @classmethod
     def _prepare(cls, create, **kwargs):
         password = kwargs.pop('password', None)

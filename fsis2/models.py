@@ -32,7 +32,7 @@ class BuildDate(models.Model):
     '''A database to hold the date that the database was last refreshed.'''
     build_date = models.DateField(editable=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.build_date.strftime("%d-%b-%Y")
 
 
@@ -48,7 +48,7 @@ class Readme(models.Model):
     class Meta:
         ordering = ['-date']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.comment
 
     def get_download_date(self, ):
@@ -81,12 +81,12 @@ class Species(models.Model):
     class Meta:
         ordering = ['species_code']
 
-    def __unicode__(self):
+    def __str__(self):
         if self.scientific_name:
-            spc_unicode = "%s (%s)" % (self.common_name, self.scientific_name)
+            spc_str = "%s (%s)" % (self.common_name, self.scientific_name)
         else:
-            spc_unicode = "%s" % self.common_name
-        return spc_unicode
+            spc_str = "%s" % self.common_name
+        return spc_str
 
 
 class Strain(models.Model):
@@ -100,7 +100,7 @@ class Strain(models.Model):
         ordering = ['species', 'strain_name']
         #unique_together = ['species_code', 'sto_code']
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s %s" % (self.strain_name, self.species.common_name)
 
 
@@ -112,7 +112,7 @@ class Proponent(models.Model):
     class Meta:
         ordering = ['proponent_name']
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.proponent_name, self.abbrev)
 
     def get_absolute_url(self):
@@ -145,7 +145,7 @@ class StockingSite(models.Model):
 
     objects = models.GeoManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.site_name, self.fsis_site_id)
 
     class Meta:
@@ -267,7 +267,7 @@ class Lot(models.Model):
     class Meta:
         ordering = ['-spawn_year']
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s yc %s)" % (self.fs_lot, self.spawn_year,
                                   self.species.common_name)
 
@@ -397,7 +397,7 @@ class Event(models.Model):
     class Meta:
         ordering = ['-event_date']
 
-    def __unicode__(self):
+    def __str__(self):
         return 'fsis event : %s' % self.fs_event
 
     def get_absolute_url(self):
@@ -571,7 +571,7 @@ class TaggingEvent(models.Model):
                                   choices=TAG_COLOUR_CHOICES,
                                   default='NON')
 
-    def __unicode__(self):
+    def __str__(self):
         return 'tagging event :%s' % self.id
 
        #def get_absolute_url(self):
@@ -584,7 +584,7 @@ class CWTs_Applied(models.Model):
     fs_tagging_event_id = models.IntegerField()
     cwt = models.CharField(max_length=6, db_index=True)
 
-    def __unicode__(self):
+    def __str__(self):
         cwt = str(self.cwt)
         string = '-'.join((cwt[:2], cwt[2:4], cwt[4:]))
         return string
@@ -604,7 +604,7 @@ class Lake(models.Model):
     class Meta:
         verbose_name = "Lake"
 
-    def __unicode__(self):
+    def __str__(self):
         '''return the lake name as its string representation'''
         return self.lake
 
@@ -645,7 +645,7 @@ class ManagementUnit(models.Model):
     def name(self):
         return ' '.join([str(self.lake), self.mu_type.upper(), self.label])
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name()
 
     def save(self, *args, **kwargs):
@@ -667,7 +667,7 @@ class ManagementUnit(models.Model):
 ##     ltrz = models.IntegerField('LTRZ')
 ##     geom = models.MultiPolygonField(srid=26917)
 ##
-##     def __unicode__(self):
+##     def __str__(self):
 ##         ret = 'LTRZ-{0}'.format(self.ltrz)
 ##         return ret
 ##
@@ -680,5 +680,5 @@ class ManagementUnit(models.Model):
 ##     qma = models.CharField('QMA', max_length=6)
 ##     geom = models.MultiPolygonField(srid=26917)
 ##
-##     def __unicode__(self):
+##     def __str__(self):
 ##         return self.qma

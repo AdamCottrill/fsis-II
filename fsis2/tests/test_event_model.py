@@ -14,11 +14,8 @@ A. Cottrill
 '''
 
 
-
-
-
-
 import pytest
+
 from django.core.urlresolvers import reverse
 
 from fsis2.models import Event
@@ -26,15 +23,16 @@ from fsis2.tests.factories import *
 
 from datetime import datetime
 
-@pytest.fixture(scope='class')
-def db_setup():
+
+@pytest.fixture(scope='function')
+def db_setup(db):
     """For the tests in this file, we will need three different species,
     two different hatcheries, and several events.
 
     """
 
     strain = StrainFactory(strain_code='WRT') #wild rainbow trout
-    rainbow = SpeciesFactory.create(common_name='Rainbow Trout',
+    rainbow = SpeciesFactory(common_name='Rainbow Trout',
                                     species_code='076')
 
     hatchery1 = ProponentFactory(abbrev='ABC',
