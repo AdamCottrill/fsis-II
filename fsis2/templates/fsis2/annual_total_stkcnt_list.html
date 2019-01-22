@@ -44,7 +44,7 @@
     </thead>
     <tbody>
       {% for row in object_list %}
-      <tr class="{% cycle row1,row2 %}">
+      <tr class="{% cycle 'row1' 'row2' %}">
         <td> <a href="{% url 'species_annual_events' spc=species.species_code  year=row.lot__event__prj_cd|prj_cd_Year %}">
             {{row.lot__event__prj_cd | prj_cd_Year}} </a> </td>
         <td> {{ row.proponent_name | title }} </td>

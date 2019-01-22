@@ -71,7 +71,7 @@ class CWT_recovery(models.Model):
     recovery_date = models.DateField(null=True, blank=True)
     recovery_grid= models.CharField(max_length=4)
     composite_key = models.CharField(max_length=50)
-    spc = models.ForeignKey(Species)
+    spc = models.ForeignKey(Species, on_delete=models.CASCADE)
     flen = models.IntegerField(null=True, blank=True)
     age = models.IntegerField(null=True, blank=True)
     geom = models.PointField(srid=4326,
@@ -83,7 +83,7 @@ class CWT_recovery(models.Model):
     popup_text = models.CharField(max_length=2500)
 
 
-    objects = models.GeoManager()
+    objects = models.Manager()
 
 
     def save(self, *args, **kwargs):
@@ -196,7 +196,8 @@ class CWT(models.Model):
     #distributed_date = models.DateField(null=True, blank=True)
 
     #spc is null before tags are distributed
-    spc = models.ForeignKey(Species, null=True, blank=True)
+    spc = models.ForeignKey(Species, null=True, blank=True,
+                            on_delete=models.CASCADE)
     STRAIN_CHOICES = (
         ('BS', 'Big Sound'),
         ('GL', 'Green Lake'),

@@ -102,7 +102,7 @@
       </thead>
       <tbody>
         {% for event in events %}
-        <tr class="{% cycle row1,row2 %}">
+        <tr class="{% cycle 'row1' 'row2' %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
           <td> {{ event.stkcnt|intcomma }} </td>
           {% if event.event_date %}

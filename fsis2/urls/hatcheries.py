@@ -19,9 +19,9 @@ from fsis2.views import (ProponentListView,
 )
 
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
-urlpatterns = patterns('',
+urlpatterns = [
         #================
         #Proponent Lists
         url(
@@ -44,4 +44,4 @@ urlpatterns = patterns('',
 #            name='hatchery_event_list'
 #            ),
 
-)
+]

@@ -139,7 +139,7 @@
                     </thead>
                     <tbody>
                         {% for event in species.list %}
-                        <tr class="{% cycle row1,row2 %}">
+                        <tr class="{% cycle 'row1' 'row2' %}">
                             <td> <a href="{% url 'event_detail'  event.id  %}">{{ event.fs_event }}</a> </td>
                             <td> <a href="{% url 'species_annual_events' event.lot.species.species_code year %}">{{ event.lot.species.common_name | title }} </a>
 </td>

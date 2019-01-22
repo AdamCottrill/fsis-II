@@ -84,7 +84,7 @@ def db_setup(db):
 
 
 @pytest.mark.django_db
-def test_status_and_template(client, db_setup):
+def test_annual_events_view(client, db_setup):
     """Verify that the url returns an appropriate status code and that the
     template is the one we think it is.
 
@@ -94,8 +94,10 @@ def test_status_and_template(client, db_setup):
     """
 
     yr = 2010
-
     url = reverse('annual_events', kwargs={'year':yr})
+
+    print('url={}'.format(url))
+
     response = client.get(url)
     content = str(response.content)
 

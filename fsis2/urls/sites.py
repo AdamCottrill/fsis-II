@@ -13,7 +13,7 @@ A. Cottrill
 '''
 
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from fsis2.views import (SiteDetailView,
                          SiteListView,
@@ -22,7 +22,7 @@ from fsis2.views import (SiteDetailView,
                          find_sites)
 
 
-urlpatterns = patterns('',
+urlpatterns = [
 
         #================
         #    STOCKING SITEs
@@ -58,4 +58,4 @@ urlpatterns = patterns('',
         url(regex=r'^find_sites/$',
             view=find_sites,
             name='find_sites'),
-)
+]

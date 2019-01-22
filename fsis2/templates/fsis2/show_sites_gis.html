@@ -40,7 +40,7 @@
     </thead>
     <tbody>
       {% for site in sites %}
-      <tr class="{% cycle row1,row2 %}">
+      <tr class="{% cycle 'row1' 'row2' %}">
         <td> <a href="{% url 'site_detail'  site.id  %}">{{ site.fsis_site_id }}</a> </td>
         <td> {{ site.site_name }} </td>
         <td> {{ site.basin }} </td>

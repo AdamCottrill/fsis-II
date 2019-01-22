@@ -16,9 +16,9 @@ from fsis2.views import (LotDetailView,
                          LotCreateView,
                          LotUpdateView)
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
-urlpatterns = patterns('',
+urlpatterns = [
 
         #================
         #    Lots
@@ -58,4 +58,4 @@ urlpatterns = patterns('',
             ),
 
 
-)
+]
