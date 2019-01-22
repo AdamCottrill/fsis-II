@@ -12,7 +12,7 @@ A. Cottrill
 =============================================================
 '''
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from fsis2.views import (EventDetailView,
                          EventListView,
@@ -20,13 +20,14 @@ from fsis2.views import (EventDetailView,
                          EventCreateView,
                          AnnualStockingBySpcStrainView,
                          annual_events,
+                         find_events,
                          most_recent_events,
                          proponent_annual_events,
                          proponent_most_recent_events,
                          species_annual_events)
 
 
-urlpatterns = patterns('',
+urlpatterns = [
 
         #event list <lot>
 
@@ -60,13 +61,14 @@ urlpatterns = patterns('',
             ),
 
 
-        url(r'find_events/$', 'fsis2.views.find_events', name='find_events'),
+        url(r'find_events/$',
+            find_events,
+            name='find_events'),
 
         #event list <year>
         url(r'(?P<year>\d{4})/$',
             view=annual_events,
             name="annual_events"),
-
 
         url(
             regex=r'most_recent/$',
@@ -108,4 +110,4 @@ urlpatterns = patterns('',
             ),
 
 
-)
+]

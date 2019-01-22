@@ -51,7 +51,7 @@
     </thead>
     <tbody>
       {% for object in object_list %}
-      <tr class="{% cycle row1,row2 %}">
+      <tr class="{% cycle 'row1' 'row2' %}">
         <td> <a href="{{ object.get_absolute_url }}"> {{ object.fs_lot }}</a>  </td>
         <td> {{ object.spawn_year }}  </td>
         <td> {{ object.species.common_name }} </td>

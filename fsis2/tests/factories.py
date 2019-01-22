@@ -54,7 +54,7 @@ class SpeciesFactory(factory.DjangoModelFactory):
     class Meta:
         model = Species
     #species_code = '81'
-    species_code = factory.Sequence(lambda n: n)
+    species_code = factory.Sequence(lambda n: 10 + n)
     common_name = 'Lake Trout'
     scientific_name = 'Salvelinus nameychush'
 

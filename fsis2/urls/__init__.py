@@ -1,10 +1,9 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.views.generic import TemplateView
 
 from fsis2.views import (SpeciesListView, AnnualTotalSpcView)
 
-urlpatterns = patterns("",
-
+urlpatterns = [
         #================
         #SPECIES
         url(
@@ -30,13 +29,13 @@ urlpatterns = patterns("",
             name='annual_total_spc'
             ),
 
-    )
+    ]
 
 
-urlpatterns = urlpatterns + patterns('',
-                                         (r'^lots/', include('fsis2.urls.lots')),
-                                         (r'^hatcheries/', include('fsis2.urls.hatcheries')),
-                                         (r'^events/', include('fsis2.urls.events')),
-                                         (r'^sites/', include('fsis2.urls.sites')),
-                                         (r'^cwts/', include('fsis2.urls.cwts')),
-                                 )
+urlpatterns = urlpatterns + [
+    url(r'^lots/', include('fsis2.urls.lots')),
+    url(r'^hatcheries/', include('fsis2.urls.hatcheries')),
+    url(r'^events/', include('fsis2.urls.events')),
+    url(r'^sites/', include('fsis2.urls.sites')),
+    url(r'^cwts/', include('fsis2.urls.cwts')),
+                                 ]
