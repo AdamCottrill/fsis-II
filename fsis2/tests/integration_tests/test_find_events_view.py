@@ -75,8 +75,8 @@ from fsis2.tests.factories import *
 from fsis2.models import Species
 
 
-@pytest.fixture(scope='class')
-def db_setup():
+@pytest.fixture(scope='function')
+def db_setup(db):
     """For the tests in this file, we will need several different species,
     and several events.
 

@@ -26,9 +26,21 @@ import sys
 
 DBASE = 'fsis2'
 PG_USER = 'cottrillad'
-PG_PW = 'django123'
+PG_PW = 'django'
 
-DEPLOY = False
+DEPLOY = True
+
+
+#US_DB = "C:/Users/cottrillad/documents/1work/LakeTrout/Stocking/CWTs/US_CWTs/WhatThe_USCWTS.mdb"
+
+US_DB = "C:/Users/COTTRILLAD/Documents/1work/Python/djcode/fsis2/cwts/utils/Get_US_CWTS.accdb"
+
+ONT_DB = ("Y:/Information Resources/Dataset_Utilities/FS_Maker/"
+         "CWTledger/CWTcodes_InventoryUGLMUv1.mdb")
+
+
+
+
 #override DEPLOY if it was passed in as a command line option.
 for arg in sys.argv[1:]:
     exec(arg)
@@ -78,12 +90,12 @@ def get_spc_id(species_code, pgconstr):
 
 print("Retrieving US tags...")
 
-usdbase = "C:/1work/LakeTrout/Stocking/CWTs/US_CWTs/WhatThe_USCWTS.mdb"
+
 
 #============================================
 # get the database locations
 constr =r'DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={};'
-constr = constr.format(usdbase)
+constr = constr.format(US_DB)
 
 # connect to the database
 usconn = pyodbc.connect(constr)
@@ -91,7 +103,9 @@ usconn = pyodbc.connect(constr)
 uscur = usconn.cursor()
 
 #use this query when live:
-uscur.execute('exec Get_US_TagData_for_Django2')
+
+uscur.execute('exec get_US_CWT_data_for_django')
+#uscur.execute('exec Get_US_TagData_for_Django2')
 result = uscur.fetchall()
 
 #col_names = [i[0] for i in uscur.description]
@@ -181,6 +195,8 @@ VALUES
 for row in result:
     data = {key: value for (key, value) in zip(col_names, row)}
     data['spc_id'] = get_spc_id(data['spc'], pgconstr)
+    data['cwt'] = data['cwt'].replace('-','')
+    data['ltrz'] = None
     #add a placeholder for popup_text - updated later
     data['popup_text'] = data['cwt']
     pgcur.execute(sql, data)
@@ -195,12 +211,9 @@ print('US tags committed and connection closed.')
 #============================================
 # get the database locations
 
-dbase = ("Y:/Information Resources/Dataset_Utilities/FS_Maker/"
-         "CWTledger/CWTcodes_InventoryUGLMUv1.mdb")
-#dbase = ("C:/1work/ScrapBook/CWTcodes_InventoryUGLMUv1.mdb")
 
 constr =r'DRIVER={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={};'
-constr = constr.format(dbase)
+constr = constr.format(ONT_DB)
 
 # connect to the database
 print("Retrieving OMNR tags...")

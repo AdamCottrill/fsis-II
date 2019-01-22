@@ -38,7 +38,7 @@ def test_cwt_age_at_capture():
     this_year = datetime.today().year
     yrs = range(2000,this_year + 1)
     ages = range(len(yrs))
-    should_be = zip(ages,yrs)
+    should_be = list(zip(ages,yrs))
 
     for age_year in aac:
         assert age_year in should_be
