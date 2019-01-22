@@ -30,7 +30,7 @@
 import os
 import sys
 
-os.chdir('c:/1work/Python/djcode/fsis2/utils/')
+os.chdir('c:/Users/COTTRILLAD/Documents/1work/Python/djcode/fsis2/utils/')
 
 import pytz
 from datetime import datetime
@@ -45,6 +45,10 @@ from geoalchemy2.elements import WKTElement
 
 from sqa_models import *
 from helper_fcts import *
+
+
+#here is where the data will be coming from:
+MDB = 'C:/1work/Data_Warehouse/FS_Master.mdb'
 
 
 #here is dicationary that will be needed for the tag attribute table.
@@ -132,13 +136,11 @@ def get_site(site_id, session):
         print(msg)
 
 
+
+
 #========================================
-#            DATA SOURCE
+#            MDB CURSOR
 
-#here is where the data will be coming from:
-#source db
-
-MDB = 'C:/1work/Data_Warehouse/FS_Master.mdb'
 mdbconstr ="DRIVER={{Microsoft Access Driver (*.mdb)}};DBQ={}"
 mdbcon = pyodbc.connect(mdbconstr.format(MDB))
 mdbcur = mdbcon.cursor()

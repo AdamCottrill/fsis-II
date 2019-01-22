@@ -42,7 +42,7 @@ from fsis2.models import (StockingSite, Proponent, Species, Strain)
 #
 #    objects = models.GeoManager()
 #
-#    def __unicode__(self):
+#    def __str__(self):
 #        return self.us_grid_no
 
 
@@ -92,7 +92,7 @@ class CWT_recovery(models.Model):
         super(CWT_recovery, self).save( *args, **kwargs)
 
 
-    def __unicode__(self):
+    def __str__(self):
         '''the string method of the cwt_recovery will be the composite key -
         it should be unique and refer to an individual row in one of our
         databases.'''
@@ -295,8 +295,12 @@ class CWT(models.Model):
 
     AGENCY_CHOICES = (
         ('OMNR', 'Ontario Ministry of Natural Resources'),
-        ('MDNR', 'Michigan Department of Natural Resources'),
+        ('MIDNR', 'Michigan Department of Natural Resources'),
         ('USFWS', 'U.S. Fish and Wildlife Service'),
+        ('CORA', 'CORA'),
+        ('ILDNR', 'Illinois Department of Natural Resources'),
+        ('INDNR', 'Indiana Department of Natural Resources'),
+        ('WIDNR', 'Wisconsin Department of Natural Resources'),
     )
     agency = models.CharField(max_length=5, choices=AGENCY_CHOICES)
 
@@ -336,7 +340,7 @@ class CWT(models.Model):
         super(CWT, self).save( *args, **kwargs)
 
 
-    def __unicode__(self):
+    def __str__(self):
         '''the string method of the cwt objects returns as
         expected - dashes bentween the second and third and fourth and fifth
         digits.'''
