@@ -277,7 +277,7 @@
       </thead>
       <tbody>
         {% for event in events %}
-        <tr class="{% cycle row1,row2 %}">
+        <tr class="{% cycle 'row1' 'row2' %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
           <td> {{ event.stkcnt|intcomma }} </td>
           <td> {{ event.event_date|date }} </td>
@@ -316,7 +316,7 @@
       </thead>
       <tbody>
         {% for recovery in recoveries %}
-        <tr class="{% cycle row1,row2 %}">
+        <tr class="{% cycle 'row1' 'row2' %}">
           <td> {{ recovery.recovery_year }} </td>
           <td> {{ recovery.get_recovery_source_display }} </td>
           <td> {{ recovery.recovery_date|date }} </td>

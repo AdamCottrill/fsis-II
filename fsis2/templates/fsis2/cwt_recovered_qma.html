@@ -48,7 +48,7 @@
       </thead>
       <tbody>
         {% for recovery in recoveries %}
-        <tr class="{% cycle row1,row2 %}">
+        <tr class="{% cycle 'row1' 'row2' %}">
           <td> {{ recovery.recovery_year }} </td>
           <td> {{ recovery.get_recovery_source_display }} </td>
           <td> {{ recovery.recovery_date|date }} </td>
@@ -76,7 +76,7 @@
       </thead>
       <tbody>
         {% for event in events %}
-        <tr class="{% cycle row1,row2 %}">
+        <tr class="{% cycle 'row1' 'row2' %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{event.fs_event }}</a> </td>
           <td> {{ event.lot.species.common_name }} </td>
           <td> {{ event.lot.strain.strain_name }} </td>
@@ -105,7 +105,7 @@
       </thead>
         <tbody>
           {% for event in US_events %}
-          <tr class="{% cycle row1,row2 %}">
+          <tr class="{% cycle 'row1' 'row2' %}">
             <td> {{ event.spc.common_name }} </td>
             <td> {{ event.get_strain_display }} </td>
             <td> {{ event.year_class }} </td>

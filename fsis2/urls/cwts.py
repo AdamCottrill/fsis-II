@@ -22,9 +22,9 @@ from fsis2.views import (CwtListView,
                          ManagementUnitListView,)
 
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
-urlpatterns = patterns('',
+urlpatterns = [
 
         url(
             regex=r'^$',
@@ -76,4 +76,4 @@ urlpatterns = patterns('',
             name='mu_list'
             ),
 
-)
+]

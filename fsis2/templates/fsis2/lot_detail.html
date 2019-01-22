@@ -77,7 +77,7 @@
       </thead>
       <tbody>
         {% for event in object.event_set.all %}
-        <tr class="{% cycle row1,row2 %}">
+        <tr class="{% cycle 'row1' 'row2' %}">
           <td> <a href="{% url 'event_detail' event.id %}">{{ event.fs_event }}</a> </td>
           <td> {{ event.stkcnt|intcomma }} </td>
           <td> {{ event.event_date|date }} </td>

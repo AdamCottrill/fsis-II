@@ -91,7 +91,7 @@ class Species(models.Model):
 
 class Strain(models.Model):
 
-    species = models.ForeignKey(Species)
+    species = models.ForeignKey(Species, on_delete=models.CASCADE)
     sto_code = models.CharField(max_length=5)  #crap from fsis
     strain_code = models.CharField(max_length=5)
     strain_name = models.CharField(max_length=20)
@@ -143,7 +143,7 @@ class StockingSite(models.Model):
     geom = models.PointField(srid=4326,
                              help_text='Represented as (longitude, latitude)')
 
-    objects = models.GeoManager()
+    objects = models.Manager()
 
     def __str__(self):
         return "%s (%s)" % (self.site_name, self.fsis_site_id)
@@ -245,13 +245,13 @@ class Lot(models.Model):
     #prj_cd = models.CharField(max_length=13)
     #fs_lot  = models.IntegerField()
     fs_lot = models.CharField(max_length=10)
-    species = models.ForeignKey(Species)
-    strain = models.ForeignKey(Strain)
+    species = models.ForeignKey(Species, on_delete=models.CASCADE)
+    strain = models.ForeignKey(Strain, on_delete=models.CASCADE)
     spawn_year = models.IntegerField()
     #these should be in their own table
     rearloc = models.CharField(max_length=30)
     rearloc_nm = models.CharField(max_length=30)
-    proponent = models.ForeignKey(Proponent)
+    proponent = models.ForeignKey(Proponent, on_delete=models.CASCADE)
 
     PROPONENT_TYPE_CHOICES = (
         ('CFIP', 'CFIP'),
@@ -299,7 +299,7 @@ class Lot(models.Model):
 
 class Event(models.Model):
 
-    lot = models.ForeignKey(Lot)
+    lot = models.ForeignKey(Lot, on_delete=models.CASCADE)
     prj_cd = models.CharField(max_length=13)
     year = models.IntegerField(db_index=True)
     fs_event = models.IntegerField(unique=True)
@@ -314,7 +314,7 @@ class Event(models.Model):
     sitem = models.FloatField(null=True, blank=True)
     transit_mortality_count = models.IntegerField(null=True, blank=True)
 
-    site = models.ForeignKey(StockingSite)
+    site = models.ForeignKey(StockingSite, on_delete=models.CASCADE)
     dd_lat = models.FloatField()
     dd_lon = models.FloatField()
 
@@ -392,7 +392,7 @@ class Event(models.Model):
                                         choices=STOCKING_PURPOSE_CHOICES,
                                         default='UNKNOWN',
                                         null=True, blank=True)
-    objects = models.GeoManager()
+    objects = models.Manager()
 
     class Meta:
         ordering = ['-event_date']
@@ -521,7 +521,7 @@ class Event(models.Model):
 
 
 class TaggingEvent(models.Model):
-    stocking_event = models.ForeignKey(Event)
+    stocking_event = models.ForeignKey(Event, on_delete=models.CASCADE)
     fs_tagging_event_id = models.IntegerField(unique=True)
     retention_rate_pct = models.FloatField(null=True, blank=True)
     retention_rate_sample_size = models.IntegerField(null=True, blank=True)
@@ -580,7 +580,7 @@ class TaggingEvent(models.Model):
 
 class CWTs_Applied(models.Model):
     #tagging = models.ManyToMany(TaggingEvent)
-    tagging_event = models.ForeignKey(TaggingEvent)
+    tagging_event = models.ForeignKey(TaggingEvent, on_delete=models.CASCADE)
     fs_tagging_event_id = models.IntegerField()
     cwt = models.CharField(max_length=6, db_index=True)
 
@@ -620,7 +620,7 @@ class ManagementUnit(models.Model):
     label = models.CharField(max_length=25)
     slug = models.SlugField(blank=True, unique=True, editable=False)
     geom = models.MultiPolygonField(srid=4326)
-    lake = models.ForeignKey(Lake, default=1)
+    lake = models.ForeignKey(Lake, default=1, on_delete=models.CASCADE)
 
     MU_TYPE_CHOICES = (
         ('ltrz', 'Lake Trout Rehabilitation Zone'),
