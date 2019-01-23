@@ -32,8 +32,8 @@ here = lambda * x: os.path.join(os.path.abspath(os.path.dirname(__file__)), *x)
 root = lambda * x: os.path.join(os.path.abspath(PROJECT_ROOT), *x)
 
 
+SECRET_KEY = get_env_variable('SECRET_KEY')
 DEBUG = True
-
 
 ADMINS = (
     ('Adam Cottrill', 'racottrill@bmts.com'),
@@ -119,8 +119,6 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-SECRET_KEY = 'vm4rl5*ymb@2&d_(gc$gb-^twq9w(u69hi--%$5xrh!xk(t%hw'
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -164,25 +162,6 @@ TEMPLATES = [
         },
     },
 ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 LOGIN_REDIRECT_URL = "/"

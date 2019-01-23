@@ -1,0 +1,17 @@
+[run]
+
+omit =
+    django_settings.py,
+    manage.py,
+    deploy.py,
+    .git/*,
+    htmlcov/*,
+    main/*,
+    requirements/*,
+    simple_auth/*,
+    static/*,
+    static_root/*,
+    templates/*,
+    cwt/tests/*
+    fsis2/tests/*,
+    utils/*

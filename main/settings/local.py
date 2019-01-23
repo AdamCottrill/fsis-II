@@ -1,24 +1,22 @@
 from main.settings.base import *
 
+DEBUG = True
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'fsis2',
-        'USER': 'cottrillad',
-        'PASSWORD': 'django123',
+        'USER': get_env_variable('PG_USER'),
+        'PASSWORD': get_env_variable('PG_PASS'),
     }
 }
 
 
 INTERNAL_IPS = ('127.0.0.1', )
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
-}
 
-
-#MIDDLEWARE = MIDDLEWARE + ['debug_toolbar.middleware.DebugToolbarMiddleware']
+MIDDLEWARE = MIDDLEWARE + ['debug_toolbar.middleware.DebugToolbarMiddleware']
 
 INSTALLED_APPS += (
-    #'debug_toolbar',
-    #'django_extensions',
+    'debug_toolbar',
+    'django_extensions',
 )
