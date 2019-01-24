@@ -7,11 +7,11 @@ from main.settings.base import *
 
 DATABASES = {
     'default': {
-         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-         'NAME': 'fsis2',
-         'USER': 'cottrillad',
-         'PASSWORD': 'django123',
-     }
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'fsis2',
+        'USER': get_env_variable('PG_USER'),
+        'PASSWORD': get_env_variable('PG_PASS'),
+    }
 }
 
 
