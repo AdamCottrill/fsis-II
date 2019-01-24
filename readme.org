@@ -1,4 +1,4 @@
-* FSIS-II - What FSIS should have been
+* FSIS-II - What FSIS could have been
 
 FSIS-II is a django application that was written to display and
 summarize fish stocking data for the Ontario waters of Lake Huron.  A
