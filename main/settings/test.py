@@ -9,8 +9,8 @@ DATABASES = {
     'default': {
          'ENGINE': 'django.contrib.gis.db.backends.postgis',
          'NAME': 'fsis2',
- ***REMOVED***
- ***REMOVED***
+         ***REMOVED***
+         ***REMOVED***
      }
 }
 
