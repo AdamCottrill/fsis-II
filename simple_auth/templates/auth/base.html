@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <head>
+
+    <title>{% block title %}{% endblock %}Simple Authentication</title>
+    <!--     <link rel="stylesheet" href="{{ STATIC_URL }}style.css" type="text/css" media="screen" /> -->
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/stickyfooter.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+        <script src="{{ STATIC_URL }}js/html5shiv.js"></script>
+        <script src="{{ STATIC_URL }}js/respond.min.js"></script>
+    <![endif]-->
+
+
+    <style type="text/css" media="screen">
+     .top-buffer { margin-top:120px; }
+    </style>
+
+    {% block extra_head %}
+    {% endblock %}
+
+  </head>
+
+  <body>
+
+    <style type="text/css" media="screen">
+      .navbar-inverse .nav li.dropdown.open > .dropdown-toggle,
+      .navbar-inverse .nav li.dropdown.active > .dropdown-toggle,
+      .navbar-inverse .nav li.dropdown.open.active > .dropdown-toggle,
+      .navbar,
+      .navbar-inverse .navbar-inner {
+      filter: none;
+      background-image: none;
+      } 
+    </style>
+
+
+
+    <div class="container" >
+      {% block content %}
+      {% endblock%}
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+
+  </body>
+</html>
